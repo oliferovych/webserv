@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:23 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 22:52:39 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/11 22:57:05 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,10 @@ int main()
 
 		// Simple HTTP response
 		const char* response = "HTTP/1.1 200 OK\r\n"
-		                     "Content-Type: text/plain\r\n\r\n"
-		                     "Hello from WebServ!\n";
+		                     "Content-Type: text/html\r\n\r\n"
+		                     "<html><body>"
+                             "<a href='https://www.youtube.com/watch?v=xvFZjo5PgG0'>something cool</a>"
+                             "</body></html>\r\n";
 
 		if(send(client_fd, response, strlen(response), 0))
 			close(client_fd);
