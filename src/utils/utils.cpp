@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 22:28:18 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/11 23:30:06 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ std::string timestamp()
 	std::tm* ltm = std::localtime(&now);
 	
 	char buffer[20];
-	std::strftime(buffer, sizeof(buffer), "%y-%m-%d %H %M %S", ltm);
+	std::strftime(buffer, sizeof(buffer), "%y-%m-%d %H:%M:%S", ltm);
 	
 	return std::string(buffer);
 }
