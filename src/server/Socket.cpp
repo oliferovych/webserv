@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 22:34:15 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/11 22:45:16 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ Socket::Socket(int port) : _port(port), _fd(-1), _addr(sockaddr_in())
 
 Socket::~Socket()
 {
+	debug_msg("Closing socket on port: " + std::to_string(_port));
 	close(_fd);
 }
 
@@ -41,7 +42,7 @@ void Socket::setupAddr()
 {
 	debug_msg("Setting up address");
 	// setting up address AF_INET = IPv4, INADDR_ANY = lets the kernel choose the IP address
-	bzero((char *)&_addr, sizeof(_addr));
+	memset(&_addr, 0, sizeof(_addr));
 	_addr.sin_family = AF_INET;
 	_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	_addr.sin_port = htons(_port);

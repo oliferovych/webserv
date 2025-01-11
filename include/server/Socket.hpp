@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:30 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 22:35:59 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/11 22:44:11 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,16 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <ifstream>
+#include <unistd.h>
+#include <cstring>
 #include "../utils/utils.hpp"
 
 class Socket
 {
 	private:
-		struct sockaddr_in _addr;
-		int _fd;
 		int _port;
+		int _fd;
+		struct sockaddr_in _addr;
 	public:
 		Socket(int port);
 		~Socket();
@@ -35,4 +36,4 @@ class Socket
 
 		int getSocketFd() const;
 		int getPort() const;
-}
+};
