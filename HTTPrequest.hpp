@@ -65,6 +65,9 @@ class Request
 
 		void debug_print() const;
 		void debug_state() const;
+
+		void ft_trim(std::string &str);
+		void ft_tolower(std::string &str);
 };
 
 #endif

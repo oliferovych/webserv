@@ -29,14 +29,16 @@ int main(void)
     'c', 'i', 't', 'y', ':', ' ', 'N', 'e', 'w', ' ', 'Y', 'o', 'r', 'k'
 	};
 
-	std::vector<char> get_message_normal = {
-    'G', 'E', 'T', ' ', '/', 'i', 'n', 'd', 'e', 'x', '.', 'h', 't', 'm', 'l', ' ', 'H', 'T', 'T', 'P', '/', '1', '.', '1', '\r', '\n',
-    'H', 'o', 's', 't', ':', ' ', 'e', 'x', 'a', 'm', 'p', 'l', 'e', '.', 'c', 'o', 'm', '\r', '\n',
-    'A', 'c', 'c', 'e', 'p', 't', '-', 'L', 'a', 'n', 'g', 'u', 'a', 'g', 'e', ':', ' ', 'e', 'n', '-', 'U', 'S', '\r', '\n',
-    '\r', '\n'
-	};
+    std::vector<char> get_message_normal = {
+        'G', 'E', 'T', ' ', '/', 'i', 'n', 'd', 'e', 'x', '.', 'h', 't', 'm', 'l', ' ', 'H', 'T', 'T', 'P', '/', '1', '.', '1', '\r', '\n',
+        'H', 'o', 's', 't', ':', ' ', 'e', 'x', 'a', 'm', 'p', 'l', 'e', '.', 'c', 'o', 'm', '\r', '\n',
+        'A', 'c', 'c', 'e', 'p', 't', '-', 'L', 'a', 'n', 'g', 'u', 'a', 'g', 'e', ':', ' ', 'e', 'n', '-', 'U', 'S', ',', ' ', 'd', 'e', ',', ' ', 'f', 'r', '\r', '\n',
+        // 'C', 'o', 'n', 't', 'e', 'n', 't', '-', 'L', 'e', 'n', 'g', 't', 'h', ':', ' ', '3', '5', '\r', '\n',
+        '\r', '\n'
+    };
 
-	std::vector<char> message = get_message_normal;
+
+	std::vector<char> message = post_message_chunked;
 
 	std::cout << "message: " << std::endl;
     for (char c : message)
@@ -46,7 +48,8 @@ int main(void)
 	Request req;
 
 	req.updateBuffer(message);
-	for (int i = 0; i < 3; i++)
+	// for (int i = 0; i < 5; i++)
+    while(1)
 	{
 		req.parse();
 		if (req.is_complete())

@@ -71,7 +71,7 @@ int Request::parse_headers(void)
 		if (pos_colon == std::string::npos)
 			return (1);
 		std::string key = str_buffer.substr(start, pos_colon - start);
-
+		ft_tolower(key);
 		std::string value_line = str_buffer.substr(pos_colon + 1, pos_line_end - pos_colon - 1);
 		int content_start = 0;
 		while (content_start < value_line.length())
@@ -81,7 +81,8 @@ int Request::parse_headers(void)
 				pos_comma = value_line.length();
 
 			std::string val = value_line.substr(content_start, pos_comma - content_start);
-			// val.trim();
+			ft_trim(val);
+			ft_tolower(val);
 			headers[key].push_back(val);
 
 			content_start = pos_comma + 1;
@@ -92,10 +93,10 @@ int Request::parse_headers(void)
 	
 	buffer.erase(buffer.begin(), buffer.begin() + section_end + 4);
 	
-	std::unordered_map<std::string, std::vector<std::string>>::iterator it = headers.find("Transfer-Encoding");
+	std::unordered_map<std::string, std::vector<std::string>>::iterator it = headers.find("transfer-encoding");
 	if (it != headers.end() && !it->second.empty())
 	{
-		if (it->second.back() == " chunked")
+		if (it->second.back() == "chunked")
 		{
 			state = PARSE_CHUNKED_BODY;
 			return (0);
@@ -103,7 +104,7 @@ int Request::parse_headers(void)
 		return (1);
 	}
 
-	it = headers.find("Content-Length");
+	it = headers.find("content-length");
 	if (it != headers.end() && !it->second.empty())
     {
         content_length = std::stoi(it->second[0]);
@@ -193,6 +194,29 @@ void Request::updateBuffer(const std::vector<char>& new_buffer)
 	buffer.insert(buffer.end(), new_buffer.begin(), new_buffer.end());
 }
 
+void Request::ft_trim(std::string &str)
+{
+	int front = 0;
+	int back = str.length() - 1;
+
+	while (front <= back && std::isspace(str[front]))
+		++front;
+	while (back >= front && std::isspace(str[back]))
+		--back;
+	if (front <= back)
+        str = str.substr(front, back - front + 1);
+    else
+        str.clear();
+}
+
+void Request::ft_tolower(std::string &str)
+{
+	for (char &c : str)
+		c = std::tolower(c);
+}
+
+
+
 
 // Request req;
 // std::vector<char> buffer(buffer_size);
@@ -200,11 +224,15 @@ void Request::updateBuffer(const std::vector<char>& new_buffer)
 // {
 //     int bytes_received = recv(socket, buffer, buffer_size, 0);
 
-//     if (bytes_received <= 0)
-// 	{
+//     if (bytes_received < 0)
+// 	   {
 // 		//error code
 //         break;
 //     }
+	// if (bytes_received == 0)
+	// {
+		
+	// }
 
 // 	req.updateBuffer(std::vector<char> new_buffer(buffer.begin(), buffer.begin() + bytes_received));
 // 	req.parse();
