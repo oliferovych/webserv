@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:23 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/12 16:01:27 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/12 16:19:09 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,11 @@ int main()
 	{
 		if (poll.wait() > 0)
 		{
-			if(poll.canRead(0))
+			if(poll.get_pending_fd() > 0)
 			{
-				int client_fd = accept(poll.getFd(0), NULL, NULL);
-				if (client_fd > 0)
+				int client_fd;
+				int pending_fd = poll.get_pending_fd();
+				if ((client_fd = accept(poll.get_pending_fd(), NULL, NULL)) >= 0)
 				{
 					const char* response = "HTTP/1.1 200 OK\r\n"
 										"Content-Type: text/html\r\n\r\n"
@@ -43,7 +44,7 @@ int main()
 										"</body></html>\r\n";
 					if(send(client_fd, response, strlen(response), 0))
 					{
-						info_msg("Response sent to FD " + std::to_string(client_fd));
+						info_msg("Response sent to FD " + std::to_string(pending_fd));
 						close(client_fd);
 					}
 				}

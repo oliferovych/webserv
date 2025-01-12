@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/12 15:30:15 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/12 15:41:20 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/12 16:10:01 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,17 @@ int SocketPoll::wait()
 bool SocketPoll::canRead(int index)
 {
 	return _fds[index].revents & POLLIN;
+}
+
+int SocketPoll::get_pending_fd()
+{
+	// Return first ready FD found
+	for (size_t i = 0; i < _fds.size(); i++)
+	{
+		if (canRead(i))
+			return _fds[i].fd;
+	}
+	return -1;
 }
 
 int SocketPoll::getFd(int index)
