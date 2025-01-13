@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+         #
+#    By: tecker <tecker@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/09 21:08:00 by dolifero          #+#    #+#              #
-#    Updated: 2025/01/11 22:38:38 by dolifero         ###   ########.fr        #
+#    Updated: 2025/01/13 14:55:27 by tecker           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,5 +34,5 @@ fclean:		clean
 
 re:			fclean all
 
-.PHONY:		all clean fclean re
+.PHONY:		all clean fclean re 
 
