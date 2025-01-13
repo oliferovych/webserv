@@ -1,4 +1,4 @@
-#include "HTTPrequest.hpp"
+#include "../../include/requests/HTTPrequest.hpp"
 
 Request::Request()
 	: content_length(0), state(PARSE_REQUEST_LINE)
