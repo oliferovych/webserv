@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:23 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/12 16:19:09 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/13 15:41:04 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,23 +29,26 @@ int main()
 			{
 				int client_fd;
 				int pending_fd = poll.get_pending_fd();
-				if ((client_fd = accept(poll.get_pending_fd(), NULL, NULL)) >= 0)
+				while (poll.canRead(pending_fd))
 				{
-					const char* response = "HTTP/1.1 200 OK\r\n"
-										"Content-Type: text/html\r\n\r\n"
-										"<!DOCTYPE html>\r\n"
-										"<html><head><style>\r\n"
-										"body {display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;}\r\n"
-										"a {font-size: 48px; text-decoration: none; transition: all 0.3s; text-decoration-line: underline;}\r\n"
-										"a:hover {font-size:52px; text-decoration-line: underline;}\r\n"
-										"</style></head>\r\n"
-										"<body>"
-										"<a href='https://www.youtube.com/watch?v=xvFZjo5PgG0'>Something cool, click on me!</a>"
-										"</body></html>\r\n";
-					if(send(client_fd, response, strlen(response), 0))
+					if ((client_fd = accept(pending_fd, NULL, NULL)) >= 0)
 					{
-						info_msg("Response sent to FD " + std::to_string(pending_fd));
-						close(client_fd);
+						const char* response = "HTTP/1.1 200 OK\r\n"
+											"Content-Type: text/html\r\n\r\n"
+											"<!DOCTYPE html>\r\n"
+											"<html><head><style>\r\n"
+											"body {display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;}\r\n"
+											"a {font-size: 48px; text-decoration: none; transition: all 0.3s; text-decoration-line: underline;}\r\n"
+											"a:hover {font-size:52px; text-decoration-line: underline;}\r\n"
+											"</style></head>\r\n"
+											"<body>"
+											"<a href='https://www.youtube.com/watch?v=xvFZjo5PgG0'>Something cool, click on me!</a>"
+											"</body></html>\r\n";
+						if(send(client_fd, response, strlen(response), 0))
+						{
+							info_msg("Response sent to FD " + std::to_string(pending_fd));
+							close(client_fd);
+						}
 					}
 				}
 			}
