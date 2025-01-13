@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/13 16:23:00 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/13 19:20:57 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,14 @@ Server::~Server()
 
 void Server::createServerSockets()
 {
-	Socket s1(8080);
-	Socket s2(8081);
+	Socket *s1 = new Socket(8080);
+	Socket *s2 = new Socket(8081);
 
-	_sockets.insert(std::make_pair(s1.getSocketFd(), s1));
-	_sockets.insert(std::make_pair(s2.getSocketFd(), s2));
+	_sockets.insert(std::make_pair(s1->getSocketFd(), s1));
+	_sockets.insert(std::make_pair(s2->getSocketFd(), s2));
 
-	_poll.addFd(s1.getSocketFd());
-	_poll.addFd(s2.getSocketFd());
+	_poll.addFd(s1->getSocketFd());
+	_poll.addFd(s2->getSocketFd());
 }
 
 void Server::_acceptClient(int serverFd)
@@ -49,8 +49,14 @@ void Server::_acceptClient(int serverFd)
 
 	try
 	{
-		_clients.insert(std::make_pair(client_fd, Socket(client_fd)));
-		_poll.addFd(client_fd);
+		Client *clientSocket = new Client(client_fd, client_address);
+		try{
+			_clients.insert(std::make_pair(client_fd, clientSocket));
+			_poll.addFd(client_fd);
+		}catch(...){
+			delete clientSocket;
+			throw;
+		}
 		info_msg("Client connected on FD " + std::to_string(client_fd) + " from " + std::string(inet_ntoa(client_address.sin_addr)));
 	} catch (std::exception &e)
 	{
@@ -65,20 +71,7 @@ bool Server::_isServer(int fd)
 		return true;
 	return false;
 }
-
-void Server::run()
-{
-	createServerSockets();
-
-	while(1)
-	{
-		if(_poll.get_pending_fd() > 0)
-		{
-			int pending_fd = _poll.get_pending_fd();
-			while (_poll.canRead(pending_fd))
-			{
-				_acceptClient(pending_fd);
-				const char* response = "HTTP/1.1 200 OK\r\n"
+const char* response = "HTTP/1.1 200 OK\r\n"
 										"Content-Type: text/html\r\n\r\n"
 										"<!DOCTYPE html>\r\n"
 										"<html><head><style>\r\n"
@@ -89,10 +82,42 @@ void Server::run()
 										"<body>"
 										"<a href='https://www.youtube.com/watch?v=xvFZjo5PgG0'>Something cool, click on me!</a>"
 										"</body></html>\r\n";
-				if(send(client_fd, response, strlen(response), 0))
+
+void Server::run()
+{
+	createServerSockets();
+	debug_msg("Poll size: " + std::to_string(_poll.size()));
+	while(1)
+	{
+		int events = poll(_poll.getFds().data(), _poll.size(), -1);
+		if(events < 0)
+			return(err_msg("Poll failed " + std::string(strerror(errno))));
+		{
+			for(auto& pfd : _poll.getFds())
+			{
+				if(pfd.revents & POLLIN)
 				{
-					info_msg("Response sent to FD " + std::to_string(pending_fd));
-					close(client_fd);
+					debug_msg("input");
+					if(_isServer(pfd.fd))
+					{
+						debug_msg("Accepting client on FD " + std::to_string(pfd.fd));
+						_acceptClient(pfd.fd);
+						break ;
+					}
+					else
+					{
+						if(send(pfd.fd, response, strlen(response), 0) > 0)
+							info_msg("Response sent to client on FD " + std::to_string(pfd.fd) + " from "
+								+ std::string(inet_ntoa(_clients[pfd.fd]->getAddr().sin_addr)));
+						else
+						{
+							err_msg("Send failed " + std::string(strerror(errno)));
+							close(pfd.fd);
+							_poll.removeFd(pfd.fd);
+							_clients.erase(pfd.fd);
+						}
+						break ;
+					}
 				}
 			}
 		}

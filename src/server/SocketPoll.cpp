@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/12 15:30:15 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/12 16:10:01 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/13 19:02:10 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,12 @@ SocketPoll::~SocketPoll()
 
 void SocketPoll::addFd(int fd)
 {
+	if (fd < 0)
+		return(err_msg("Invalid file descriptor"));
 	struct pollfd pfd;
 	pfd.fd = fd;
-	pfd.events = POLLIN;
+	pfd.events = POLLIN | POLLOUT;
+	pfd.revents = 0;
 	_fds.push_back(pfd);
 }
 
@@ -49,11 +52,6 @@ void SocketPoll::removeFd(int fd)
 			break;
 		}
 	}
-}
-
-int SocketPoll::wait()
-{
-	return poll(_fds.data(), _fds.size(), _timeout);
 }
 
 bool SocketPoll::canRead(int index)

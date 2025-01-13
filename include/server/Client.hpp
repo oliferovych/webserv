@@ -1,32 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/13 15:53:51 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/13 18:27:57 by dolifero         ###   ########.fr       */
+/*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
+/*   Updated: 2025/01/13 18:43:44 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include "../global.hpp"
-#include <unordered_map>
 
-class Client;
-
-class Server
+class Client
 {
 	private:
-		std::unordered_map<int, Socket*> _sockets;
-		std::unordered_map<int, Client*> _clients;
-		SocketPoll _poll;
-		void _acceptClient(int serverFd);
-		bool _isServer(int fd);
+		int _clientFd;
+		bool _isFdOpen;
+		sockaddr_in _addr;
 	public:
-		Server();
-		~Server();
-		void createServerSockets();
-		void run();
+		Client(int clientFd, sockaddr_in addr);
+		~Client();
+		const int &getClientFd() const { return _clientFd; }
+		const sockaddr_in &getAddr() const { return _addr; }
 };

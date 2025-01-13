@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/12 15:24:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/12 16:10:00 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/13 18:34:43 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ class SocketPoll
 		void addFd(int fd);
 		void removeFd(int fd);
 		//checkers
-		int wait();
 		bool canRead(int index);
 		//getters
 		int getFd(int index);
