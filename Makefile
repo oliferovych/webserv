@@ -3,36 +3,45 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+         #
+#    By: tecker <tecker@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/09 21:08:00 by dolifero          #+#    #+#              #
-#    Updated: 2025/01/09 21:11:50 by dolifero         ###   ########.fr        #
+#    Updated: 2025/01/13 13:54:08 by tecker           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME		= webserv
-CC			= c++
-CFLAGS		= -Wall -Wextra -Werror -std=c++17
-RM			= rm -f
+NAME			=	webserv
 
-SRC_FILES	= $(shell find /src -name '*.cpp')
-OBJ_FILES	= $(SRC_FILES:.cpp=.o)
+CC				=	c++
 
-all:		$(NAME)
+CFLAGS			=	-Wall -Werror -Wextra -std=c++17
+
+SRC_FILES 		= 	$(shell find ./src -name '*.cpp')
+
+
+
+OBJ_DIR			=	./obj
+SRC_DIR 		= 	./src
+
+OBJ_FILES		= 	$(SRC_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+
+all:	$(NAME)
 
 $(NAME):	$(OBJ_FILES)
-			$(CC) $(CFLAGS) -o $(NAME) $(OBJ_FILES)
+	$(CC) $(CFLAGS) $^ -o $@
 
-%.o:		%.cpp
-			$(CC) $(CFLAGS) -c $< -o $@
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-			$(RM) $(OBJ_FILES)
+	rm -rf $(OBJ_DIR)
 
-fclean:		clean
-			$(RM) $(NAME)
+fclean:	clean
+	rm -f $(NAME)
 
-re:			fclean all
+re:	fclean all
 
 .PHONY:		all clean fclean re
-

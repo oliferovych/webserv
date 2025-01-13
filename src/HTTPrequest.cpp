@@ -35,7 +35,7 @@ int Request::parse_request_line(void)
 {
 	std::string str_buffer(buffer.begin(), buffer.end());
 	
-	int section_end = str_buffer.find("\r\n");
+	size_t section_end = str_buffer.find("\r\n");
 	if (section_end == std::string::npos)
 		return (0);
 	size_t space_1 = str_buffer.find(" ", 0);
@@ -58,10 +58,10 @@ int Request::parse_headers(void)
 {
 	std::string str_buffer(buffer.begin(), buffer.end());
 	
-	int section_end = str_buffer.find("\r\n\r\n");
+	size_t section_end = str_buffer.find("\r\n\r\n");
 	if (section_end == std::string::npos)
 		return (0);
-	int start = 0;
+	size_t start = 0;
 	while (start < section_end)
 	{
 		size_t pos_line_end = str_buffer.find("\r\n", start);
@@ -73,7 +73,7 @@ int Request::parse_headers(void)
 		std::string key = str_buffer.substr(start, pos_colon - start);
 		ft_tolower(key);
 		std::string value_line = str_buffer.substr(pos_colon + 1, pos_line_end - pos_colon - 1);
-		int content_start = 0;
+		size_t content_start = 0;
 		while (content_start < value_line.length())
 		{
 			size_t pos_comma = value_line.find(",", content_start);
