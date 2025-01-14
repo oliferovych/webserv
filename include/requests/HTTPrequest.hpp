@@ -70,4 +70,16 @@ class Request
 		void ft_tolower(std::string &str);
 };
 
+class HTTPException : public std::exception 
+{
+	private:
+		std::string _message;
+		int _code;
+
+	public:
+		HTTPException(int code, const std::string& msg);
+		const char* what() const noexcept;
+		int code() const;
+};
+
 #endif

@@ -33,11 +33,19 @@ void Request::parse(void)
 
 int Request::parse_request_line(void)
 {
-	std::string str_buffer(buffer.begin(), buffer.end());
+	while (buffer.size() >= 2 && buffer[0] == '\r' && buffer[1] == '\n')
+        buffer.erase(buffer.begin(), buffer.begin() + 2);
 	
-	size_t section_end = str_buffer.find("\r\n");
-	if (section_end == std::string::npos)
-		return (0);
+	// check if whole header section is presesnt
+	std::vector<char> del = {'\r', '\n'};
+	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
+    if (section_end == buffer.end())
+        return 0;
+
+	//string that contains whole header section
+	std::string str_buffer(buffer.begin(), section_end);
+	
+	// extract methode, Path and http version
 	size_t space_1 = str_buffer.find(" ", 0);
 	if (space_1 == std::string::npos)
 		return (1);
@@ -46,9 +54,10 @@ int Request::parse_request_line(void)
 	if (space_2 == std::string::npos)
 		return (1);
 	request_line.path = str_buffer.substr(space_1 + 1, space_2 - space_1 - 1);
-	request_line.version = str_buffer.substr(space_2 + 1, section_end - space_2 - 1);
+	request_line.version = str_buffer.substr(space_2 + 1, str_buffer.length() - space_2 - 1);
 
-	buffer.erase(buffer.begin(), buffer.begin() + section_end + 2);
+	// delete request_line from buffer
+	buffer.erase(buffer.begin(), buffer.begin() + str_buffer.length() + 2);
 
 	state = PARSE_HEADERS;
 	return (0);
@@ -56,13 +65,24 @@ int Request::parse_request_line(void)
 
 int Request::parse_headers(void)
 {
-	std::string str_buffer(buffer.begin(), buffer.end());
+	if (buffer.size() < 2)
+        return 0;
+	if (buffer[0] == '\r' && buffer[1] == '\n')
+		return (1);
+
+	// check if whole header section is presesnt
+	std::vector<char> del = {'\r', '\n', '\r', '\n'};
+	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
+    if (section_end == buffer.end())
+        return 0;
+
+	//string that contains whole header section
+	std::string str_buffer(buffer.begin(), section_end + 2);
 	
-	size_t section_end = str_buffer.find("\r\n\r\n");
-	if (section_end == std::string::npos)
-		return (0);
+	//parsing headers line by line
+	//extracting key and val
 	size_t start = 0;
-	while (start < section_end)
+	while (start < str_buffer.length())
 	{
 		size_t pos_line_end = str_buffer.find("\r\n", start);
 		if (pos_line_end == std::string::npos)
@@ -71,8 +91,10 @@ int Request::parse_headers(void)
 		if (pos_colon == std::string::npos)
 			return (1);
 		std::string key = str_buffer.substr(start, pos_colon - start);
-		ft_tolower(key);
 		std::string value_line = str_buffer.substr(pos_colon + 1, pos_line_end - pos_colon - 1);
+		ft_tolower(key);
+
+		//checking for multiple vals
 		size_t content_start = 0;
 		while (content_start < value_line.length())
 		{
@@ -82,7 +104,6 @@ int Request::parse_headers(void)
 
 			std::string val = value_line.substr(content_start, pos_comma - content_start);
 			ft_trim(val);
-			ft_tolower(val);
 			headers[key].push_back(val);
 
 			content_start = pos_comma + 1;
@@ -90,9 +111,10 @@ int Request::parse_headers(void)
 
 		start = pos_line_end + 2;
 	}
-	
-	buffer.erase(buffer.begin(), buffer.begin() + section_end + 4);
-	
+	// delete header section from buffer
+	buffer.erase(buffer.begin(), buffer.begin() + str_buffer.length() + 2);
+
+
 	std::unordered_map<std::string, std::vector<std::string>>::iterator it = headers.find("transfer-encoding");
 	if (it != headers.end() && !it->second.empty())
 	{
@@ -149,7 +171,7 @@ int Request::parse_chunked_body()
         size_t chunk_size;
         try
 		{
-            chunk_size = std::stol(chunk_size_str);
+            chunk_size = std::stoul(chunk_size_str, nullptr, 16);
         }
 		catch (...)
 		{
@@ -217,7 +239,6 @@ void Request::ft_tolower(std::string &str)
 
 
 
-
 // Request req;
 // std::vector<char> buffer(buffer_size);
 // while (true)
@@ -229,13 +250,25 @@ void Request::ft_tolower(std::string &str)
 // 		//error code
 //         break;
 //     }
-	// if (bytes_received == 0)
-	// {
+// 	if (bytes_received == 0)
+// 	{
 		
-	// }
+// 	}
 
 // 	req.updateBuffer(std::vector<char> new_buffer(buffer.begin(), buffer.begin() + bytes_received));
-// 	req.parse();
+// 	try
+// 	{
+// 		req.parse();
+
+// 	}
+// 	catch(const std::exception& e)
+// 	{
+// 		std::cerr << code() << e.what() << std::endl;
+
+// 		response(req, code());
+// 		close(client);
+// 	}
+	
 
 //     if (req.is_complete())
 // 	{
@@ -243,3 +276,20 @@ void Request::ft_tolower(std::string &str)
 //         req.reset();    // resets existing req
 //     }
 // }
+
+HTTPException::HTTPException(int code, const std::string& msg) 
+	: _message(msg), _code(code)
+{
+}
+
+const char *HTTPException::what() const noexcept
+{
+	return _message.c_str();
+}
+
+int HTTPException::code() const
+{
+	return (_code);
+}
+
+
