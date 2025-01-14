@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/12 15:24:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/13 18:34:43 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:05:28 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ class SocketPoll
 {
 	private:
 		std::vector<struct pollfd> _fds;
-		int _timeout;
 	public:
 		SocketPoll();
 		~SocketPoll();

@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/12 15:30:15 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/13 19:02:10 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:05:57 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../include/utils/utils.hpp"
 #include <unistd.h>
 
-SocketPoll::SocketPoll() : _fds(std::vector<struct pollfd>()), _timeout(-1)
+SocketPoll::SocketPoll() : _fds(std::vector<struct pollfd>())
 {
 	debug_msg("Creating socket poll");
 }
