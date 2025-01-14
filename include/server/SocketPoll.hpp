@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/12 15:24:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 16:05:28 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:34:20 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ class SocketPoll
 {
 	private:
 		std::vector<struct pollfd> _fds;
+		int _timeout;
 	public:
 		SocketPoll();
 		~SocketPoll();
@@ -30,7 +31,7 @@ class SocketPoll
 		bool canRead(int index);
 		//getters
 		int getFd(int index);
-		int get_pending_fd();
+		int wait();
 		size_t size() const;
-		std::vector<struct pollfd> getFds();
+		std::vector<struct pollfd> &getFds();
 };

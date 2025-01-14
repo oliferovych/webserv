@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 16:27:04 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:37:00 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,14 +89,13 @@ void Server::run()
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
 	while(1)
 	{
-		int events = poll(_poll.getFds().data(), _poll.getFds().size(), -1);
+		int events = poll(_poll.getFds().data(), _poll.size(), -1);
 		if(events < 0)
 			return(err_msg("Poll failed " + std::string(strerror(errno))));
 		for(size_t i = 0; i < _poll.size(); i++)
 		{
 			if(_poll.canRead(i))
 			{
-				debug_msg("input");
 				if(_isServer(_poll.getFd(i)))
 				{
 					debug_msg("Accepting client on FD " + std::to_string(_poll.getFd(i)));
