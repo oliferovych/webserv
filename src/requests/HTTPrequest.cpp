@@ -12,24 +12,16 @@ Request::~Request()
 
 void Request::parse(void)
 {
-	debug_state();
-	switch (state)
-	{
-		case PARSE_REQUEST_LINE:
-			parse_request_line();
-			break;
-		case PARSE_HEADERS:
-			parse_headers();
-			break;
-		case PARSE_BODY:
-			parse_body();
-			break;
-		case PARSE_CHUNKED_BODY:
-			parse_chunked_body();
-			break;
-		case COMPLETE:
-			return ;
-	}
+	if (state == PARSE_REQUEST_LINE)
+		parse_request_line();
+	if (state == PARSE_HEADERS)
+		parse_headers();
+	if (state == PARSE_BODY)
+		parse_body();
+	if (state == PARSE_CHUNKED_BODY)
+		parse_chunked_body();
+	if (state == COMPLETE)
+		return ;
 }
 
 int Request::parse_request_line(void)
@@ -151,6 +143,7 @@ int Request::parse_body(void)
 	buffer.erase(buffer.begin(), buffer.begin() + content_length);
 
 	state = COMPLETE;
+	debug_state();
 	return (0);
 }
 
@@ -215,67 +208,6 @@ void Request::updateBuffer(const std::vector<char>& new_buffer)
 	buffer.insert(buffer.end(), new_buffer.begin(), new_buffer.end());
 }
 
-void Request::ft_trim(std::string &str)
-{
-	int front = 0;
-	int back = str.length() - 1;
-
-	while (front <= back && std::isspace(str[front]))
-		++front;
-	while (back >= front && std::isspace(str[back]))
-		--back;
-	if (front <= back)
-        str = str.substr(front, back - front + 1);
-    else
-        str.clear();
-}
-
-void Request::ft_tolower(std::string &str)
-{
-	for (char &c : str)
-		c = std::tolower(c);
-}
-
-
-
-// Request req;
-// std::vector<char> buffer(buffer_size);
-// while (true)
-// {
-//     int bytes_received = recv(socket, buffer, buffer_size, 0);
-
-//     if (bytes_received < 0)
-// 	   {
-// 		//error code
-//         break;
-//     }
-// 	if (bytes_received == 0)
-// 	{
-		
-// 	}
-
-// 	req.updateBuffer(std::vector<char> new_buffer(buffer.begin(), buffer.begin() + bytes_received));
-// 	try
-// 	{
-// 		req.parse();
-
-// 	}
-// 	catch(const std::exception& e)
-// 	{
-// 		std::cerr << code() << e.what() << std::endl;
-
-// 		response(req, code());
-// 		close(client);
-// 	}
-	
-
-//     if (req.is_complete())
-// 	{
-//         response(req);
-//         req.reset();    // resets existing req
-//     }
-// }
-
 HTTPException::HTTPException(int code, const std::string& msg) 
 	: _message(msg), _code(code)
 {
@@ -291,4 +223,15 @@ int HTTPException::code() const
 	return (_code);
 }
 
+void Request::reset()
+{
+	request_line.method.clear();
+	request_line.path.clear();
+	request_line.version.clear();
+	headers.clear();
+	body.clear();
+	buffer.clear();
+	content_length = 0;
+	state = PARSE_REQUEST_LINE;
+}
 

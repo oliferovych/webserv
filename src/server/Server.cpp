@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 16:37:00 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/14 20:13:59 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server/Server.hpp"
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 Server::Server()
 {
@@ -44,6 +45,12 @@ void Server::_acceptClient(int serverFd)
 		err_msg("Accept failed " + std::string(strerror(errno)));
 		return;
 	}
+
+	// if (fcntl(client_fd, F_SETFL, O_NONBLOCK) < 0) {
+	// 	err_msg("Failed to set client socket to non-blocking mode: " + std::string(strerror(errno)));
+	// 	close(client_fd);
+	// 	return;
+	// }
 	// TODO: understand how it works
 	setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
 
@@ -71,17 +78,6 @@ bool Server::_isServer(int fd)
 		return true;
 	return false;
 }
-const char* response = "HTTP/1.1 200 OK\r\n"
-										"Content-Type: text/html\r\n\r\n"
-										"<!DOCTYPE html>\r\n"
-										"<html><head><style>\r\n"
-										"body {display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;}\r\n"
-										"a {font-size: 48px; text-decoration: none; transition: all 0.3s; text-decoration-line: underline;}\r\n"
-										"a:hover {font-size:52px; text-decoration-line: underline;}\r\n"
-										"</style></head>\r\n"
-										"<body>"
-										"<a href='https://www.youtube.com/watch?v=xvFZjo5PgG0'>Something cool, click on me!</a>"
-										"</body></html>\r\n";
 
 void Server::run()
 {
@@ -100,21 +96,15 @@ void Server::run()
 				{
 					debug_msg("Accepting client on FD " + std::to_string(_poll.getFd(i)));
 					_acceptClient(_poll.getFd(i));
-					break ;
 				}
 				else
 				{
-					if(send(_poll.getFd(i), response, strlen(response), 0) > 0)
-						info_msg("Response sent to client on FD " + std::to_string(_poll.getFd(i)) + " from "
-							+ std::string(inet_ntoa(_clients[_poll.getFd(i)]->getAddr().sin_addr)));
-					else
+					if (_clients[_poll.getFd(i)]->handle_message() < 0)
 					{
-						err_msg("Send failed " + std::string(strerror(errno)));
 						close(_poll.getFd(i));
 						_poll.removeFd(_poll.getFd(i));
 						_clients.erase(_poll.getFd(i));
 					}
-					break ;
 				}
 			}
 		}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 23:30:06 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/14 20:08:45 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,4 +36,25 @@ void debug_msg(const std::string &msg)
 void info_msg(const std::string &msg)
 {
 	std::cout << "[INFO] " << timestamp() << " : " << msg << std::endl;
+}
+
+void ft_trim(std::string &str)
+{
+	int front = 0;
+	int back = str.length() - 1;
+
+	while (front <= back && std::isspace(str[front]))
+		++front;
+	while (back >= front && std::isspace(str[back]))
+		--back;
+	if (front <= back)
+        str = str.substr(front, back - front + 1);
+    else
+        str.clear();
+}
+
+void ft_tolower(std::string &str)
+{
+	for (char &c : str)
+		c = std::tolower(c);
 }

@@ -8,7 +8,7 @@
 
 #include <iomanip>
 
-
+#include "../utils/utils.hpp"
 
 
 class Request
@@ -53,21 +53,19 @@ class Request
 
 		void parse();
 		void updateBuffer(const std::vector<char>& new_buffer);
+		void reset();
 
 		bool is_complete() const;
     	
-		size_t get_content_length() const;
-		const std::string& get_method() const;
-		const std::string& get_target() const;
-		const std::string& get_version() const;
-		std::vector<std::string> get_header(const std::string& name) const;
-		const std::vector<uint8_t>& get_body() const;
+		// size_t get_content_length() const;
+		// const std::string& get_method() const;
+		// const std::string& get_target() const;
+		// const std::string& get_version() const;
+		// std::vector<std::string> get_header(const std::string& name) const;
+		// const std::vector<uint8_t>& get_body() const;
 
 		void debug_print() const;
 		void debug_state() const;
-
-		void ft_trim(std::string &str);
-		void ft_tolower(std::string &str);
 };
 
 class HTTPException : public std::exception 
