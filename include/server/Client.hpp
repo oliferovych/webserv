@@ -1,37 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   SocketPoll.hpp                                     :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/12 15:24:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 16:34:20 by dolifero         ###   ########.fr       */
+/*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
+/*   Updated: 2025/01/13 18:43:44 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include <vector>
-#include <poll.h>
+#include <unistd.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include "../global.hpp"
 
-class SocketPoll
+class Client
 {
 	private:
-		std::vector<struct pollfd> _fds;
-		int _timeout;
+		int _clientFd;
+		bool _isFdOpen;
+		sockaddr_in _addr;
 	public:
-		SocketPoll();
-		~SocketPoll();
-		//methods
-		void addFd(int fd);
-		void removeFd(int fd);
-		//checkers
-		bool canRead(int index);
-		//getters
-		int getFd(int index);
-		int wait();
-		size_t size() const;
-		std::vector<struct pollfd> &getFds();
+		Client(int clientFd, sockaddr_in addr);
+		~Client();
+		const int &getClientFd() const { return _clientFd; }
+		const sockaddr_in &getAddr() const { return _addr; }
 };

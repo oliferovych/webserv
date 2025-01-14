@@ -1,37 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   SocketPoll.hpp                                     :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/12 15:24:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 16:34:20 by dolifero         ###   ########.fr       */
+/*   Created: 2025/01/13 15:53:51 by dolifero          #+#    #+#             */
+/*   Updated: 2025/01/13 18:27:57 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+#include "../global.hpp"
+#include <unordered_map>
 
-#include <vector>
-#include <poll.h>
-#include <sys/socket.h>
+class Client;
 
-class SocketPoll
+class Server
 {
 	private:
-		std::vector<struct pollfd> _fds;
-		int _timeout;
+		std::unordered_map<int, Socket*> _sockets;
+		std::unordered_map<int, Client*> _clients;
+		SocketPoll _poll;
+		void _acceptClient(int serverFd);
+		bool _isServer(int fd);
 	public:
-		SocketPoll();
-		~SocketPoll();
-		//methods
-		void addFd(int fd);
-		void removeFd(int fd);
-		//checkers
-		bool canRead(int index);
-		//getters
-		int getFd(int index);
-		int wait();
-		size_t size() const;
-		std::vector<struct pollfd> &getFds();
+		Server();
+		~Server();
+		void createServerSockets();
+		void run();
 };

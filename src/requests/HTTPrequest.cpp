@@ -1,4 +1,5 @@
 #include "../../include/requests/HTTPrequest.hpp"
+#include <algorithm>
 
 Request::Request()
 	: content_length(0), state(PARSE_REQUEST_LINE)
@@ -130,8 +131,6 @@ int Request::parse_headers(void)
 	if (it != headers.end() && !it->second.empty())
     {
         content_length = std::stoi(it->second[0]);
-		if (content_length < 0)
-			return (1);
 		if (content_length > 0)
 			state = PARSE_BODY;
 		else
@@ -139,7 +138,7 @@ int Request::parse_headers(void)
     }
 	else
 		state = COMPLETE;
-		
+
 	return (0);
 }
 
@@ -147,7 +146,7 @@ int Request::parse_body(void)
 {
 	if (buffer.size() < content_length)
 		return (0);
-	
+
 	body.assign(buffer.begin(), buffer.begin() + content_length);
 	buffer.erase(buffer.begin(), buffer.begin() + content_length);
 
@@ -164,10 +163,10 @@ int Request::parse_chunked_body()
 
         if (it == buffer.end())
             return 0;
-            
+
         std::string chunk_size_str(buffer.begin(), it);
         size_t line_length = std::distance(buffer.begin(), it) + 2;
-        
+
         size_t chunk_size;
         try
 		{
@@ -183,24 +182,24 @@ int Request::parse_chunked_body()
         {
 			if (buffer.size() < line_length + 2)
 				return 0;
-                
+
             if (buffer[line_length] != '\r' || buffer[line_length + 1] != '\n')
                 return 1;
-                
+
             buffer.erase(buffer.begin(), buffer.begin() + line_length + 2);
             state = COMPLETE;
             return 0;
         }
-        
+
         if (buffer.size() < line_length + chunk_size + 2)
             return 0;
-            
+
         std::vector<char>::iterator chunk_start = buffer.begin() + line_length;
-        
+
         body.insert(body.end(), chunk_start, chunk_start + chunk_size);
         buffer.erase(buffer.begin(), chunk_start + chunk_size + 2);
     }
-    
+
 	state = COMPLETE;
     return 0;
 }

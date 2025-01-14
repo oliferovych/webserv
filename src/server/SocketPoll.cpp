@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/12 15:30:15 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/12 16:10:01 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:34:24 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../include/utils/utils.hpp"
 #include <unistd.h>
 
-SocketPoll::SocketPoll() : _fds(std::vector<struct pollfd>()), _timeout(-1)
+SocketPoll::SocketPoll() : _fds(std::vector<struct pollfd>())
 {
 	debug_msg("Creating socket poll");
 }
@@ -32,9 +32,12 @@ SocketPoll::~SocketPoll()
 
 void SocketPoll::addFd(int fd)
 {
+	if (fd < 0)
+		return(err_msg("Invalid file descriptor"));
 	struct pollfd pfd;
 	pfd.fd = fd;
-	pfd.events = POLLIN;
+	pfd.events = POLLIN | POLLOUT;
+	pfd.revents = 0;
 	_fds.push_back(pfd);
 }
 
@@ -51,25 +54,14 @@ void SocketPoll::removeFd(int fd)
 	}
 }
 
-int SocketPoll::wait()
-{
-	return poll(_fds.data(), _fds.size(), _timeout);
-}
-
 bool SocketPoll::canRead(int index)
 {
 	return _fds[index].revents & POLLIN;
 }
 
-int SocketPoll::get_pending_fd()
+int SocketPoll::wait()
 {
-	// Return first ready FD found
-	for (size_t i = 0; i < _fds.size(); i++)
-	{
-		if (canRead(i))
-			return _fds[i].fd;
-	}
-	return -1;
+	return poll(_fds.data(), _fds.size(), _timeout);
 }
 
 int SocketPoll::getFd(int index)
@@ -82,7 +74,7 @@ size_t SocketPoll::size() const
 	return _fds.size();
 }
 
-std::vector<struct pollfd> SocketPoll::getFds()
+std::vector<struct pollfd> &SocketPoll::getFds()
 {
 	return _fds;
 }
