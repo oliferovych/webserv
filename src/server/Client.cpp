@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 20:21:06 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/15 02:07:40 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,9 +46,9 @@ int Client::handle_message()
 	{
 		_request.parse();
 	}
-	catch(const HTTPException& e)
+	catch(const Error& e)
 	{
-		err_msg("Parsing failed (for client on FD" + std::to_string(_clientFd) + ") | reason:" + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
+		err_msg("Parsing failed (for client on FD" + std::to_string(_clientFd) + ") | reason: " + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
 		// response(req, code());
 		info_msg("closing connection to client (on FD" + std::to_string(_clientFd) + ")");
 		return -1;

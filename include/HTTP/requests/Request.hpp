@@ -1,5 +1,5 @@
-#ifndef HTTPREQUEST_HPP
-#define HTTPREQUEST_HPP
+#ifndef REQUEST_HPP
+#define REQUEST_HPP
 
 #include <iostream>
 #include <string>
@@ -8,7 +8,7 @@
 
 #include <iomanip>
 
-#include "../utils/utils.hpp"
+#include "../../utils/utils.hpp"
 
 
 class Request
@@ -28,6 +28,7 @@ class Request
 			std::string method;
 			std::string path;
 			std::string version;
+			std::string absolute_host;
 		};
 		
 
@@ -41,10 +42,16 @@ class Request
 		ParseState state;
 	
 		
-		int parse_request_line();
-		int parse_headers();
-		int parse_body();
-		int parse_chunked_body();
+		void parse_request_line();
+		void parse_headers();
+		void parse_body();
+		void parse_chunked_body();
+
+		void validateRequestLine();
+		void handle_absolute_path();
+		void validateHeaders();
+
+
 	
 	public:
 		Request();
@@ -68,16 +75,6 @@ class Request
 		void debug_state() const;
 };
 
-class HTTPException : public std::exception 
-{
-	private:
-		std::string _message;
-		int _code;
 
-	public:
-		HTTPException(int code, const std::string& msg);
-		const char* what() const noexcept;
-		int code() const;
-};
 
 #endif

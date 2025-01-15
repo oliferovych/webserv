@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 20:08:45 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/15 01:58:42 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,21 @@ void info_msg(const std::string &msg)
 	std::cout << "[INFO] " << timestamp() << " : " << msg << std::endl;
 }
 
+Error::Error(int code, const std::string& msg) 
+	: _message(msg), _code(code)
+{
+}
+
+const char *Error::what() const noexcept
+{
+	return _message.c_str();
+}
+
+int Error::code() const
+{
+	return (_code);
+}
+
 void ft_trim(std::string &str)
 {
 	int front = 0;
@@ -57,4 +72,14 @@ void ft_tolower(std::string &str)
 {
 	for (char &c : str)
 		c = std::tolower(c);
+}
+
+bool ft_has_whitespace_in_str(const std::string &str)
+{
+	for (auto c : str)
+	{
+		if (std::isspace(c))
+			return (true);
+	}
+	return false;
 }
