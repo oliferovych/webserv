@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 20:08:45 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/15 18:42:58 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,26 +16,26 @@ std::string timestamp()
 {
 	std::time_t now = std::time(nullptr);
 	std::tm* ltm = std::localtime(&now);
-	
+
 	char buffer[20];
 	std::strftime(buffer, sizeof(buffer), "%y-%m-%d %H:%M:%S", ltm);
-	
+
 	return std::string(buffer);
 }
 
 void err_msg(const std::string &msg)
 {
-	std::cout << "[ERROR] " << timestamp() << " : " << msg << std::endl;
+	std::cout << FG_RED << BOLD << "[ERROR]	" << RESET << FG_RED << timestamp() << " : " << msg << RESET << std::endl;
 }
 
 void debug_msg(const std::string &msg)
 {
-	std::cout << "[DEBUG] " << timestamp() << " : " << msg << std::endl;
+	std::cout << DIM << "[DEBUG] " << timestamp() << " : " << msg << RESET << std::endl;
 }
 
 void info_msg(const std::string &msg)
 {
-	std::cout << "[INFO] " << timestamp() << " : " << msg << std::endl;
+	std::cout << FG_GREEN << "[INFO]  " << timestamp() << " : " << msg << RESET << std::endl;
 }
 
 void ft_trim(std::string &str)

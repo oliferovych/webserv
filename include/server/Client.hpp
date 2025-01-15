@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 18:16:50 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/15 17:27:57 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Client
 {
 	private:
 		int _clientFd;
-		bool _isFdOpen;
+		bool _connected;
 		sockaddr_in _addr;
 		Request _request;
 

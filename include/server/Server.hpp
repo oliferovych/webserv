@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 15:53:51 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/13 18:27:57 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/15 18:04:53 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ class Server
 		SocketPoll _poll;
 		void _acceptClient(int serverFd);
 		bool _isServer(int fd);
+		void _closeClient(int clientFd);
+		void _closeServerSock(int serverFd);
 	public:
 		Server();
 		~Server();
