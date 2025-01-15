@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 22:45:16 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/15 17:37:46 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ Socket::Socket(int port) : _port(port), _fd(-1), _addr(sockaddr_in())
 	setupAddr();
 	bindAddr();
 	listenFd();
+	info_msg("Port " + std::to_string(port) + " is now open");
 }
 
 Socket::~Socket()
