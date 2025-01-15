@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/15 17:35:56 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/15 18:42:58 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ std::string timestamp()
 
 void err_msg(const std::string &msg)
 {
-	std::cout << FG_RED << BOLD << "[ERROR] " << RESET << FG_RED << timestamp() << " : " << msg << RESET << std::endl;
+	std::cout << FG_RED << BOLD << "[ERROR]	" << RESET << FG_RED << timestamp() << " : " << msg << RESET << std::endl;
 }
 
 void debug_msg(const std::string &msg)
@@ -35,7 +35,7 @@ void debug_msg(const std::string &msg)
 
 void info_msg(const std::string &msg)
 {
-	std::cout << FG_GREEN << "[INFO] " << timestamp() << " : " << msg << RESET << std::endl;
+	std::cout << FG_GREEN << "[INFO]  " << timestamp() << " : " << msg << RESET << std::endl;
 }
 
 void ft_trim(std::string &str)
