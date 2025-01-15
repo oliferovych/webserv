@@ -28,16 +28,15 @@ int Request::parse_request_line(void)
 {
 	while (buffer.size() >= 2 && buffer[0] == '\r' && buffer[1] == '\n')
         buffer.erase(buffer.begin(), buffer.begin() + 2);
-	
+
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-    if (section_end == buffer.end())
-        return 0;
-
+	if(section_end == buffer.end())
+		return 0;
 	//string that contains whole header section
 	std::string str_buffer(buffer.begin(), section_end);
-	
+
 	// extract methode, Path and http version
 	size_t space_1 = str_buffer.find(" ", 0);
 	if (space_1 == std::string::npos)
@@ -66,12 +65,11 @@ int Request::parse_headers(void)
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n', '\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-    if (section_end == buffer.end())
+    if(section_end == buffer.end()){
         return 0;
+	}
+	std::string str_buffer(buffer.begin(), section_end + 2); //string that contains whole header section
 
-	//string that contains whole header section
-	std::string str_buffer(buffer.begin(), section_end + 2);
-	
 	//parsing headers line by line
 	//extracting key and val
 	size_t start = 0;
@@ -208,7 +206,7 @@ void Request::updateBuffer(const std::vector<char>& new_buffer)
 	buffer.insert(buffer.end(), new_buffer.begin(), new_buffer.end());
 }
 
-HTTPException::HTTPException(int code, const std::string& msg) 
+HTTPException::HTTPException(int code, const std::string& msg)
 	: _message(msg), _code(code)
 {
 }
