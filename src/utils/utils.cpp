@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/16 21:40:38 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/16 22:05:39 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void debug_msg(const std::string &msg)
 
 void info_msg(const std::string &msg)
 {
-	std::cout << "[INFO] " << timestamp() << " : " << msg << std::endl;
+	std::cout << FG_GREEN << "[INFO]  " << timestamp() << " : " << msg << RESET << std::endl;
 }
 
 Error::Error(int code, const std::string& msg) 
