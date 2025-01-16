@@ -33,7 +33,11 @@ void Request::parse_request_line(void)
 	std::vector<char> del = {'\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
     if (section_end == buffer.end())
-        throw Error(400, "wrong format (request line)");
+        return ;
+
+	// check size
+	if (std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+		throw Error(501, "request-line too large");
 
 	//string that contains whole header section
 	std::string str_buffer(buffer.begin(), section_end);
@@ -48,6 +52,14 @@ void Request::parse_request_line(void)
 		throw Error(400, "wrong format (request line)");
 	request_line.path = str_buffer.substr(space_1 + 1, space_2 - space_1 - 1);
 	request_line.version = str_buffer.substr(space_2 + 1, str_buffer.length() - space_2 - 1);
+
+	// check if path is a query string
+	size_t query = request_line.path.find("?");
+	if (query != std::string::npos)
+		request_line.path = request_line.path.substr(0, query);
+
+	if (request_line.path.find("%") != std::string::npos)
+		ft_decode(request_line.path);
 
 	// delete request_line from buffer
 	buffer.erase(buffer.begin(), buffer.begin() + str_buffer.length() + 2);
@@ -69,6 +81,10 @@ void Request::parse_headers(void)
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
     if (section_end == buffer.end())
         return ;
+
+	//check size
+	if (std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+		throw Error(431, "Header section too large");
 
 	//string that contains whole header section
 	std::string str_buffer(buffer.begin(), section_end + 2);
@@ -98,6 +114,8 @@ void Request::parse_headers(void)
 
 			std::string val = value_line.substr(content_start, pos_comma - content_start);
 			ft_trim(val);
+			if (val.find("%") != std::string::npos)
+				ft_decode(val);
 			headers[key].push_back(val);
 
 			content_start = pos_comma + 1;
@@ -115,12 +133,12 @@ void Request::parse_headers(void)
 	std::unordered_map<std::string, std::vector<std::string>>::iterator it = headers.find("transfer-encoding");
 	if (it != headers.end() && request_line.method == "POST")
 	{
-		if (it->second.back() == "chunked")
+		if (it->second[0] == "chunked")
 		{
 			state = PARSE_CHUNKED_BODY;
 			return ;
 		}
-		throw Error(501, "this transfer-encoding isn't supported by the server: " + it->second.back());
+		throw Error(501, "this transfer-encoding isn't supported by the server: " + it->second[0]);
 	}
 	it = headers.find("content-length");
 	if (it != headers.end() && content_length > 0 && request_line.method == "POST")
@@ -212,4 +230,14 @@ void Request::reset()
 	content_length = 0;
 	state = PARSE_REQUEST_LINE;
 }
+
+const std::vector<std::string> Request::get_header(const std::string& key) const
+{
+	const auto it = headers.find(key);
+	if (it != headers.end())
+		return (it->second);
+	else
+		return {};
+}
+
 

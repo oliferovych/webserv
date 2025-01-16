@@ -10,6 +10,8 @@
 
 #include "../../utils/utils.hpp"
 
+#define MAX_ELEMENT_SIZE 8000
+
 
 class Request
 {
@@ -68,7 +70,7 @@ class Request
 		// const std::string& get_method() const;
 		// const std::string& get_target() const;
 		// const std::string& get_version() const;
-		// std::vector<std::string> get_header(const std::string& name) const;
+		const std::vector<std::string> Request::get_header(const std::string& key) const;
 		// const std::vector<uint8_t>& get_body() const;
 
 		void debug_print() const;

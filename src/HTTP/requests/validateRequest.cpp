@@ -72,7 +72,7 @@ void Request::validateHeaders()
 	{
 		if (headers.find("transfer-encoding") != headers.end())
 			throw Error(400, "both transfer-encoding and content-length are present in the header");
-		//max conten-length?
+		//max content-length?
 		try
 		{
 			content_length = std::stol(it->second[0]);
@@ -83,6 +83,8 @@ void Request::validateHeaders()
 		}
 		
 		if (content_length < 0)
-			throw Error(400, "content-length is invalid: " + std::string(1, content_length));
+			throw Error(400, "content-length is invalid: " + std::to_string(content_length));
 	}
+	else if (request_line.method == "POST" && headers.find("transfer-encoding") == headers.end())
+			throw Error(411, "there is some content length required");
 }

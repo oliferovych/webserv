@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/15 01:49:59 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/16 12:54:01 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,3 +36,4 @@ void info_msg(const std::string &msg);
 void ft_trim(std::string &str);
 void ft_tolower(std::string &str);
 bool ft_has_whitespace_in_str(const std::string &str);
+void ft_decode(std::string &str);

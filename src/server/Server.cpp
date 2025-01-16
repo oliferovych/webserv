@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 20:13:59 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/16 16:16:11 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,15 @@ void Server::run()
 						_poll.removeFd(_poll.getFd(i));
 						_clients.erase(_poll.getFd(i));
 					}
+				}
+			}
+			if (!_isServer(_poll.getFd(i)) && _clients[_poll.getFd(i)].status == sending)
+			{
+				if (_clients[_poll.getFd(i)].isTimeouted())
+				{
+					send error response;
+					close connection with client;
+					delete client;
 				}
 			}
 		}

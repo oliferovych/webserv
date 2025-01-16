@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/15 01:58:42 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/16 14:19:22 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,4 +82,37 @@ bool ft_has_whitespace_in_str(const std::string &str)
 			return (true);
 	}
 	return false;
+}
+
+void ft_decode(std::string &str)
+{
+	std::string decoded;
+
+    for (size_t i = 0; i < str.length(); ++i)
+	{
+        if (str[i] == '%' && i + 2 < str.length())
+		{
+            std::string hex = str.substr(i + 1, 2);
+            if (std::isxdigit(hex[0]) && std::isxdigit(hex[1]))
+			{
+				try
+				{
+					char decodedChar = static_cast<char>(std::stoi(hex, nullptr, 16));
+					decoded.push_back(decodedChar);
+                	i += 2;
+				}
+				catch(const std::exception& e)
+				{
+					throw Error(500, "decoding failed");
+				}
+            }
+			else
+                throw Error(400, "Invalid percent-encoding found: " + hex);
+        }
+		else if (str[i] == '+')
+            decoded.push_back(' ');
+        else
+            decoded.push_back(str[i]);
+    }
+    str = decoded;
 }
