@@ -1,4 +1,4 @@
-#include "../../include/requests/HTTPrequest.hpp"
+#include "../../../include/HTTP/requests/Request.hpp"
 #include <algorithm>
 
 Request::Request()
@@ -24,7 +24,7 @@ void Request::parse(void)
 		return ;
 }
 
-int Request::parse_request_line(void)
+void Request::parse_request_line(void)
 {
 	while (buffer.size() >= 2 && buffer[0] == '\r' && buffer[1] == '\n')
         buffer.erase(buffer.begin(), buffer.begin() + 2);
@@ -32,44 +32,63 @@ int Request::parse_request_line(void)
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-	if(section_end == buffer.end())
-		return 0;
+    if (section_end == buffer.end())
+        return ;
+
+	// check size
+	if (std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+		throw Error(501, "request-line too large");
+
 	//string that contains whole header section
 	std::string str_buffer(buffer.begin(), section_end);
 
 	// extract methode, Path and http version
 	size_t space_1 = str_buffer.find(" ", 0);
 	if (space_1 == std::string::npos)
-		return (1);
+		throw Error(400, "wrong format (request line)");
 	request_line.method = str_buffer.substr(0, space_1);
 	size_t space_2 = str_buffer.find(" ", space_1 + 1);
 	if (space_2 == std::string::npos)
-		return (1);
+		throw Error(400, "wrong format (request line)");
 	request_line.path = str_buffer.substr(space_1 + 1, space_2 - space_1 - 1);
 	request_line.version = str_buffer.substr(space_2 + 1, str_buffer.length() - space_2 - 1);
+
+	// check if path is a query string
+	size_t query = request_line.path.find("?");
+	if (query != std::string::npos)
+		request_line.path = request_line.path.substr(0, query);
+
+	if (request_line.path.find("%") != std::string::npos)
+		ft_decode(request_line.path);
 
 	// delete request_line from buffer
 	buffer.erase(buffer.begin(), buffer.begin() + str_buffer.length() + 2);
 
+	// check if all all infos are correct
+	validateRequestLine();
 	state = PARSE_HEADERS;
-	return (0);
 }
 
-int Request::parse_headers(void)
+void Request::parse_headers(void)
 {
 	if (buffer.size() < 2)
-        return 0;
+        return ;
 	if (buffer[0] == '\r' && buffer[1] == '\n')
-		return (1);
+		throw Error(400, "bad format (there is a \r\n between request-line and headers)");
 
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n', '\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-    if(section_end == buffer.end()){
-        return 0;
-	}
-	std::string str_buffer(buffer.begin(), section_end + 2); //string that contains whole header section
+    if (section_end == buffer.end())
+        return ;
 
+	//check size
+	if (std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+		throw Error(431, "Header section too large");
+
+	//string that contains whole header section
+	std::string str_buffer(buffer.begin(), section_end + 2);
+	
 	//parsing headers line by line
 	//extracting key and val
 	size_t start = 0;
@@ -77,10 +96,10 @@ int Request::parse_headers(void)
 	{
 		size_t pos_line_end = str_buffer.find("\r\n", start);
 		if (pos_line_end == std::string::npos)
-			return (1);
+			throw Error(400, "bad format (there is no \r\n at the end of a line in the header)");
 		size_t pos_colon = str_buffer.find(":", start);
 		if (pos_colon == std::string::npos)
-			return (1);
+			throw Error(400, "bad format (there is no : in a header-line)");
 		std::string key = str_buffer.substr(start, pos_colon - start);
 		std::string value_line = str_buffer.substr(pos_colon + 1, pos_line_end - pos_colon - 1);
 		ft_tolower(key);
@@ -95,6 +114,8 @@ int Request::parse_headers(void)
 
 			std::string val = value_line.substr(content_start, pos_comma - content_start);
 			ft_trim(val);
+			if (val.find("%") != std::string::npos)
+				ft_decode(val);
 			headers[key].push_back(val);
 
 			content_start = pos_comma + 1;
@@ -105,59 +126,52 @@ int Request::parse_headers(void)
 	// delete header section from buffer
 	buffer.erase(buffer.begin(), buffer.begin() + str_buffer.length() + 2);
 
+	//check if headers are correct
+	validateHeaders();
 
+	//check if there is a body
 	std::unordered_map<std::string, std::vector<std::string>>::iterator it = headers.find("transfer-encoding");
-	if (it != headers.end() && !it->second.empty())
+	if (it != headers.end() && request_line.method == "POST")
 	{
-		if (it->second.back() == "chunked")
+		if (it->second[0] == "chunked")
 		{
 			state = PARSE_CHUNKED_BODY;
-			return (0);
+			return ;
 		}
-		return (1);
+		throw Error(501, "this transfer-encoding isn't supported by the server: " + it->second[0]);
 	}
-
 	it = headers.find("content-length");
-	if (it != headers.end() && !it->second.empty())
-    {
-        content_length = std::stoi(it->second[0]);
-		if (content_length > 0)
-			state = PARSE_BODY;
-		else
-			state = COMPLETE;
-    }
+	if (it != headers.end() && content_length > 0 && request_line.method == "POST")
+		state = PARSE_BODY;
 	else
 		state = COMPLETE;
-
-	return (0);
 }
 
-int Request::parse_body(void)
+void Request::parse_body(void)
 {
 	if (buffer.size() < content_length)
-		return (0);
+		return ;
 
+	// copy content-length bytes from the body
 	body.assign(buffer.begin(), buffer.begin() + content_length);
 	buffer.erase(buffer.begin(), buffer.begin() + content_length);
 
 	state = COMPLETE;
-	debug_state();
-	return (0);
 }
 
-int Request::parse_chunked_body()
+void Request::parse_chunked_body()
 {
     while (!buffer.empty())
     {
         std::vector<char> del = {'\r', '\n'};
-		std::vector<char>::iterator it = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
+		auto it = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
 
         if (it == buffer.end())
-            return 0;
+            return ;
 
+		// getting the chunk size
         std::string chunk_size_str(buffer.begin(), it);
         size_t line_length = std::distance(buffer.begin(), it) + 2;
-
         size_t chunk_size;
         try
 		{
@@ -165,34 +179,32 @@ int Request::parse_chunked_body()
         }
 		catch (...)
 		{
-            return 1;
+			throw Error(500, "chunk-size parsing failed");
 		}
 
-        // std::cout << "chunk size: " << chunk_size << std::endl;
+		// chunk size = 0 if we reached the end of the body
         if (chunk_size == 0)
         {
 			if (buffer.size() < line_length + 2)
-				return 0;
-
+				return ;
             if (buffer[line_length] != '\r' || buffer[line_length + 1] != '\n')
-                return 1;
+				throw Error(400, "body ending has wrong format");
 
             buffer.erase(buffer.begin(), buffer.begin() + line_length + 2);
             state = COMPLETE;
-            return 0;
+            return ;
         }
-
+		// Ensure there is enough data in the buffer for the current chunk and its CRLF
         if (buffer.size() < line_length + chunk_size + 2)
-            return 0;
+            return ;
 
-        std::vector<char>::iterator chunk_start = buffer.begin() + line_length;
-
+        // Append the current chunk's data to the body
+		auto chunk_start = buffer.begin() + line_length;
         body.insert(body.end(), chunk_start, chunk_start + chunk_size);
-        buffer.erase(buffer.begin(), chunk_start + chunk_size + 2);
+        // delete chunk + chunk size line from buffer
+		buffer.erase(buffer.begin(), chunk_start + chunk_size + 2);
     }
-
 	state = COMPLETE;
-    return 0;
 }
 
 bool Request::is_complete() const
@@ -206,30 +218,26 @@ void Request::updateBuffer(const std::vector<char>& new_buffer)
 	buffer.insert(buffer.end(), new_buffer.begin(), new_buffer.end());
 }
 
-HTTPException::HTTPException(int code, const std::string& msg)
-	: _message(msg), _code(code)
-{
-}
-
-const char *HTTPException::what() const noexcept
-{
-	return _message.c_str();
-}
-
-int HTTPException::code() const
-{
-	return (_code);
-}
-
 void Request::reset()
 {
 	request_line.method.clear();
 	request_line.path.clear();
 	request_line.version.clear();
+	request_line.absolute_host.clear();
 	headers.clear();
 	body.clear();
 	buffer.clear();
 	content_length = 0;
 	state = PARSE_REQUEST_LINE;
 }
+
+const std::vector<std::string> Request::get_header(const std::string& key) const
+{
+	const auto it = headers.find(key);
+	if (it != headers.end())
+		return (it->second);
+	else
+		return {};
+}
+
 

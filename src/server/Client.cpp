@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/15 18:21:37 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/16 21:58:34 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,9 @@ int Client::handle_message()
 	{
 		_request.parse();
 	}
-	catch(const HTTPException& e)
+	catch(const Error& e)
 	{
-		err_msg("Parsing failed (for client on FD" + std::to_string(_clientFd) + ") | reason:" + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
+		err_msg("Parsing failed (for client on FD" + std::to_string(_clientFd) + ") | reason: " + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
 		// response(req, code());
 		return -1;
 	}
@@ -73,9 +73,16 @@ int Client::handle_message()
 							// + " from " + std::string(inet_ntoa(_addr.sin_addr)));
 			else
 			{
-				err_msg("reading failed " + std::string(strerror(errno)));
+				err_msg("sending failed " + std::string(strerror(errno)));
 				info_msg("closing connection to client (on FD" + std::to_string(_clientFd) + ")");
+        		// _request.reset();
 				return -1;
+			}
+			auto connection = _request.get_header("connection");
+			if (!connection.empty())
+			{
+				if (connection[0] == "close")
+					return -1;
 			}
         _request.reset();
     }

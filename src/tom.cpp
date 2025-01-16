@@ -1,9 +1,10 @@
-// #include "../include/requests/HTTPrequest.hpp"
+// #include "../include/HTTP/requests/Request.hpp"
 
 // int main(void)
 // {
 // 	std::vector<char> post_message_chunked = {
 //         'P', 'O', 'S', 'T', ' ', '/', 'u', 'p', 'l', 'o', 'a', 'd', ' ', 'H', 'T', 'T', 'P', '/', '1', '.', '1', '\r', '\n',
+//         'H', 'o', 's', 't', ':', ' ', 'e', 'x', 'a', 'm', 'p', 'l', 'e', '.', 'c', 'o', 'm', '\r', '\n',
 //         'H', 'o', 's', 't', ':', ' ', 'e', 'x', 'a', 'm', 'p', 'l', 'e', '.', 'c', 'o', 'm', '\r', '\n',
 //         'T', 'r', 'a', 'n', 's', 'f', 'e', 'r', '-', 'E', 'n', 'c', 'o', 'd', 'i', 'n', 'g', ':', ' ', 'c', 'h', 'u', 'n', 'k', 'e', 'd', '\r', '\n',
 //         'C', 'o', 'n', 't', 'e', 'n', 't', '-', 'T', 'y', 'p', 'e', ':', ' ', 'a', 'p', 'p', 'l', 'i', 'c', 'a', 't', 'i', 'o', 'n', '/', 'j', 's', 'o', 'n', '\r', '\n',
@@ -38,7 +39,7 @@
 //     };
 
 
-// 	std::vector<char> message = post_message_chunked;
+// 	std::vector<char> message = post_message_normal;
 
 // 	std::cout << "message: " << std::endl;
 //     for (char c : message)
@@ -48,14 +49,24 @@
 // 	Request req;
 
 // 	req.updateBuffer(message);
-// 	for (int i = 0; i < 4; i++)
-//     // while(1)
+// 	// for (int i = 0; i < 4; i++)
+//     while(1)
 // 	{
-// 		req.parse();
-// 		if (req.is_complete())
-// 			break;
-// 	}
-// 	req.debug_print();
+// 		try
+//         {
+//             req.parse();
+//         }
+//         catch(const Error& e)
+//         {
+//             err_msg("Parsing failed | reason: " + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
+//             break ;
+//         }
+//         if (req.is_complete())
+//         {
+//             req.debug_print();
+//             break;
+//         }
+//     }
 
 // 	return (0);
 // }
