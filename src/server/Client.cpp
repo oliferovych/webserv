@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/16 14:17:18 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/16 21:58:34 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,13 @@
 #include <unistd.h>
 
 Client::Client(int clientFd, sockaddr_in addr)
-	: _clientFd(clientFd), _isFdOpen(true), _addr(addr)
+	: _clientFd(clientFd), _connected(true), _addr(addr)
 {
 }
 
 Client::~Client()
 {
-	if (_isFdOpen)
+	if (_connected)
 		close(_clientFd);
 }
 
@@ -31,14 +31,12 @@ int Client::handle_message()
 	if (bytes_received < 0)
 	{
 		err_msg("reading failed " + std::string(strerror(errno)));
-		info_msg("closing connection to client (on FD" + std::to_string(_clientFd) + ")");
-			return -1;
+		return -1;
 	}
-
 	if (bytes_received == 0)
 	{
-		info_msg("client disconnected (on FD" + std::to_string(_clientFd) + ")");
-		return (-1);
+		debug_msg("Tab closed by client on FD" + std::to_string(_clientFd));
+		return -1;
 	}
 	std::vector<char> new_buffer(buffer.begin(), buffer.begin() + bytes_received);
 	_request.updateBuffer(new_buffer);
@@ -50,10 +48,9 @@ int Client::handle_message()
 	{
 		err_msg("Parsing failed (for client on FD" + std::to_string(_clientFd) + ") | reason: " + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
 		// response(req, code());
-		info_msg("closing connection to client (on FD" + std::to_string(_clientFd) + ")");
 		return -1;
 	}
-	
+
 	char response[] = 	"HTTP/1.1 200 OK\r\n"
 						"Content-Type: text/html\r\n"
 						"Content-Length: 416\r\n"
@@ -65,11 +62,11 @@ int Client::handle_message()
 						"a:hover {font-size:52px; text-decoration-line: underline;}\r\n"
 						"</style></head>\r\n"
 						"<body><a href='https://www.youtube.com/watch?v=xvFZjo5PgG0'>Something cool, click on me!</a></body></html>";
-								
+
     if (_request.is_complete())
 	{
 		info_msg("Message recieved from client on FD " + std::to_string(_clientFd));
-		_request.debug_print();
+		//_request.debug_print();
         // response(req);
 			if(send(_clientFd, response, strlen(response), 0) > 0)
 				info_msg("Response sent to client on FD " + std::to_string(_clientFd));

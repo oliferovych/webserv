@@ -28,7 +28,7 @@ void Request::parse_request_line(void)
 {
 	while (buffer.size() >= 2 && buffer[0] == '\r' && buffer[1] == '\n')
         buffer.erase(buffer.begin(), buffer.begin() + 2);
-	
+
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
@@ -41,7 +41,7 @@ void Request::parse_request_line(void)
 
 	//string that contains whole header section
 	std::string str_buffer(buffer.begin(), section_end);
-	
+
 	// extract methode, Path and http version
 	size_t space_1 = str_buffer.find(" ", 0);
 	if (space_1 == std::string::npos)

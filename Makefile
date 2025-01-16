@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+         #
+#    By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/01/09 21:08:00 by dolifero          #+#    #+#              #
-#    Updated: 2025/01/13 18:58:44 by tomecker         ###   ########.fr        #
+#    Updated: 2025/01/15 18:12:33 by dolifero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,9 +33,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
+	@echo "clean $(NAME)"
 	@rm -rf $(OBJ_DIR)
 
 fclean:	clean
+	@echo "fclean $(NAME)"
 	@rm -f $(NAME)
 
 re:	fclean all
