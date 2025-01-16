@@ -6,17 +6,17 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:23 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/14 18:30:53 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/14 23:10:35 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/global.hpp"
+// #include "../include/global.hpp"
 
-int main()
-{
-	Server server;
+// int main()
+// {
+// 	Server server;
 
-	server.run();
+// 	server.run();
 
-	return 0;
-}
+// 	return 0;
+// }

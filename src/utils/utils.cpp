@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/15 18:42:58 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/16 22:05:39 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,21 @@ void info_msg(const std::string &msg)
 	std::cout << FG_GREEN << "[INFO]  " << timestamp() << " : " << msg << RESET << std::endl;
 }
 
+Error::Error(int code, const std::string& msg) 
+	: _message(msg), _code(code)
+{
+}
+
+const char *Error::what() const noexcept
+{
+	return _message.c_str();
+}
+
+int Error::code() const
+{
+	return (_code);
+}
+
 void ft_trim(std::string &str)
 {
 	int front = 0;
@@ -57,4 +72,47 @@ void ft_tolower(std::string &str)
 {
 	for (char &c : str)
 		c = std::tolower(c);
+}
+
+bool ft_has_whitespace_in_str(const std::string &str)
+{
+	for (auto c : str)
+	{
+		if (std::isspace(c))
+			return (true);
+	}
+	return false;
+}
+
+void ft_decode(std::string &str)
+{
+	std::string decoded;
+
+    for (size_t i = 0; i < str.length(); ++i)
+	{
+        if (str[i] == '%' && i + 2 < str.length())
+		{
+            std::string hex = str.substr(i + 1, 2);
+            if (std::isxdigit(hex[0]) && std::isxdigit(hex[1]))
+			{
+				try
+				{
+					char decodedChar = static_cast<char>(std::stoi(hex, nullptr, 16));
+					decoded.push_back(decodedChar);
+                	i += 2;
+				}
+				catch(const std::exception& e)
+				{
+					throw Error(500, "decoding failed");
+				}
+            }
+			else
+                throw Error(400, "Invalid percent-encoding found: " + hex);
+        }
+		else if (str[i] == '+')
+            decoded.push_back(' ');
+        else
+            decoded.push_back(str[i]);
+    }
+    str = decoded;
 }
