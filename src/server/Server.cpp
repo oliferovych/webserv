@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2025/01/17 00:11:47 by dolifero         ###   ########.fr       */
-=======
-/*   Updated: 2025/01/16 21:44:24 by tomecker         ###   ########.fr       */
->>>>>>> 90953bb67e3dade0dd3fd183a7fd5a27f4c999d3
+/*   Updated: 2025/01/17 01:36:46 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +101,14 @@ void Server::_closeClient(int clientFd)
 
 void Server::_closeServerSock(int serverFd)
 {
+	struct linger lo;
+	lo.l_onoff = 1;
+	lo.l_linger = 0;
+
+	setsockopt(serverFd, SOL_SOCKET, SO_LINGER, &lo, sizeof(lo));
+
 	close(serverFd);
+	memset(&_sockets[serverFd]->getAddr(), 0, sizeof(_sockets[serverFd]->getAddr()));
 	_poll.removeFd(serverFd);
 	delete _sockets[serverFd];
 	_sockets.erase(serverFd);
@@ -133,16 +136,12 @@ void Server::run()
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
 	while(_running)
 	{
-		int events = poll(_poll.getFds().data(), _poll.size(), 5000);
-		if(events < 0 && errno == EINTR)
-		{
-			err_msg("Poll interrupted");
-			break ;
-		}
+		int events = poll(_poll.getFds().data(), _poll.size(), -1);
 		if(events < 0)
 		{
-			err_msg("Poll failed " + std::string(strerror(errno)));
-			continue;
+			if(errno != EINTR)
+				err_msg("Poll failed " + std::string(strerror(errno)));
+			break ;
 		}
 		for(auto &pfd : _poll.getFds())
 		{

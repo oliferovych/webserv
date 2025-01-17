@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/15 17:37:46 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/17 01:33:16 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,15 +34,18 @@ void Socket::setupFd()
 	// creating socket(socket = fd)
 	if ((_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
-		err_msg("Error creating socket");
-		exit(1);
+		throw std::runtime_error("Socket creation failed: " + std::string(strerror(errno)));
 	}
 }
 
 void Socket::setupAddr()
 {
 	debug_msg("Setting up address");
-	// setting up address AF_INET = IPv4, INADDR_ANY = lets the kernel choose the IP address
+	int opt = 1;
+	if(setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) < 0)
+	{
+		throw std::runtime_error("Setsockopt failed: " + std::string(strerror(errno)));
+	}
 	memset(&_addr, 0, sizeof(_addr));
 	_addr.sin_family = AF_INET;
 	_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -55,8 +58,7 @@ void Socket::bindAddr()
 	// binding address to a socket
 	if (bind(_fd, (struct sockaddr *)&_addr, sizeof(_addr)) < 0)
 	{
-		err_msg("Error binding socket");
-		exit(1);
+		throw std::runtime_error("Bind failed: " + std::string(strerror(errno)));
 	}
 }
 
@@ -66,11 +68,14 @@ void Socket::listenFd()
 	// listening to the socket, SOMAXCONN = maximum number of connections
 	if (listen(_fd, SOMAXCONN) < 0)
 	{
-		err_msg("Listen failed");
-		exit(1);
+		throw std::runtime_error("Listen failed: " + std::string(strerror(errno)));
 	}
 }
 
+sockaddr_in &Socket::getAddr()
+{
+	return _addr;
+}
 
 int Socket::getSocketFd() const
 {

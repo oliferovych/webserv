@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:30 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 22:44:11 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/17 01:26:36 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,4 +36,5 @@ class Socket
 
 		int getSocketFd() const;
 		int getPort() const;
+		struct sockaddr_in &getAddr();
 };
