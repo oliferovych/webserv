@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/16 21:44:24 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/17 09:41:14 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ void Server::_closeServerSock(int serverFd)
 void Server::run()
 {
 	createServerSockets();
+	_pollCycleCount = 0;
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
 	while(1)
 	{
@@ -138,5 +139,25 @@ void Server::run()
 				}
 			}
 		}
+		if (_pollCycleCount >= TIMEOUT_CHECK_INTERVAL)
+		{
+			_checkTimeouts();
+			_pollCycleCount = 0;
+		}
+
 	}
 }
+
+void Server::_checkTimeouts()
+{
+	for (auto it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (it->second->hasTimedOut())
+		{
+			// it->second->send_error_response();
+            err_msg("Client timed out while receiving data on FD " + std::to_string(it->second->getClientFd()));
+			_closeClient(it->second->getClientFd());
+		}
+	}
+}
+

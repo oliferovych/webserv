@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/16 21:58:34 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/17 09:40:37 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 Client::Client(int clientFd, sockaddr_in addr)
-	: _clientFd(clientFd), _connected(true), _addr(addr)
+	: _clientFd(clientFd), _connected(true), _addr(addr), _state(COMPLETE)
 {
 }
 
@@ -39,7 +39,9 @@ int Client::handle_message()
 		return -1;
 	}
 	std::vector<char> new_buffer(buffer.begin(), buffer.begin() + bytes_received);
+	_state = RECEIVING;
 	_request.updateBuffer(new_buffer);
+	_lastActivityTime = std::chrono::steady_clock::now();
 	try
 	{
 		_request.parse();
@@ -65,6 +67,8 @@ int Client::handle_message()
 
     if (_request.is_complete())
 	{
+		_state = SENDING;
+		_lastActivityTime = std::chrono::steady_clock::now();
 		info_msg("Message recieved from client on FD " + std::to_string(_clientFd));
 		//_request.debug_print();
         // response(req);
@@ -85,7 +89,20 @@ int Client::handle_message()
 					return -1;
 			}
         _request.reset();
+		_state = COMPLETE;
     }
 	return (0);
+}
+
+bool Client::hasTimedOut() const
+{
+	if (_state != COMPLETE)
+	{
+		auto now = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - _lastActivityTime);
+        if (duration.count() > TIMER)
+            return true;
+	}
+	return (false);
 }
 
