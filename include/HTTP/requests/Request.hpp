@@ -40,7 +40,7 @@ class Request
 
 		std::vector<char> buffer;
 
-		size_t	content_length;
+		long	content_length;
 		ParseState state;
 	
 		
