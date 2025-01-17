@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <algorithm>
 
 #include <iomanip>
 
@@ -32,7 +33,7 @@ class Request
 			std::string version;
 			std::string absolute_host;
 		};
-		
+
 
 		Request_line	request_line;
 		std::unordered_map<std::string, std::vector<std::string>>	headers;
@@ -42,8 +43,8 @@ class Request
 
 		size_t	content_length;
 		ParseState state;
-	
-		
+
+
 		void parse_request_line();
 		void parse_headers();
 		void parse_body();
@@ -54,18 +55,18 @@ class Request
 		void validateHeaders();
 
 
-	
+
 	public:
 		Request();
 		~Request();
-		
+
 
 		void parse();
 		void updateBuffer(const std::vector<char>& new_buffer);
 		void reset();
 
 		bool is_complete() const;
-    	
+
 		// size_t get_content_length() const;
 		// const std::string& get_method() const;
 		// const std::string& get_target() const;
