@@ -1,4 +1,6 @@
 #include "../../../include/HTTP/requests/Request.hpp"
+#include <array>
+#include <algorithm>
 
 void	Request::handle_absolute_path()
 {

@@ -32,11 +32,15 @@ void Request::parse_request_line(void)
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-	if(section_end == buffer.end())
-		return ;
-	if(std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+  if (section_end == buffer.end())
+	{
+        return ;
+	}
+	// check size
+	if (std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+	{
 		throw Error(501, "request-line too large");
-
+	}
 	//string that contains whole header section
 	std::string str_buffer(buffer.begin(), section_end);
 
@@ -77,10 +81,16 @@ void Request::parse_headers(void)
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n', '\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-	if(section_end == buffer.end())
-		return ;
-	if(std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+  if (section_end == buffer.end())
+	{
+        return ;
+	}
+
+	//check size
+	if (std::distance(buffer.begin(), section_end) > MAX_ELEMENT_SIZE)
+	{
 		throw Error(431, "Header section too large");
+	}
 
 	//string that contains whole header section
 	std::string str_buffer(buffer.begin(), section_end + 2);
@@ -145,7 +155,7 @@ void Request::parse_headers(void)
 
 void Request::parse_body(void)
 {
-	if (buffer.size() < content_length)
+	if (buffer.size() < static_cast<long unsigned int> (content_length))
 		return ;
 
 	// copy content-length bytes from the body
