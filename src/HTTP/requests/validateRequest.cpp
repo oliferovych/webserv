@@ -78,14 +78,14 @@ void Request::validateHeaders()
 		try
 		{
 			content_length = std::stol(it->second[0]);
+			if (content_length == 0)
+				throw Error(400, "content-length is invalid: " + std::to_string(content_length));
 		}
 		catch(...)
 		{
 			throw Error(500, "content_length parsing failed");
 		}
-		
-		if (content_length < 0)
-			throw Error(400, "content-length is invalid: " + std::to_string(content_length));
+
 	}
 	else if (request_line.method == "POST" && headers.find("transfer-encoding") == headers.end())
 			throw Error(411, "there is some content length required");

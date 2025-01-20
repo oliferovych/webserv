@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/16 21:44:24 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/17 01:36:46 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,13 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
+
 Server::Server()
 {
+	_serverSignals();
 }
+
+bool Server::_running = true;
 
 Server::~Server()
 {
@@ -97,22 +101,48 @@ void Server::_closeClient(int clientFd)
 
 void Server::_closeServerSock(int serverFd)
 {
+	struct linger lo;
+	lo.l_onoff = 1;
+	lo.l_linger = 0;
+
+	setsockopt(serverFd, SOL_SOCKET, SO_LINGER, &lo, sizeof(lo));
+
 	close(serverFd);
+	memset(&_sockets[serverFd]->getAddr(), 0, sizeof(_sockets[serverFd]->getAddr()));
 	_poll.removeFd(serverFd);
 	delete _sockets[serverFd];
 	_sockets.erase(serverFd);
 	info_msg("Server socket closed on FD " + std::to_string(serverFd));
 }
 
+void Server::_shutdownServer()
+{
+	while (!_clients.empty())
+	{
+		auto it = _clients.begin();
+		_closeClient(it->first);
+	}
+	while (!_sockets.empty())
+	{
+		auto it = _sockets.begin();
+		_closeServerSock(it->first);
+	}
+	info_msg("Server shutdown");
+}
+
 void Server::run()
 {
 	createServerSockets();
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
-	while(1)
+	while(_running)
 	{
 		int events = poll(_poll.getFds().data(), _poll.size(), -1);
 		if(events < 0)
-			return(err_msg("Poll failed " + std::string(strerror(errno))));
+		{
+			if(errno != EINTR)
+				err_msg("Poll failed " + std::string(strerror(errno)));
+			break ;
+		}
 		for(auto &pfd : _poll.getFds())
 		{
 			if(pfd.revents & POLLIN)
@@ -139,4 +169,26 @@ void Server::run()
 			}
 		}
 	}
+	_shutdownServer();
+}
+
+void Server::_signalHandler(int sig)
+{
+	(void)sig;
+	_running = false;
+}
+
+void Server::_serverSignals()
+{
+	struct sigaction sa;
+	sa.sa_handler = &_signalHandler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	if (sigaction(SIGINT, &sa, NULL) < 0)
+		err_msg("Error setting SIGINT handler");
+	if (sigaction(SIGTERM, &sa, NULL) < 0)
+		err_msg("Error setting SIGTERM handler");
+	if (sigaction(SIGQUIT, &sa, NULL) < 0)
+		err_msg("Error setting SIGQUIT handler");
+	info_msg("Signal handlers set");
 }
