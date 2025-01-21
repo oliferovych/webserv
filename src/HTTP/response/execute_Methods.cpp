@@ -19,20 +19,18 @@ std::string Response::getMimeType(std::string path)
 void Response::getFile(void)
 {
 	std::string request_path = _request.get_path();
-	request_path.erase(0, 1);
 	if (request_path.back() == '/')
 		request_path += "index.html";
+	request_path.erase(0, 1);
 	
 	std::filesystem::path path = _rootDir / request_path;
-	std::cout << "\nbef PATH: " << _rootDir.string() << std::endl;
-	std::cout << "\nreq PATH: " << request_path << std::endl;
-	std::cout << "\nPATH: " << path.string() << std::endl;
 	if (_rootDir.empty() || !std::filesystem::exists(path))
 	{
 		err_msg("file not found at path: " + std::string(path));
 		error_body(404, "couldn't find file at path: " + path.string());
 		return ;
 	}
+	// std::cout << "path: " << path << std::endl;
 	setBody(path);
 }
 
