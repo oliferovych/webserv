@@ -20,7 +20,8 @@ void Response::init_mimeTypes(void)
             {".js", "application/javascript"},
             {".jpg", "image/jpeg"},
             {".png", "image/png"},
-            {".gif", "image/gif"}
+			{".gif", "image/gif"},
+            {".ico", "image/x-icon"}
 		};
 }
 
@@ -40,9 +41,10 @@ void Response::addHeaders(std::string category, std::vector<std::string> args)
 
 void Response::build(void)
 {
-	std::string errorMessage = "Request Parsing failed";
+	std::string errorMessage = "ok";
 	_result += "HTTP/1.1 " + std::to_string(_status_code);
 	_result += " " + errorMessage;
+	_result += "\r\n";
 
 	addHeaders("date", {getDateHeader()});
 	if (!_body.empty())
@@ -51,11 +53,8 @@ void Response::build(void)
 		addHeaders("Content-Type", {_content_type});
 	}
 	auto connection = _request.get_header("connection");
-	if (!connection.empty())
-	{
-		if (connection[0] == "close")
+	if (!connection.empty() && connection[0] == "close")
 			addHeaders("connection", {"close"});
-	}
 	else
 		addHeaders("connection", {"keep-alive"});
 	_result += "\r\n";
