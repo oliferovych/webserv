@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/17 09:41:47 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/20 22:44:52 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ class Client
 		const int &getClientFd() const { return _clientFd; }
 		const sockaddr_in &getAddr() const { return _addr; }
 		bool hasTimedOut() const;
+		int sendResponse(std::string response);
 
 		
 };
