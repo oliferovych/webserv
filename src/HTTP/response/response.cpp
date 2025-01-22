@@ -41,7 +41,7 @@ void Response::addHeaders(std::string category, std::vector<std::string> args)
 
 void Response::build(void)
 {
-	std::string errorMessage = "ok";
+	std::string errorMessage = "ok"; //other than ok?
 	_result += "HTTP/1.1 " + std::to_string(_status_code);
 	_result += " " + errorMessage;
 	_result += "\r\n";
@@ -82,11 +82,11 @@ void Response::doMethod(void)
 {
 	std::string method = _request.get_method();
 	if (method == "GET")
-		getFile();
+		GET();
 	else if (method == "POST")
-		createFile();
+		POST();
 	else
-		deleteFile();
+		DELETE();
 }
 
 std::filesystem::path Response::getrootDir()

@@ -16,7 +16,7 @@ std::string Response::getMimeType(std::string path)
 	return ("");
 }
 
-void Response::getFile(void)
+void Response::GET(void)
 {
 	std::string request_path = _request.get_path();
 	if (request_path.back() == '/')
@@ -34,26 +34,21 @@ void Response::getFile(void)
 	setBody(path);
 }
 
-void Response::createFile(void)
+void Response::fileCreation(std::vector<char> &content, std::string &filename)
 {
 	std::string request_path = _request.get_path();
 	request_path.erase(0, 1);
 	std::filesystem::path path = _rootDir / request_path;
 	std::filesystem::path dir = path.parent_path();
 
+	if (filename.find('/') != std::string::npos)
+		throw Error(400, "Invalid filename: " + filename);
+
 	if (request_path.back() == '/')
-	{
-		err_msg("can't create directories with POST: " + dir.string());
-		error_body(403, "Forbidden: Cannot create directories with Post");
-		return ;
-	}	
+		throw Error(403,  "Forbidden: Cannot create directories with Post" + dir.string());
 
 	if (dir.string().find(_rootDir.string()) != 0)
-	{
-		err_msg("Attempt to create directories outside /content: " + dir.string());
-		error_body(403, "Forbidden: Cannot create directories outside /content.");
-		return ;
-	}
+		throw Error(403,  "Forbidden: Cannot create directories outside /content." + dir.string());
 
 	try
     {
@@ -61,43 +56,115 @@ void Response::createFile(void)
         {
             info_msg("Creating directory structure: " + dir.string());
             if (!std::filesystem::create_directories(dir))
-            {
-                err_msg("Failed to create directory structure at: " + dir.string());
-                error_body(500, "Failed to create necessary directories");
-                return;
-            }
+				throw Error(500,  "Failed to create necessary directories");
         }
     }
     catch (const std::filesystem::filesystem_error& e)
     {
-        err_msg("Filesystem error while creating directories");
-        error_body(500, "Failed to create directory structure");
-        return;
+		throw Error(500, "Failed to create directory structure");
     }
 
-	std::ofstream file(path, std::ios::binary);
+	std::filesystem::path filePath = path / filename;
+	
+	std::string extension = filePath.extension().string();
+	if (_mimeTypes.find(extension) == _mimeTypes.end())
+		throw Error(503,  "File type not allowed by server: " + extension);
+
+	int counter = 2;
+	while (std::filesystem::exists(filePath))
+	{
+		filePath = path / (filePath.stem().string() + "_" + std::to_string(counter) + extension);
+		counter++;
+	}
+
+	std::ofstream file(filePath, std::ios::binary);
     if (!file.is_open())
-    {
-        err_msg("Failed to create file at path: " + path.string());
-        error_body(500, "Failed to create file at: " + path.string());
-        return;
-    }
+		throw Error(500, "Failed to create file at path: " + path.string());
 
-    const std::vector<char> body = _request.get_body();
-    file.write(body.data(), body.size());
+    file.write(content.data(), content.size());
     file.close();
 
     if (file.fail())
-    {
-        err_msg("Failed to write to file: " + path.string());
-        error_body(500, "Failed to write content to file");
-        return;
-    }
+		throw Error(500, "Failed to write to file: " + path.string());
 
     _status_code = 201;
 }
 
-void Response::deleteFile(void)
+std::pair<std::string, std::vector<char>> Response::extractData()
+{
+	std::string boundary = _request.get_header("content-type")[0];
+	size_t begin = boundary.find("boundary=");
+	if (begin == std::string::npos)
+		throw Error(400, "can't find boundary in Content-Type");
+	std::string del = "--" + boundary.substr(begin + 9);
+	std::vector<char> requestBody = _request.get_body();
+	std::pair<std::string, std::vector<char>> result;
+
+	size_t start = 0;
+	auto it = std::search(requestBody.begin(), requestBody.end(), del.begin(), del.end());
+	while (it != requestBody.end())
+	{
+		start = std::distance(requestBody.begin(), it) + del.size();
+		
+		if (start + 2 <= requestBody.size() && std::equal(requestBody.begin() + start, requestBody.begin() + start + 2, "--"))
+            break;
+		
+		auto partEndIt = std::search(requestBody.begin() + start, requestBody.end(), del.begin(), del.end());
+        if (partEndIt == requestBody.end())
+            throw Error(400, "can't find lower boundary in body");
+
+		std::vector<char> part(requestBody.begin() + start, partEndIt);
+		std::string partStr(part.begin(), part.end());
+
+		size_t dispositionPos = partStr.find("Content-Disposition:");
+        if (dispositionPos == std::string::npos)
+            throw Error(400, "Missing Content-Disposition header");
+
+        size_t filenamePos = partStr.find("filename=\"", dispositionPos);
+        if (filenamePos == std::string::npos)
+            throw Error(400, "Filename not found in Content-Disposition");
+
+        filenamePos += 10;
+        size_t filenameEnd = partStr.find('"', filenamePos);
+        if (filenameEnd == std::string::npos)
+            throw Error(400, "Invalid filename format");
+
+        std::string filename = partStr.substr(filenamePos, filenameEnd - filenamePos);
+
+        size_t contentStart = partStr.find("\r\n\r\n");
+        if (contentStart == std::string::npos)
+            throw Error(400, "Content delimiter not found after headers");
+
+        contentStart += 4;
+
+        std::vector<char> fileContent(part.begin() + contentStart, part.end() - 2);
+        result.first = filename;
+        result.second = fileContent;
+
+		it = std::search(requestBody.begin() + start, requestBody.end(), del.begin(), del.end());
+	}
+	if (result.first.empty() || result.second.empty())
+		throw Error(400, "there was not enough data for POST in the body");
+	return result;
+}
+
+void Response::POST(void)
+{
+	std::pair<std::string, std::vector<char>> result;
+	try
+	{
+		result = extractData();
+		fileCreation(result.second, result.first);
+	}
+	catch(const Error& e)
+ 	{
+        err_msg("POST execution failed: " + std::string(e.what()));
+        error_body(e.code(), "POST execution failed: " + std::string(e.what()));
+        return;
+    }
+}
+
+void Response::DELETE(void)
 {
 	std::string request_path = _request.get_path();
 	request_path.erase(0, 1);

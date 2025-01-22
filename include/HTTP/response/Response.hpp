@@ -25,15 +25,17 @@ class Response
 		std::unordered_map<std::string, std::string> _mimeTypes;
 
 		void addHeaders(std::string category, std::vector<std::string> args);
-		void getFile(void);
-		void createFile(void);
-		void deleteFile(void);
+		void GET(void);
+		void POST(void);
+		void DELETE(void);
 		std::filesystem::path getrootDir();
 		void setBody(std::filesystem::path path);
 		void init_mimeTypes(void);
 		std::string getMimeType(std::string path);
 		void error_body(int code, const std::string &errorMessage);
 		std::string getDateHeader(void);
+		void fileCreation(std::vector<char> &content, std::string &filename);
+		std::pair<std::string, std::vector<char>> extractData();
 
 
 	public:
