@@ -1,6 +1,7 @@
 #include "../../../include/HTTP/response/Response.hpp"
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 std::string Response::getMimeType(std::string path)
 {
