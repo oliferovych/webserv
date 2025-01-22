@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 01:38:59 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/22 20:54:52 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,31 +23,6 @@ ServerConfig::~ServerConfig()
 {
 }
 
-bool isKeyWord(std::string const &line, std::string const &keyword)
-{
-	size_t first = std::find_if(line.begin(), line.end(), [](unsigned char ch) {
-		return !std::isspace(ch);
-	}) - line.begin();
-
-	if (first == line.size())
-		return false;
-	size_t last = line.find(' ', first);
-	if (last == std::string::npos)
-		last = line.size();
-	return(line.substr(first, last - first) == keyword);
-}
-
-std::string getSingleVarValue(std::string const &line, std::string const &keyword)
-{
-	size_t pos = line.find(keyword);
-	pos += keyword.length();
-	size_t first = line.find_first_not_of(' ', pos);
-	if(first == std::string::npos)
-		return "";
-	size_t last = line.find(';', first);
-	return line.substr(first, last - first);
-}
-
 bool ServerConfig::_parseServer(std::ifstream &file)
 {
 	std::string line;
@@ -56,18 +31,28 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 		if(line.empty() || line[0] == '#')
 			continue;
 		if(isLineConsistsOnlyOf(line, "}"))
-		{
-			debug_msg("Server block ended");
 			break;
-		}
+
 		if(isKeyWord(line, "listen"))
 			_ports.push_back(std::stoi(getSingleVarValue(line, "listen")));
-		// else if(isKeyWord(line, "server_name"))
-		// 	//parse server_name
+		else if(isKeyWord(line, "server_name"))
+		{
+			try{
+				_serverNames = getMultipleVarValue(line, "server_name");
+			}
+			catch(const std::exception& e){return false;}
+		}
 		else if(isKeyWord(line, "root"))
 			_root = getSingleVarValue(line, "root");
 		else if(isKeyWord(line, "index"))
 			_index = getSingleVarValue(line, "index");
+		else if(isKeyWord(line, "location"))
+		{
+			Location loc(file, getSingleVarValue(line, "location"));
+			if(!loc.isValid())
+				return false;
+			_locations.push_back(loc);
+		}
 		// else if(isKeyWord(line, "error_page"))
 		// {
 		// 	//parse error_page
@@ -82,12 +67,21 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 }
 void ServerConfig::_printOut()
 {
+	std::cout << "Server config:" << std::endl;
+	std::cout << std::endl;
 	std::cout << "Ports: ";
 	for(auto port : _ports)
 		std::cout << port << " ";
 	std::cout << std::endl;
+	std::cout << "Server names: ";
+	for(auto name : _serverNames)
+		std::cout << name << " ";
+	std::cout << std::endl;
 	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Index: " << _index << std::endl;
+	for(auto loc : _locations)
+		loc.printOut(1);
+	std::cout << std::endl;
 }
 
 void ServerConfig::_loadConfig(std::string const &path)
@@ -122,7 +116,7 @@ void ServerConfig::_loadConfig(std::string const &path)
 		}
 	}
 	_valid = 1;
-	// _printOut();
+	_printOut();
 }
 
 bool ServerConfig::isValid() const
