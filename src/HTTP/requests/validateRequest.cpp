@@ -94,6 +94,6 @@ void Request::validateHeaders()
 	it = headers.find("content-type");
 	if ((it == headers.end() && request_line.method == "POST") || (it != headers.end() && it->second.empty() && request_line.method == "POST"))
 		throw Error(400, "content-type is missing for POST request");
-	if (it != headers.end() && request_line.method == "POST" && it->second[0] != "multipart/form-data")
-		throw Error(501, "server only supports multipart/form-data content type. Requested content-type: " + it->second[0]);
+	if (it != headers.end() && request_line.method == "POST" && it->second[0].compare(0, 19, "multipart/form-data") != 0)
+		throw Error(501, "server only supports multipart/form-data content type for POST request. Requested content-type: " + it->second[0]);
 }

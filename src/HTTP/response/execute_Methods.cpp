@@ -39,23 +39,23 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 	std::string request_path = _request.get_path();
 	request_path.erase(0, 1);
 	std::filesystem::path path = _rootDir / request_path;
-	std::filesystem::path dir = path.parent_path();
 
 	if (filename.find('/') != std::string::npos)
 		throw Error(400, "Invalid filename: " + filename);
 
 	if (request_path.back() == '/')
-		throw Error(403,  "Forbidden: Cannot create directories with Post" + dir.string());
+		throw Error(403,  "Forbidden: Cannot create directories with Post" + path.string());
 
-	if (dir.string().find(_rootDir.string()) != 0)
-		throw Error(403,  "Forbidden: Cannot create directories outside /content." + dir.string());
+	if (path.string().find(_rootDir.string()) != 0)
+		throw Error(403,  "Forbidden: Cannot create directories outside /content." + path.string());
+	// std::cout << "dir: " << path.string() << std::endl;
 
 	try
     {
-        if (!dir.empty() && !std::filesystem::exists(dir))
+        if (!path.empty() && !std::filesystem::exists(path))
         {
-            info_msg("Creating directory structure: " + dir.string());
-            if (!std::filesystem::create_directories(dir))
+            info_msg("Creating directory structure: " + path.string());
+            if (!std::filesystem::create_directories(path))
 				throw Error(500,  "Failed to create necessary directories");
         }
     }
@@ -63,7 +63,6 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
     {
 		throw Error(500, "Failed to create directory structure");
     }
-
 	std::filesystem::path filePath = path / filename;
 	
 	std::string extension = filePath.extension().string();

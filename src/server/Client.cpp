@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/21 22:27:46 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/22 19:37:34 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ int Client::handle_message()
         Response response(_request);
 		response.doMethod();
 		response.build();
-		std::cout << "\nResponse:\n" << response.getResult() << std::endl;
+		// std::cout << "\nResponse:\n" << response.getResult() << std::endl;
 		if (sendResponse(response.getResult()) < 0)
 			return (-1);
 		auto connection = _request.get_header("connection");
