@@ -52,6 +52,8 @@ void Response::build(void)
 		addHeaders("Content-Length", {std::to_string(_body.length())});
 		addHeaders("Content-Type", {_content_type});
 	}
+	else
+		addHeaders("Content-Length", {"0"});
 	auto connection = _request.get_header("connection");
 	if (!connection.empty() && connection[0] == "close")
 			addHeaders("connection", {"close"});

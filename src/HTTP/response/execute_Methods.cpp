@@ -4,6 +4,7 @@
 
 std::string Response::getMimeType(std::string path)
 {
+	ft_tolower(path);
 	size_t dot = path.find(".");
 	if (dot != std::string::npos)
 	{
@@ -66,6 +67,7 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 	std::filesystem::path filePath = path / filename;
 	
 	std::string extension = filePath.extension().string();
+	ft_tolower(extension);
 	if (_mimeTypes.find(extension) == _mimeTypes.end())
 		throw Error(503,  "File type not allowed by server: " + extension);
 
