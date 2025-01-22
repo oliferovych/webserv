@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 20:55:21 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/22 20:59:52 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ Location::Location(std::ifstream &file, std::string const &path)
 				_allowedMethods = getMultipleVarValue(line, "allow_methods");
 			}
 			catch(const std::exception& e){
-				err_msg("Error in location block: "+ line + " : " + std::string(e.what()));
+				err_msg("Error in location block: \""+ line + "\": " + std::string(e.what()));
 				_valid = false;
 				return;
 			}
