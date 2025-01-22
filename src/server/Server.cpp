@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/17 01:36:46 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/22 01:39:21 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,13 @@
 #include <fcntl.h>
 
 
-Server::Server()
+Server::Server(std::string const &configPath) : _config(configPath)
 {
+	if(!_config.isValid())
+	{
+		err_msg("Invalid server config");
+		exit(1);
+	}
 	_serverSignals();
 }
 
@@ -28,14 +33,22 @@ Server::~Server()
 
 void Server::createServerSockets()
 {
-	Socket *s1 = new Socket(8080);
-	Socket *s2 = new Socket(8081);
-
-	_sockets.insert(std::make_pair(s1->getSocketFd(), s1));
-	_sockets.insert(std::make_pair(s2->getSocketFd(), s2));
-
-	_poll.addFd(s1->getSocketFd());
-	_poll.addFd(s2->getSocketFd());
+	std::vector<int> ports = _config.getPorts();
+	for(auto port : ports)
+	{
+		std::unique_ptr<Socket> s(new Socket(port));
+		try
+		{
+			_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));
+			_poll.addFd(s->getSocketFd());
+			s.release();
+		}
+		catch(...)
+		{
+			err_msg("Error creating server socket on port " + std::to_string(port));
+			throw;
+		}
+	}
 }
 
 void Server::_acceptClient(int serverFd)
@@ -56,7 +69,6 @@ void Server::_acceptClient(int serverFd)
 		err_msg("Error getting client socket flags " + std::string(strerror(errno)));
 		return ((void)close(client_fd));
 	}
-	debug_msg("fcntl() flags: " + std::to_string(flags));
 	if(fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0)
 	{
 		err_msg("Error setting client socket to non-blocking " + std::string(strerror(errno)));
