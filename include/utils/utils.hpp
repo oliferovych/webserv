@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/16 12:54:01 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/21 23:37:03 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <ctime>
 #include <string>
 
-class Error : public std::exception 
+class Error : public std::exception
 {
 	private:
 		std::string _message;
@@ -37,3 +37,6 @@ void ft_trim(std::string &str);
 void ft_tolower(std::string &str);
 bool ft_has_whitespace_in_str(const std::string &str);
 void ft_decode(std::string &str);
+
+std::string trim(const std::string& str);
+bool isLineConsistsOnlyOf(const std::string& line, const std::string& target);

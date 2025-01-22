@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/16 22:05:39 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/21 23:35:58 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ void info_msg(const std::string &msg)
 	std::cout << FG_GREEN << "[INFO]  " << timestamp() << " : " << msg << RESET << std::endl;
 }
 
-Error::Error(int code, const std::string& msg) 
+Error::Error(int code, const std::string& msg)
 	: _message(msg), _code(code)
 {
 }
@@ -115,4 +115,19 @@ void ft_decode(std::string &str)
             decoded.push_back(str[i]);
     }
     str = decoded;
+}
+
+std::string trim(const std::string& str)
+{
+	size_t first = str.find_first_not_of(' ');
+	if (first == std::string::npos)
+		return "";
+	size_t last = str.find_last_not_of(' ');
+	return str.substr(first, last - first + 1);
+}
+
+bool isLineConsistsOnlyOf(const std::string& line, const std::string& target)
+{
+	std::string trimmedLine = trim(line);
+	return trimmedLine == target;
 }
