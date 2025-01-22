@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/21 23:37:03 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/22 20:18:19 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,8 @@
 #include <iostream>
 #include <ctime>
 #include <string>
+#include <vector>
+
 
 class Error : public std::exception
 {
@@ -40,3 +42,8 @@ void ft_decode(std::string &str);
 
 std::string trim(const std::string& str);
 bool isLineConsistsOnlyOf(const std::string& line, const std::string& target);
+std::vector<std::string> splitString(const std::string &str, char delimiter);
+
+bool isKeyWord(std::string const &line, std::string const &keyword);
+std::string getSingleVarValue(std::string const &line, std::string const &keyword);
+std::vector<std::string> getMultipleVarValue(std::string const &line, std::string const &keyword);

@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/21 23:35:58 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/22 19:50:55 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,4 +130,18 @@ bool isLineConsistsOnlyOf(const std::string& line, const std::string& target)
 {
 	std::string trimmedLine = trim(line);
 	return trimmedLine == target;
+}
+
+std::vector<std::string> splitString(const std::string &str, char delimiter)
+{
+	std::vector<std::string> tokens;
+	std::stringstream ss(str);
+	std::string token;
+
+	while (std::getline(ss, token, delimiter))
+	{
+		tokens.push_back(token);
+	}
+
+	return tokens;
 }
