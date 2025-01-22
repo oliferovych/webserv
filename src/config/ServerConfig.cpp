@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 01:26:30 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/22 01:38:59 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@ void ServerConfig::_loadConfig(std::string const &path)
 		}
 	}
 	_valid = 1;
-	_printOut();
+	// _printOut();
 }
 
 bool ServerConfig::isValid() const

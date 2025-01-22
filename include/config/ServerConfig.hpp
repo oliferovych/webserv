@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:13:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 01:15:51 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/22 01:30:22 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class ServerConfig
 		void _printOut();
 	public:
 		bool isValid() const;
+		const std::vector<int> &getPorts() const { return _ports; }
 		ServerConfig(std::string const &path);
 		~ServerConfig();
 };
