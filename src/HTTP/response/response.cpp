@@ -63,9 +63,9 @@ void Response::build(void)
 	_result += _body;
 }
 
-void Response::build_err(void)
+void Response::build_err(std::string message)
 {
-	std::string errorMessage = "Request Parsing failed";
+	std::string errorMessage = "Request Parsing failed: " + message;
 	_result += "HTTP/1.1 " + std::to_string(_status_code);
 	_result += " " + errorMessage;
 	_result += "\r\n";

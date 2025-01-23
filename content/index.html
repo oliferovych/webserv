@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload to /uploads</title>
+    <title>Centered Buttons</title>
     <style>
         body {
             display: flex;
@@ -16,7 +16,7 @@
             font-family: 'Arial', sans-serif;
         }
 
-        a, input[type="submit"] {
+        a, button {
             font-size: 24px;
             font-weight: 500;
             color: #007bff;
@@ -30,25 +30,33 @@
             margin: 10px 0;
         }
 
-        a:hover, input[type="submit"]:hover {
+        a:hover, button:hover {
             color: #ffffff;
             background-color: #007bff;
             border-color: #0056b3;
         }
 
-        form {
+        .button-group {
+            display: flex;
+            gap: 20px;
             margin-top: 20px;
-            text-align: center;
+        }
+
+        button {
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
     <a href="https://www.youtube.com/watch?v=xvFZjo5PgG0" target="_blank">Something cool, click on me!</a>
 
-    <form action="/uploads" method="post" enctype="multipart/form-data">
-        <label for="file">Choose a file to upload:</label><br>
-        <input type="file" id="file" name="file" required><br>
-        <input type="submit" value="Upload">
-    </form>
+    <div class="button-group">
+        <form action="post.html" method="get">
+            <button type="submit">POST</button>
+        </form>
+        <form action="delete.html" method="get">
+            <button type="submit">DELETE</button>
+        </form>
+    </div>
 </body>
 </html>

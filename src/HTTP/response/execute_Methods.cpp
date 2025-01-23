@@ -18,6 +18,40 @@ std::string Response::getMimeType(std::string path)
 	return ("");
 }
 
+void Response::add_FileList(void)
+{
+	try
+	{
+        if (std::filesystem::exists(_rootDir / "uploads"))
+		{
+			std::string options;
+			std::string str = "<select id=\"file-select\" name=\"filename\" required>";
+			size_t insert_pos = _body.find(str);
+            if (insert_pos != std::string::npos)
+			{
+				insert_pos += str.length();
+				for (const auto& entry : std::filesystem::directory_iterator(_rootDir / "uploads"))
+				{
+					if (std::filesystem::is_regular_file(entry.path()))
+					{
+						std::cout << entry.path().filename() << std::endl;
+						std::string filename = entry.path().filename().string();
+						options += "<option value=\"" + filename + "\">" + filename + "</option>";
+					}
+				}
+				_body.insert(insert_pos, "\n\t\t" + options);
+			}
+			else
+				return ;
+		}
+    }
+	catch (const std::filesystem::filesystem_error& e)
+	{
+		err_msg("Filesystem error: " + std::string(e.what()));
+    }
+}
+
+
 void Response::GET(void)
 {
 	std::string request_path = _request.get_path();
@@ -34,6 +68,8 @@ void Response::GET(void)
 	}
 	// std::cout << "path: " << path << std::endl;
 	setBody(path);
+	if (request_path == "delete.html")
+		add_FileList();
 }
 
 void Response::fileCreation(std::vector<char> &content, std::string &filename)

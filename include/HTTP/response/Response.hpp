@@ -36,6 +36,7 @@ class Response
 		std::string getDateHeader(void);
 		void fileCreation(std::vector<char> &content, std::string &filename);
 		std::pair<std::string, std::vector<char>> extractData();
+		void add_FileList(void);
 
 
 	public:
@@ -43,7 +44,7 @@ class Response
 		~Response();
 
 		void build(void);
-		void build_err(void);
+		void build_err(std::string message);
 
 		void doMethod(void);
 

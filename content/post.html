@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        input[type="file"] {
+            font-size: 18px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background-color: #007be2;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: #0056b3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: #004494;
+        }
+
+        input[type="submit"] {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background: none;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        a {
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #007bff;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        a:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload File</h1>
+    <form action="/uploads" method="post" enctype="multipart/form-data">
+        <label for="file">Choose a file to upload:</label><br>
+        <input type="file" id="file" name="file" required><br>
+        <input type="submit" value="Upload">
+    </form>
+    <a href="/">Go Back to Home Page</a>
+</body>
+</html>
