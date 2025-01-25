@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 20:54:52 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/26 00:07:18 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,12 +43,20 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 			catch(const std::exception& e){return false;}
 		}
 		else if(isKeyWord(line, "root"))
+		{
 			_root = getSingleVarValue(line, "root");
+			if(_root.back() != '/')
+				_root += "/";
+		}
 		else if(isKeyWord(line, "index"))
+		{
 			_index = getSingleVarValue(line, "index");
+			if(_index.front() == '/')
+				_index = _index.substr(1);
+		}
 		else if(isKeyWord(line, "location"))
 		{
-			Location loc(file, getSingleVarValue(line, "location"));
+			Location loc(file, getSingleVarValue(line, "location"), _root);
 			if(!loc.isValid())
 				return false;
 			_locations.push_back(loc);
@@ -62,6 +70,18 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 			err_msg("Invalid keyword in server block: " + line);
 			return false;
 		}
+	}
+	if(_ports.empty() || _serverNames.empty() || _root.empty() || _index.empty())
+		return false;
+	else if(!isDir(_root))
+	{
+		err_msg("Server's root directory does not exist");
+		return false;
+	}
+	else if(!fileExists(_root + _index))
+	{
+		err_msg("Server's index file does not exist");
+		return false;
 	}
 	return true;
 }

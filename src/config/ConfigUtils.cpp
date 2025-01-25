@@ -6,12 +6,14 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:16:12 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 20:52:46 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/26 00:02:30 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/utils/utils.hpp"
 #include <algorithm>
+#include <unistd.h>
+#include <sys/stat.h>
 
 bool isKeyWord(std::string const &line, std::string const &keyword)
 {
@@ -60,4 +62,32 @@ std::vector<std::string> getMultipleVarValue(std::string const &line, std::strin
 	sub = sub.substr(0, last);
 
 	return (splitString(sub, ' '));
+}
+
+bool fileExists(const std::string &path)
+{
+	debug_msg("Checking if file exists: " + path);
+	if(path.empty())
+		return false;
+	std::string cleanPath;
+	if(path.front() != '.')
+		cleanPath = "." + path;
+	else
+		cleanPath = path;
+	return (access(cleanPath.c_str(), F_OK) != -1);
+}
+
+bool isDir(const std::string &path)
+{
+	std::string cleanPath = path;
+	while (!cleanPath.empty() && cleanPath.back() == '/')
+		cleanPath.pop_back();
+
+	if (cleanPath.empty())
+		cleanPath = ".";
+	else
+		cleanPath = "." + cleanPath;
+	
+	struct stat buf;
+	return (stat(cleanPath.c_str(), &buf) == 0 && S_ISDIR(buf.st_mode));
 }

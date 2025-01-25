@@ -6,15 +6,16 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 20:59:52 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/26 00:10:27 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/Location.hpp"
 #include "../../include/utils/utils.hpp"
+
 #include <fstream>
 
-Location::Location(std::ifstream &file, std::string const &path)
+Location::Location(std::ifstream &file, std::string const &path, std::string const &servRoot)
 {
 	_path = path;
 	std::string line;
@@ -26,9 +27,20 @@ Location::Location(std::ifstream &file, std::string const &path)
 			break;
 
 		if(isKeyWord(line, "root"))
+		{
 			_root = getSingleVarValue(line, "root");
+			if(_root.front() == '/')
+				_root = _root.substr(1);
+			_root = servRoot + _root;
+			if(_root.back() != '/')
+				_root += "/";
+		}
 		else if(isKeyWord(line, "index"))
+		{
 			_index = getSingleVarValue(line, "index");
+			if(_index.front() == '/')
+				_index = _index.substr(1);
+		}
 		else if(isKeyWord(line, "allow_methods"))
 		{
 			try
@@ -47,10 +59,22 @@ Location::Location(std::ifstream &file, std::string const &path)
 			_valid = false;
 		}
 	}
-	// if(_root.empty() || _index.empty() || _allowedMethods.empty())
-	// 	_valid = false;
-	// else
-	_valid = true;
+	if(_root.empty() || _index.empty() || _allowedMethods.empty())
+		_valid = false;
+	else if(!isDir(_root)){
+		err_msg("Location's root directory does not exist");
+		_valid = false;
+	}
+	else if(!fileExists(_root + _index))
+	{
+		err_msg("Location's index file does not exist");
+		_valid = false;
+	}
+	else
+		_valid = true;
+
+	if(_valid)
+		debug_msg("Location block parsed");
 }
 
 Location::~Location()

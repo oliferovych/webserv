@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 20:34:36 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/25 23:25:33 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class Location
 		std::vector<std::string> _allowedMethods;
 		bool _valid;
 	public:
-		Location(std::ifstream &file, std::string const &path);
+		Location(std::ifstream &file, std::string const &path, std::string const &servRoot);
 		~Location();
 
 		bool isValid() const { return _valid; }
