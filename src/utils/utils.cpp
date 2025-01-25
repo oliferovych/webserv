@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 19:50:55 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/25 23:37:19 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,10 +119,11 @@ void ft_decode(std::string &str)
 
 std::string trim(const std::string& str)
 {
-	size_t first = str.find_first_not_of(' ');
+	const std::string whitespace = " \t\n\r\f\v";
+	size_t first = str.find_first_not_of(whitespace);
 	if (first == std::string::npos)
 		return "";
-	size_t last = str.find_last_not_of(' ');
+	size_t last = str.find_last_not_of(whitespace);
 	return str.substr(first, last - first + 1);
 }
 
