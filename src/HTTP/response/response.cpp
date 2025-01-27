@@ -1,7 +1,13 @@
 #include "../../../include/HTTP/response/Response.hpp"
 
 Response::Response(const Request& request)
-	: _result(""), _status_code(200), _request(request), _contentDir("content"), _rootDir(getrootDir())
+	: _result(""), _status_code(200), _request(&request), _contentDir("content"), _rootDir(getrootDir())
+{
+	init_mimeTypes();
+}
+
+Response::Response(void)
+	: _result(""), _status_code(200), _request(nullptr), _contentDir("content"), _rootDir(getrootDir())
 {
 	init_mimeTypes();
 }
@@ -54,7 +60,7 @@ void Response::build(void)
 	}
 	else
 		addHeaders("Content-Length", {"0"});
-	auto connection = _request.get_header("connection");
+	auto connection = _request->get_header("connection");
 	if (!connection.empty() && connection[0] == "close")
 			addHeaders("connection", {"close"});
 	else
@@ -63,9 +69,10 @@ void Response::build(void)
 	_result += _body;
 }
 
-void Response::build_err(std::string message)
+void Response::build_err(int code, std::string message)
 {
-	std::string errorMessage = "Request Parsing failed: " + message;
+	_status_code = code;
+	std::string errorMessage = message;
 	_result += "HTTP/1.1 " + std::to_string(_status_code);
 	_result += " " + errorMessage;
 	_result += "\r\n";
@@ -82,7 +89,7 @@ void Response::build_err(std::string message)
 
 void Response::doMethod(void)
 {
-	std::string method = _request.get_method();
+	std::string method = _request->get_method();
 	if (method == "GET")
 		GET();
 	else if (method == "POST")
@@ -110,7 +117,8 @@ std::filesystem::path Response::getrootDir()
 
 void Response::error_body(int code, const std::string &errorMessage)
 {
-    _status_code = code;
+	if (code != _status_code)
+    	_status_code = code;
     setBody(_rootDir / "ERROR.html");
     
     size_t pos = 0;

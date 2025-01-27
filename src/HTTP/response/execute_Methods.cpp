@@ -55,7 +55,7 @@ void Response::populate_dropdown(void)
 
 void Response::GET(void)
 {
-	std::string request_path = _request.get_path();
+	std::string request_path = _request->get_path();
 	if (request_path.back() == '/')
 		request_path += "index.html";
 	request_path.erase(0, 1);
@@ -75,7 +75,7 @@ void Response::GET(void)
 
 void Response::fileCreation(std::vector<char> &content, std::string &filename)
 {
-	std::string request_path = _request.get_path();
+	std::string request_path = _request->get_path();
 	request_path.erase(0, 1);
 	std::filesystem::path path = _rootDir / request_path;
 
@@ -131,12 +131,12 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 std::pair<std::string, std::vector<char>> Response::extractData()
 {
-	std::string boundary = _request.get_header("content-type")[0];
+	std::string boundary = _request->get_header("content-type")[0];
 	size_t begin = boundary.find("boundary=");
 	if (begin == std::string::npos)
 		throw Error(400, "can't find boundary in Content-Type");
 	std::string del = "--" + boundary.substr(begin + 9);
-	std::vector<char> requestBody = _request.get_body();
+	std::vector<char> requestBody = _request->get_body();
 	std::pair<std::string, std::vector<char>> result;
 
 	size_t start = 0;
@@ -210,7 +210,7 @@ void Response::POST(void)
 
 void Response::DELETE(void)
 {
-	std::string request_path = _request.get_path();
+	std::string request_path = _request->get_path();
 	request_path.erase(0, 1);
 	std::filesystem::path path = _rootDir / request_path;
    	if (!std::filesystem::exists(path))

@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 12:12:10 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:12:05 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,7 @@ int Client::handle_message()
 	{
 		err_msg("Request parsing failed (for client on FD" + std::to_string(_clientFd) + ") | reason: " + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
 		Response response(_request);
-		response.setCode(e.code());
-		response.build_err(std::string(e.what()));
+		response.build_err(e.code(), "Request Parsing failed: " + std::string(e.what()));
 		sendResponse(response.getResult());
 		return -1;
 	}

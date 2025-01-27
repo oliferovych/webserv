@@ -17,7 +17,7 @@ class Response
 	private:
 		std::string _result;
 		int _status_code;
-		const Request &_request;
+		const Request *_request;
 		std::string _contentDir;
 		std::filesystem::path _rootDir;
 		std::string _body;
@@ -41,10 +41,12 @@ class Response
 
 	public:
 		Response(const Request& request);
+		Response(void);
 		~Response();
 
 		void build(void);
-		void build_err(std::string message);
+		void build_err(int code, std::string message);
+
 
 		void doMethod(void);
 
