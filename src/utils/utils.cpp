@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/25 23:37:19 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:52:42 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,4 +145,12 @@ std::vector<std::string> splitString(const std::string &str, char delimiter)
 	}
 
 	return tokens;
+}
+
+bool isFiletype(std::string type, std::string const &path)
+{
+	std::string extension = path.substr(path.find_last_of('.'));
+	if (extension == type)
+		return true;
+	return false;
 }

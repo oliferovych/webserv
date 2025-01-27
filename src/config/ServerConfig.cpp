@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 16:38:12 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:53:38 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,9 +119,9 @@ void ServerConfig::_printOut()
 
 void ServerConfig::_loadConfig(std::string const &path)
 {
-	if(path.find(".conf") == std::string::npos)
+	if(!isFiletype(".conf", path))
 	{
-		err_msg("Invalid config file");
+		err_msg("Invalid config filetype");
 		return ;
 	}
 	std::ifstream file(path.c_str());
@@ -131,12 +131,16 @@ void ServerConfig::_loadConfig(std::string const &path)
 		return ;
 	}
 	std::string line;
+	bool htmlBlock = false;
 	while(std::getline(file, line))
 	{
 		if(line.empty() || line[0] == '#')
 			continue;
-		if(isLineConsistsOnlyOf(line, "http {"))
+		if(isLineConsistsOnlyOf(line, "http {") && !htmlBlock)
+		{
+			htmlBlock = true;
 			continue;
+		}
 		if(isLineConsistsOnlyOf(line, "}"))
 			break;
 		if(isLineConsistsOnlyOf(line, "server {"))
@@ -146,6 +150,12 @@ void ServerConfig::_loadConfig(std::string const &path)
 				_valid = 0;
 				return ;
 			}
+		}
+		else
+		{
+			err_msg("Invalid keyword in http block: " + line);
+			_valid = 0;
+			return ;
 		}
 	}
 	_valid = 1;

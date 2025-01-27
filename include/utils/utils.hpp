@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/25 23:27:50 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:51:43 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,3 +50,4 @@ std::vector<std::string> getMultipleVarValue(std::string const &line, std::strin
 
 bool fileExists(const std::string &path);
 bool isDir(const std::string &path);
+bool isFiletype(std::string type, std::string const &path);
