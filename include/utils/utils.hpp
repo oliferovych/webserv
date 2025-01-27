@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 20:18:19 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/25 23:27:50 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,3 +47,6 @@ std::vector<std::string> splitString(const std::string &str, char delimiter);
 bool isKeyWord(std::string const &line, std::string const &keyword);
 std::string getSingleVarValue(std::string const &line, std::string const &keyword);
 std::vector<std::string> getMultipleVarValue(std::string const &line, std::string const &keyword);
+
+bool fileExists(const std::string &path);
+bool isDir(const std::string &path);
