@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 14:37:30 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:38:12 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../include/global.hpp"
 #include <fstream>
 
-ServerConfig::ServerConfig(std::string const &path) : _maxBodySize(0)
+ServerConfig::ServerConfig(std::string const &path) : _maxBodySize(0), _maxConn(0)
 {
 	_loadConfig(path);
 }
@@ -64,9 +64,13 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 		else if(isKeyWord(line, "max_body_size") && _maxBodySize == 0)
 		{
 			_maxBodySize = std::stoi(getSingleVarValue(line, "max_body_size"));
-			if(_maxBodySize > SOMAXCONN)
+		}
+		else if(isKeyWord(line, "max_clients") && _maxConn == 0)
+		{
+			_maxConn = std::stoi(getSingleVarValue(line, "max_clients"));
+			if(_maxConn < 1 || _maxConn > SOMAXCONN)
 			{
-				err_msg("Invalid max body size");
+				err_msg("Invalid max_clients value: " + line);
 				return false;
 			}
 		}
@@ -76,6 +80,8 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 			return false;
 		}
 	}
+	if(_maxConn == 0)
+		_maxConn = SOMAXCONN;
 	if(_ports.empty() || _serverNames.empty() || _root.empty() || _index.empty())
 		return false;
 	else if(!isDir(_root))
@@ -103,6 +109,7 @@ void ServerConfig::_printOut()
 		std::cout << name << " ";
 	std::cout << std::endl;
 	std::cout << "Max body size: " << _maxBodySize << std::endl;
+	std::cout << "Max clients: " << _maxConn << std::endl;
 	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Index: " << _index << std::endl;
 	for(auto loc : _locations)

@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 14:54:03 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:37:42 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void Server::createServerSockets()
 	std::vector<int> ports = _config.getPorts();
 	for(auto port : ports)
 	{
-		std::unique_ptr<Socket> s(new Socket(port, _config.getMaxBodySize()));
+		std::unique_ptr<Socket> s(new Socket(port, _config.getMaxConn()));
 		try
 		{
 			_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));
@@ -75,7 +75,7 @@ void Server::_acceptClient(int serverFd)
 		return ;
 	}
 
-	if((unsigned int)_clients.size() + 1 > _config.getMaxBodySize())
+	if((unsigned int)_clients.size() + 1 > _config.getMaxConn())
 	{
 		err_msg("Client on port " + std::to_string(_sockets[serverFd]->getPort()) + " rejected: too many clients");
 		handleMaxBodySize(client_fd);
