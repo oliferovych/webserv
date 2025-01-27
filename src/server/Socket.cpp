@@ -6,13 +6,13 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/17 01:33:16 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 14:43:12 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server/Socket.hpp"
 
-Socket::Socket(int port) : _port(port), _fd(-1), _addr(sockaddr_in())
+Socket::Socket(int port, unsigned int maxConn) : _port(port), _fd(-1), _addr(sockaddr_in()), _maxConn(maxConn)
 {
 	debug_msg("Creating socket on port: " + std::to_string(port));
 	setupFd();
@@ -66,7 +66,7 @@ void Socket::listenFd()
 {
 	debug_msg("Listening to socket");
 	// listening to the socket, SOMAXCONN = maximum number of connections
-	if (listen(_fd, SOMAXCONN) < 0)
+	if (listen(_fd, _maxConn) < 0)
 	{
 		throw std::runtime_error("Listen failed: " + std::string(strerror(errno)));
 	}

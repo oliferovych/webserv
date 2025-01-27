@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/26 00:07:18 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 14:37:30 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../include/global.hpp"
 #include <fstream>
 
-ServerConfig::ServerConfig(std::string const &path)
+ServerConfig::ServerConfig(std::string const &path) : _maxBodySize(0)
 {
 	_loadConfig(path);
 }
@@ -42,13 +42,13 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 			}
 			catch(const std::exception& e){return false;}
 		}
-		else if(isKeyWord(line, "root"))
+		else if(isKeyWord(line, "root") && _root.empty())
 		{
 			_root = getSingleVarValue(line, "root");
 			if(_root.back() != '/')
 				_root += "/";
 		}
-		else if(isKeyWord(line, "index"))
+		else if(isKeyWord(line, "index") && _index.empty())
 		{
 			_index = getSingleVarValue(line, "index");
 			if(_index.front() == '/')
@@ -61,10 +61,15 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 				return false;
 			_locations.push_back(loc);
 		}
-		// else if(isKeyWord(line, "error_page"))
-		// {
-		// 	//parse error_page
-		// }
+		else if(isKeyWord(line, "max_body_size") && _maxBodySize == 0)
+		{
+			_maxBodySize = std::stoi(getSingleVarValue(line, "max_body_size"));
+			if(_maxBodySize > SOMAXCONN)
+			{
+				err_msg("Invalid max body size");
+				return false;
+			}
+		}
 		else
 		{
 			err_msg("Invalid keyword in server block: " + line);
@@ -97,6 +102,7 @@ void ServerConfig::_printOut()
 	for(auto name : _serverNames)
 		std::cout << name << " ";
 	std::cout << std::endl;
+	std::cout << "Max body size: " << _maxBodySize << std::endl;
 	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Index: " << _index << std::endl;
 	for(auto loc : _locations)
