@@ -49,8 +49,10 @@ void Request::validateRequestLine(void)
 	bool last_was_slash = false;
 	for (auto c : request_line.path)
 	{
-		if ((c == '/' && last_was_slash) || std::isspace(c))
-			throw Error(400, "forbidden characters in request target: " + std::string(1, c));
+		if ((c == '/' && last_was_slash))
+			throw Error(400, "forbidden characters in request target: " + request_line.path);
+		if (std::isspace(c))
+			throw Error(400, "whitespace is forbidden in request target: " + request_line.path);
 		last_was_slash = (c == '/');
 	}
 }

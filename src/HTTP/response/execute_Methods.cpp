@@ -18,14 +18,14 @@ std::string Response::getMimeType(std::string path)
 	return ("");
 }
 
-void Response::add_FileList(void)
+void Response::populate_dropdown(void)
 {
 	try
 	{
         if (std::filesystem::exists(_rootDir / "uploads"))
 		{
 			std::string options;
-			std::string str = "<select id=\"file-select\" name=\"filename\" required>";
+			std::string str = "<option value=\"\" disabled selected>-- Select a file --</option>";
 			size_t insert_pos = _body.find(str);
             if (insert_pos != std::string::npos)
 			{
@@ -43,6 +43,7 @@ void Response::add_FileList(void)
 			}
 			else
 				return ;
+				//error handling?
 		}
     }
 	catch (const std::filesystem::filesystem_error& e)
@@ -69,7 +70,7 @@ void Response::GET(void)
 	// std::cout << "path: " << path << std::endl;
 	setBody(path);
 	if (request_path == "delete.html")
-		add_FileList();
+		populate_dropdown();
 }
 
 void Response::fileCreation(std::vector<char> &content, std::string &filename)
@@ -168,6 +169,11 @@ std::pair<std::string, std::vector<char>> Response::extractData()
             throw Error(400, "Invalid filename format");
 
         std::string filename = partStr.substr(filenamePos, filenameEnd - filenamePos);
+		for (auto c : filename)
+		{
+			if (std::isspace(c))
+				throw Error(400, "whitespace in filename for POST isnt allowed: " + filename);
+		}		
 
         size_t contentStart = partStr.find("\r\n\r\n");
         if (contentStart == std::string::npos)

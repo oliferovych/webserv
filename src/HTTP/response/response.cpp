@@ -41,7 +41,7 @@ void Response::addHeaders(std::string category, std::vector<std::string> args)
 
 void Response::build(void)
 {
-	std::string errorMessage = "ok"; //other than ok?
+	std::string errorMessage = _status_code == 200 || _status_code == 201 ? "OK" : "KO";
 	_result += "HTTP/1.1 " + std::to_string(_status_code);
 	_result += " " + errorMessage;
 	_result += "\r\n";

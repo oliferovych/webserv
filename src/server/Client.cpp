@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/23 12:06:49 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/27 12:12:10 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,11 +61,11 @@ int Client::handle_message()
 		_state = SENDING;
 		_lastActivityTime = std::chrono::steady_clock::now();
 		info_msg("Message recieved from client on FD " + std::to_string(_clientFd));
-		_request.debug_print();
+			// _request.debug_print();
         Response response(_request);
 		response.doMethod();
 		response.build();
-		std::cout << "\nResponse:\n" << response.getResult() << std::endl;
+			// std::cout << "\nResponse:\n" << response.getResult() << std::endl;
 		if (sendResponse(response.getResult()) < 0)
 			return (-1);
 		auto connection = _request.get_header("connection");
