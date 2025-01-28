@@ -3,18 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:23 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/20 23:31:04 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/20 15:34:01 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/global.hpp"
 
-int main()
+int main(int argc, char **argv)
 {
-	Server server;
+	if(argc != 2)
+	{
+		err_msg("Wrong number of arguments");
+		info_msg("Usage: ./webserv <config_file>");
+		return 1;
+	}
+	Server server(argv[1]);
 
 	server.run();
 

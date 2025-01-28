@@ -3,20 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/17 09:41:14 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:37:42 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server/Server.hpp"
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <memory>
 
-Server::Server()
+Server::Server(std::string const &configPath) : _config(configPath)
 {
+	if(!_config.isValid())
+	{
+		err_msg("Invalid server config");
+		exit(1);
+	}
+	_serverSignals();
 }
+
+bool Server::_running = true;
 
 Server::~Server()
 {
@@ -24,14 +33,34 @@ Server::~Server()
 
 void Server::createServerSockets()
 {
-	Socket *s1 = new Socket(8080);
-	Socket *s2 = new Socket(8081);
+	std::vector<int> ports = _config.getPorts();
+	for(auto port : ports)
+	{
+		std::unique_ptr<Socket> s(new Socket(port, _config.getMaxConn()));
+		try
+		{
+			_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));
+			_poll.addFd(s->getSocketFd());
+			s.release();
+		}
+		catch(...)
+		{
+			err_msg("Error creating server socket on port " + std::to_string(port));
+			throw;
+		}
+	}
+}
 
-	_sockets.insert(std::make_pair(s1->getSocketFd(), s1));
-	_sockets.insert(std::make_pair(s2->getSocketFd(), s2));
-
-	_poll.addFd(s1->getSocketFd());
-	_poll.addFd(s2->getSocketFd());
+void handleMaxBodySize(int clientFd)
+{
+	const char* response = "HTTP/1.1 413 Payload Too Large\r\n"
+                          "Content-Type: text/plain\r\n"
+                          "Connection: close\r\n\r\n"
+                          "Request entity too large\r\n";
+	
+	send(clientFd, response, strlen(response), 0);
+	close(clientFd);
+	info_msg("Client socket bounced");
 }
 
 void Server::_acceptClient(int serverFd)
@@ -46,13 +75,19 @@ void Server::_acceptClient(int serverFd)
 		return ;
 	}
 
+	if((unsigned int)_clients.size() + 1 > _config.getMaxConn())
+	{
+		err_msg("Client on port " + std::to_string(_sockets[serverFd]->getPort()) + " rejected: too many clients");
+		handleMaxBodySize(client_fd);
+		return ;
+	}
+
 	int flags = fcntl(client_fd, F_GETFL, 0);
 	if(flags < 0)
 	{
 		err_msg("Error getting client socket flags " + std::string(strerror(errno)));
 		return ((void)close(client_fd));
 	}
-	debug_msg("fcntl() flags: " + std::to_string(flags));
 	if(fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0)
 	{
 		err_msg("Error setting client socket to non-blocking " + std::string(strerror(errno)));
@@ -97,11 +132,33 @@ void Server::_closeClient(int clientFd)
 
 void Server::_closeServerSock(int serverFd)
 {
+	struct linger lo;
+	lo.l_onoff = 1;
+	lo.l_linger = 0;
+
+	setsockopt(serverFd, SOL_SOCKET, SO_LINGER, &lo, sizeof(lo));
+
 	close(serverFd);
+	memset(&_sockets[serverFd]->getAddr(), 0, sizeof(_sockets[serverFd]->getAddr()));
 	_poll.removeFd(serverFd);
 	delete _sockets[serverFd];
 	_sockets.erase(serverFd);
 	info_msg("Server socket closed on FD " + std::to_string(serverFd));
+}
+
+void Server::_shutdownServer()
+{
+	while (!_clients.empty())
+	{
+		auto it = _clients.begin();
+		_closeClient(it->first);
+	}
+	while (!_sockets.empty())
+	{
+		auto it = _sockets.begin();
+		_closeServerSock(it->first);
+	}
+	info_msg("Server shutdown");
 }
 
 void Server::run()
@@ -109,11 +166,15 @@ void Server::run()
 	createServerSockets();
 	_pollCycleCount = 0;
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
-	while(1)
+	while(_running)
 	{
 		int events = poll(_poll.getFds().data(), _poll.size(), -1);
 		if(events < 0)
-			return(err_msg("Poll failed " + std::string(strerror(errno))));
+		{
+			if(errno != EINTR)
+				err_msg("Poll failed " + std::string(strerror(errno)));
+			break ;
+		}
 		for(auto &pfd : _poll.getFds())
 		{
 			if(pfd.revents & POLLIN)
@@ -146,6 +207,28 @@ void Server::run()
 		}
 
 	}
+	_shutdownServer();
+}
+
+void Server::_signalHandler(int sig)
+{
+	(void)sig;
+	_running = false;
+}
+
+void Server::_serverSignals()
+{
+	struct sigaction sa;
+	sa.sa_handler = &_signalHandler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	if (sigaction(SIGINT, &sa, NULL) < 0)
+		err_msg("Error setting SIGINT handler");
+	if (sigaction(SIGTERM, &sa, NULL) < 0)
+		err_msg("Error setting SIGTERM handler");
+	if (sigaction(SIGQUIT, &sa, NULL) < 0)
+		err_msg("Error setting SIGQUIT handler");
+	info_msg("Signal handlers set");
 }
 
 void Server::_checkTimeouts()

@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:30 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/11 22:44:11 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 14:42:32 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,9 @@ class Socket
 		int _port;
 		int _fd;
 		struct sockaddr_in _addr;
+		unsigned int _maxConn;
 	public:
-		Socket(int port);
+		Socket(int port, unsigned int maxConn);
 		~Socket();
 
 		void setupFd();
@@ -36,4 +37,5 @@ class Socket
 
 		int getSocketFd() const;
 		int getPort() const;
+		struct sockaddr_in &getAddr();
 };
