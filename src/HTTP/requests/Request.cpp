@@ -246,4 +246,19 @@ const std::vector<std::string> Request::get_header(const std::string& key) const
 		return {};
 }
 
-
+const std::string &Request::get_method() const
+{
+	return (request_line.method);
+}
+const std::string &Request::get_path() const
+{
+	return (request_line.path);
+}
+const std::string &Request::get_version() const
+{
+	return (request_line.version);
+}
+const std::vector<char> &Request::get_body() const
+{
+	return (body);
+}

@@ -44,11 +44,15 @@ void Request::validateRequestLine(void)
 		throw Error(403, "server doesn't allow .. in request target: " + request_line.path);
 	if (request_line.path[0] != '/')
 		throw Error(400, "request target must start with a /: " + request_line.path);
+	// if (request_line.path.back() == '/')
+	// 	throw Error(400, "request target cant end with a /: " + request_line.path);
 	bool last_was_slash = false;
 	for (auto c : request_line.path)
 	{
-		if ((c == '/' && last_was_slash) || std::isspace(c))
-			throw Error(400, "forbidden characters in request target: " + std::string(1, c));
+		if ((c == '/' && last_was_slash))
+			throw Error(400, "forbidden characters in request target: " + request_line.path);
+		if (std::isspace(c))
+			throw Error(400, "whitespace is forbidden in request target: " + request_line.path);
 		last_was_slash = (c == '/');
 	}
 }
@@ -89,4 +93,9 @@ void Request::validateHeaders()
 	}
 	else if (request_line.method == "POST" && headers.find("transfer-encoding") == headers.end())
 			throw Error(411, "there is some content length required");
+	it = headers.find("content-type");
+	if ((it == headers.end() && request_line.method == "POST") || (it != headers.end() && it->second.empty() && request_line.method == "POST"))
+		throw Error(400, "content-type is missing for POST request");
+	if (it != headers.end() && request_line.method == "POST" && it->second[0].compare(0, 19, "multipart/form-data") != 0)
+		throw Error(501, "server only supports multipart/form-data content type for POST request. Requested content-type: " + it->second[0]);
 }

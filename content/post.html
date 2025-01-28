@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        input[type="file"] {
+            font-size: 18px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background-color: #007be2;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: #0056b3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: #004494;
+        }
+
+        input[type="submit"], button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background: none;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="submit"]:hover, button:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        a {
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #007bff;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        a:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        #message {
+            font-size: 16px;
+            margin-top: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload File</h1>
+    <form id="uploadForm">
+        <label for="file">Choose a file to upload:</label><br>
+        <input type="file" id="fileInput" name="file" required><br>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="message"></div>
+    <a href="/">Go Back to Home Page</a>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        // Check if a file is selected
+        if (!fileInput.files.length) {
+            messageDiv.textContent = "Please select a file before uploading.";
+            return;
+        }
+
+        // Create FormData object to collect file data
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            // Send POST request
+            const response = await fetch('/uploads', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                messageDiv.textContent = "File uploaded successfully!";
+                fileInput.value = "";
+            } else {
+                // If the response is an HTML page, replace the current page content
+                const contentType = response.headers.get('Content-Type');
+                if (contentType && contentType.includes('text/html')) {
+                    const newHtml = await response.text();
+                    document.open();
+                    document.write(newHtml);
+                    document.close();
+                }
+            }
+        } catch (error) {
+            // Handle any network or server errors
+            messageDiv.textContent = `Error: ${error.message}`;
+        }
+    });
+
+    </script>
+</body>
+</html>

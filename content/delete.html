@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DELETE</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        select, button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        select {
+            text-align-last: center;
+        }
+
+        button {
+            color: #007bff;
+        }
+
+        button:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        a {
+            font-size: 18px;
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #007bff;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        a:hover {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Delete File</h1>
+    <form id="deleteForm">
+        <label for="file-select">Select a file to delete:</label><br>
+        <select id="file-select" name="filename" required>
+            <option value="" disabled selected>-- Select a file --</option>
+                <!-- Dropdown is pre-populated in response building by server -->
+        </select><br>
+        <button type="submit">Delete</button>
+    </form>
+    <a href="/">Go Back to Home Page</a>
+
+    <script>
+        const form = document.getElementById('deleteForm');
+        const fileSelect = document.getElementById('file-select');
+
+        // Handle form submission for delete request
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const selectedFile = fileSelect.value;
+            if (!selectedFile) {
+                alert("Please select a file to delete.");
+                return;
+            }
+
+            // Show confirmation popup
+            const confirmation = confirm(`Are you sure you want to delete the file "${selectedFile}"?`);
+            if (!confirmation) {
+                return;
+            }
+
+            try {
+                //send the DELETE request
+                const response = await fetch(`/uploads/${encodeURIComponent(selectedFile)}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    // If the deletion failed, extract the HTML response and display it
+                    const contentType = response.headers.get('Content-Type');
+                    if (contentType && contentType.includes('text/html')) {
+                        const newHtml = await response.text();
+                        document.open();
+                        document.write(newHtml);
+                        document.close();
+                    }
+                }
+            } catch (error) {
+                alert(`Error deleting file: ${error.message}`);
+            }
+        });
+
+
+        // Ensure dropdown starts with no file selected
+        window.onload = () => {
+            fileSelect.selectedIndex = 0;
+        };
+    </script>
+</body>
+</html>

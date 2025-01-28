@@ -164,6 +164,7 @@ void Server::_shutdownServer()
 void Server::run()
 {
 	createServerSockets();
+	_pollCycleCount = 0;
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
 	while(_running)
 	{
@@ -199,6 +200,12 @@ void Server::run()
 				}
 			}
 		}
+		if (_pollCycleCount >= TIMEOUT_CHECK_INTERVAL)
+		{
+			_checkTimeouts();
+			_pollCycleCount = 0;
+		}
+
 	}
 	_shutdownServer();
 }
@@ -223,3 +230,17 @@ void Server::_serverSignals()
 		err_msg("Error setting SIGQUIT handler");
 	info_msg("Signal handlers set");
 }
+
+void Server::_checkTimeouts()
+{
+	for (auto it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (it->second->hasTimedOut())
+		{
+			// it->second->send_error_response();
+            err_msg("Client timed out while receiving data on FD " + std::to_string(it->second->getClientFd()));
+			_closeClient(it->second->getClientFd());
+		}
+	}
+}
+

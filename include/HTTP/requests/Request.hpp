@@ -68,11 +68,11 @@ class Request
 		bool is_complete() const;
 
 		// size_t get_content_length() const;
-		// const std::string& get_method() const;
-		// const std::string& get_target() const;
-		// const std::string& get_version() const;
+		const std::string &get_method() const;
+		const std::string &get_path() const;
+		const std::string &get_version() const;
+		const std::vector<char> &get_body() const;
 		const std::vector<std::string> get_header(const std::string& key) const;
-		// const std::vector<uint8_t>& get_body() const;
 
 		void debug_print() const;
 		void debug_state() const;
