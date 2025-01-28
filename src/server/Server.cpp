@@ -6,14 +6,14 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/22 01:39:21 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:37:42 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server/Server.hpp"
 #include <arpa/inet.h>
 #include <fcntl.h>
-
+#include <memory>
 
 Server::Server(std::string const &configPath) : _config(configPath)
 {
@@ -36,7 +36,7 @@ void Server::createServerSockets()
 	std::vector<int> ports = _config.getPorts();
 	for(auto port : ports)
 	{
-		std::unique_ptr<Socket> s(new Socket(port));
+		std::unique_ptr<Socket> s(new Socket(port, _config.getMaxConn()));
 		try
 		{
 			_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));
@@ -51,6 +51,18 @@ void Server::createServerSockets()
 	}
 }
 
+void handleMaxBodySize(int clientFd)
+{
+	const char* response = "HTTP/1.1 413 Payload Too Large\r\n"
+                          "Content-Type: text/plain\r\n"
+                          "Connection: close\r\n\r\n"
+                          "Request entity too large\r\n";
+	
+	send(clientFd, response, strlen(response), 0);
+	close(clientFd);
+	info_msg("Client socket bounced");
+}
+
 void Server::_acceptClient(int serverFd)
 {
 	sockaddr_in client_address{};
@@ -60,6 +72,13 @@ void Server::_acceptClient(int serverFd)
 	if ((client_fd = accept(serverFd, reinterpret_cast<sockaddr*>(&client_address), &client_address_len)) < 0)
 	{
 		err_msg("Accept failed " + std::string(strerror(errno)));
+		return ;
+	}
+
+	if((unsigned int)_clients.size() + 1 > _config.getMaxConn())
+	{
+		err_msg("Client on port " + std::to_string(_sockets[serverFd]->getPort()) + " rejected: too many clients");
+		handleMaxBodySize(client_fd);
 		return ;
 	}
 

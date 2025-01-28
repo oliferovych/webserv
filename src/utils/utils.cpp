@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/21 23:35:58 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/27 16:52:42 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,10 +119,11 @@ void ft_decode(std::string &str)
 
 std::string trim(const std::string& str)
 {
-	size_t first = str.find_first_not_of(' ');
+	const std::string whitespace = " \t\n\r\f\v";
+	size_t first = str.find_first_not_of(whitespace);
 	if (first == std::string::npos)
 		return "";
-	size_t last = str.find_last_not_of(' ');
+	size_t last = str.find_last_not_of(whitespace);
 	return str.substr(first, last - first + 1);
 }
 
@@ -130,4 +131,26 @@ bool isLineConsistsOnlyOf(const std::string& line, const std::string& target)
 {
 	std::string trimmedLine = trim(line);
 	return trimmedLine == target;
+}
+
+std::vector<std::string> splitString(const std::string &str, char delimiter)
+{
+	std::vector<std::string> tokens;
+	std::stringstream ss(str);
+	std::string token;
+
+	while (std::getline(ss, token, delimiter))
+	{
+		tokens.push_back(token);
+	}
+
+	return tokens;
+}
+
+bool isFiletype(std::string type, std::string const &path)
+{
+	std::string extension = path.substr(path.find_last_of('.'));
+	if (extension == type)
+		return true;
+	return false;
 }
