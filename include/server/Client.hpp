@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/20 22:44:52 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/27 18:44:59 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,9 @@ class Client
 		Request _request;
 		Status _state;
 		std::chrono::steady_clock::time_point _lastActivityTime;
+		
+		int sendResponse(std::string response);
+		void changeState(Status newState);
 	
 	public:
 		int handle_message();
@@ -48,7 +51,6 @@ class Client
 		const int &getClientFd() const { return _clientFd; }
 		const sockaddr_in &getAddr() const { return _addr; }
 		bool hasTimedOut() const;
-		int sendResponse(std::string response);
 
 		
 };

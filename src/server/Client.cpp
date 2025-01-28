@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 16:12:05 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/27 18:49:49 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,9 @@ int Client::handle_message()
 		debug_msg("Tab closed by client on FD" + std::to_string(_clientFd));
 		return -1;
 	}
+	changeState(RECEIVING);
 	std::vector<char> new_buffer(buffer.begin(), buffer.begin() + bytes_received);
-	_state = RECEIVING;
 	_request.updateBuffer(new_buffer);
-	_lastActivityTime = std::chrono::steady_clock::now();
 	try
 	{
 		_request.parse();
@@ -52,13 +51,13 @@ int Client::handle_message()
 		Response response(_request);
 		response.build_err(e.code(), "Request Parsing failed: " + std::string(e.what()));
 		sendResponse(response.getResult());
+		changeState(COMPLETE);
 		return -1;
 	}
 
     if (_request.is_complete())
 	{
-		_state = SENDING;
-		_lastActivityTime = std::chrono::steady_clock::now();
+		changeState(SENDING);
 		info_msg("Message recieved from client on FD " + std::to_string(_clientFd));
 			// _request.debug_print();
         Response response(_request);
@@ -74,7 +73,7 @@ int Client::handle_message()
 				return -1;
 		}
         _request.reset();
-		_state = COMPLETE;
+		changeState(COMPLETE);
     }
 	return (0);
 }
@@ -103,3 +102,10 @@ int Client::sendResponse(std::string response)
 	}
 	return (1);
 }
+
+void Client::changeState(Status newState)
+{
+	_state = newState;
+	_lastActivityTime = std::chrono::steady_clock::now();
+}
+
