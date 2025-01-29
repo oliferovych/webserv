@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:13:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 16:36:06 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/29 11:29:36 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,16 +29,16 @@ class ServerConfig
 		unsigned int _maxBodySize;
 		unsigned int _maxConn;
 		bool _valid;
-		void _loadConfig(std::string const &path);
 		bool _parseServer(std::ifstream &file);
 		void _printOut();
 	public:
 		bool isValid() const;
 
 		const std::vector<int> &getPorts() const { return _ports; }
+		const std::vector<std::string> &getServerNames() const { return _serverNames; }
 		const unsigned int &getMaxBodySize() const { return _maxBodySize; }
 		const unsigned int &getMaxConn() const { return _maxConn; }
-		
-		ServerConfig(std::string const &path);
+
+		ServerConfig(std::ifstream &file);
 		~ServerConfig();
 };

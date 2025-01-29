@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 16:37:42 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/29 11:23:16 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,12 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <memory>
+#include <fstream>
 
-Server::Server(std::string const &configPath) : _config(configPath)
+Server::Server(std::string const &configPath)
 {
-	if(!_config.isValid())
+
+	if(!_loadConfig(configPath))
 	{
 		err_msg("Invalid server config");
 		exit(1);
@@ -27,26 +29,70 @@ Server::Server(std::string const &configPath) : _config(configPath)
 
 bool Server::_running = true;
 
+bool Server::_loadConfig(std::string const &path)
+{
+	if(!isFiletype(".conf", path))
+	{
+		err_msg("Invalid config filetype");
+		return false;
+	}
+	std::ifstream file(path.c_str());
+	if (!file.is_open())
+	{
+		err_msg("Error opening config file");
+		return false;
+	}
+	std::string line;
+	bool htmlBlock = false;
+	while(std::getline(file, line))
+	{
+		if(line.empty() || line[0] == '#')
+			continue;
+		if(isLineConsistsOnlyOf(line, "http {") && !htmlBlock)
+		{
+			htmlBlock = true;
+			continue;
+		}
+		if(isLineConsistsOnlyOf(line, "}"))
+			break;
+		if(isLineConsistsOnlyOf(line, "server {"))
+		{
+			ServerConfig sc(file);
+			if(!sc.isValid())
+				return false;
+			_config.push_back(sc);
+		}
+		else
+		{
+			err_msg("Invalid keyword in http block: " + line);
+			return false;
+		}
+	}
+	return true;
+}
+
 Server::~Server()
 {
 }
 
 void Server::createServerSockets()
 {
-	std::vector<int> ports = _config.getPorts();
-	for(auto port : ports)
+	for(ServerConfig const &_conf : _config)
 	{
-		std::unique_ptr<Socket> s(new Socket(port, _config.getMaxConn()));
-		try
+		for(int port : _conf.getPorts())
 		{
-			_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));
-			_poll.addFd(s->getSocketFd());
-			s.release();
-		}
-		catch(...)
-		{
-			err_msg("Error creating server socket on port " + std::to_string(port));
-			throw;
+			std::unique_ptr<Socket> s(new Socket(port, _conf.getMaxConn()));
+			try
+			{
+				_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));
+				_poll.addFd(s->getSocketFd());
+				s.release();
+			}
+			catch(...)
+			{
+				err_msg("Error creating server socket on port " + std::to_string(port));
+				throw;
+			}
 		}
 	}
 }
@@ -57,7 +103,7 @@ void handleMaxBodySize(int clientFd)
                           "Content-Type: text/plain\r\n"
                           "Connection: close\r\n\r\n"
                           "Request entity too large\r\n";
-	
+
 	send(clientFd, response, strlen(response), 0);
 	close(clientFd);
 	info_msg("Client socket bounced");
@@ -75,7 +121,7 @@ void Server::_acceptClient(int serverFd)
 		return ;
 	}
 
-	if((unsigned int)_clients.size() + 1 > _config.getMaxConn())
+	if((unsigned int)_clients.size() + 1 > _findConfig(_sockets[serverFd]->getPort()).getMaxConn())
 	{
 		err_msg("Client on port " + std::to_string(_sockets[serverFd]->getPort()) + " rejected: too many clients");
 		handleMaxBodySize(client_fd);
@@ -164,7 +210,6 @@ void Server::_shutdownServer()
 void Server::run()
 {
 	createServerSockets();
-	_pollCycleCount = 0;
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
 	while(_running)
 	{
@@ -200,12 +245,6 @@ void Server::run()
 				}
 			}
 		}
-		if (_pollCycleCount >= TIMEOUT_CHECK_INTERVAL)
-		{
-			_checkTimeouts();
-			_pollCycleCount = 0;
-		}
-
 	}
 	_shutdownServer();
 }
@@ -231,16 +270,28 @@ void Server::_serverSignals()
 	info_msg("Signal handlers set");
 }
 
-void Server::_checkTimeouts()
+ServerConfig const &Server::_findConfig(int port)
 {
-	for (auto it = _clients.begin(); it != _clients.end(); ++it)
+	for(ServerConfig const &sc : _config)
 	{
-		if (it->second->hasTimedOut())
+		for(int p : sc.getPorts())
 		{
-			// it->second->send_error_response();
-            err_msg("Client timed out while receiving data on FD " + std::to_string(it->second->getClientFd()));
-			_closeClient(it->second->getClientFd());
+			if(p == port)
+				return sc;
 		}
 	}
+	throw std::runtime_error("No server config found for port " + std::to_string(port));
 }
 
+ServerConfig const &Server::_findConfig(std::string const &serverName)
+{
+	for(ServerConfig const &sc : _config)
+	{
+		for(std::string const &sn : sc.getServerNames())
+		{
+			if(sn == serverName)
+				return sc;
+		}
+	}
+	throw std::runtime_error("No server config found for server name " + serverName);
+}

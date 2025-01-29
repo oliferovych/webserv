@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 16:53:38 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/29 11:16:43 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 #include "../../include/global.hpp"
 #include <fstream>
 
-ServerConfig::ServerConfig(std::string const &path) : _maxBodySize(0), _maxConn(0)
+ServerConfig::ServerConfig(std::ifstream &file) : _maxBodySize(0), _maxConn(0)
 {
-	_loadConfig(path);
+	_valid = _parseServer(file);
 }
 
 ServerConfig::~ServerConfig()
@@ -94,6 +94,7 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 		err_msg("Server's index file does not exist");
 		return false;
 	}
+	_printOut();
 	return true;
 }
 void ServerConfig::_printOut()
@@ -115,51 +116,6 @@ void ServerConfig::_printOut()
 	for(auto loc : _locations)
 		loc.printOut(1);
 	std::cout << std::endl;
-}
-
-void ServerConfig::_loadConfig(std::string const &path)
-{
-	if(!isFiletype(".conf", path))
-	{
-		err_msg("Invalid config filetype");
-		return ;
-	}
-	std::ifstream file(path.c_str());
-	if (!file.is_open())
-	{
-		err_msg("Error opening config file");
-		return ;
-	}
-	std::string line;
-	bool htmlBlock = false;
-	while(std::getline(file, line))
-	{
-		if(line.empty() || line[0] == '#')
-			continue;
-		if(isLineConsistsOnlyOf(line, "http {") && !htmlBlock)
-		{
-			htmlBlock = true;
-			continue;
-		}
-		if(isLineConsistsOnlyOf(line, "}"))
-			break;
-		if(isLineConsistsOnlyOf(line, "server {"))
-		{
-			if(!_parseServer(file))
-			{
-				_valid = 0;
-				return ;
-			}
-		}
-		else
-		{
-			err_msg("Invalid keyword in http block: " + line);
-			_valid = 0;
-			return ;
-		}
-	}
-	_valid = 1;
-	_printOut();
 }
 
 bool ServerConfig::isValid() const
