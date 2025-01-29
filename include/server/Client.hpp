@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 18:44:59 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/29 17:47:47 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "../global.hpp"
+#include "../config/ServerConfig.hpp"
 
 #define BUFFER_SIZE 1024
 
@@ -46,7 +47,7 @@ class Client
 	
 	public:
 		int handle_message();
-		Client(int clientFd, sockaddr_in addr);
+		Client(int clientFd, sockaddr_in addr, const std::vector<ServerConfig> &conf);
 		~Client();
 		const int &getClientFd() const { return _clientFd; }
 		const sockaddr_in &getAddr() const { return _addr; }

@@ -10,6 +10,7 @@
 #include <iomanip>
 
 #include "../../utils/utils.hpp"
+#include "../../config/ServerConfig.hpp"
 
 #define MAX_ELEMENT_SIZE 8000
 
@@ -44,6 +45,9 @@ class Request
 		long	content_length;
 		ParseState state;
 
+		ServerConfig const *config;
+		std::vector<ServerConfig> const &configVec;
+
 
 		void parse_request_line();
 		void parse_headers();
@@ -54,10 +58,11 @@ class Request
 		void handle_absolute_path();
 		void validateHeaders();
 
+		ServerConfig const *_findConfig(std::string const &serverName);
 
 
 	public:
-		Request();
+		Request(const std::vector<ServerConfig> &conf);
 		~Request();
 
 
