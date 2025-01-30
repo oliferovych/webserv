@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/30 11:01:08 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/30 19:24:37 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,8 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		if(isKeyWord(line, "root"))
 		{
 			_root = getSingleVarValue(line, "root");
-			if(_root.front() == '/')
-				_root = _root.substr(1);
-			_root = servRoot + _root;
+			if(_root.front() != '/')
+				_root = '/' + _root;
 			if(_root.back() != '/')
 				_root += "/";
 		}
@@ -59,13 +58,11 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 			_valid = false;
 		}
 	}
-	if(_root.empty() || _index.empty() || _allowedMethods.empty())
-		_valid = false;
-	else if(!isDir(_root)){
+	if(!_root.empty() && !isDir(_root)){
 		err_msg("Location's root directory does not exist");
 		_valid = false;
 	}
-	else if(!fileExists(_root + _index))
+	else if(!fileExists(_root + _index) && !fileExists(servRoot + _index))
 	{
 		err_msg("Location's index file does not exist");
 		_valid = false;
