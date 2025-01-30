@@ -1,9 +1,15 @@
 #include "../../../include/HTTP/response/Response.hpp"
 
-Response::Response(const Request& request)
-	: _result(""), _status_code(200), _request(&request), _contentDir("content"), _rootDir(getrootDir())
+Response::Response(Request& request)
+	: _result(""), _status_code(200), _request(&request), _rootDir(getrootDir()), _location(nullptr)
 {
 	init_mimeTypes();
+	_contentDir = _request->config->getRoot();
+	// std::cout << "con dir: " << _contentDir << std::endl;
+	if (_contentDir[0] == '/')
+    	_contentDir = _contentDir.substr(1);
+	_workingDir = _rootDir / _contentDir;
+	// std::cout << "active con: " << _workingDir << std::endl;
 }
 
 Response::Response(void)
@@ -89,6 +95,17 @@ void Response::build_err(int code, std::string message)
 
 void Response::doMethod(void)
 {
+	try
+	{
+		checkLocation();
+	}
+	catch(const Error& e)
+	{
+		err_msg(std::string(e.what()) + " | error code: " + std::to_string(e.code()));
+		error_body(e.code(), std::string(e.what()));
+		return ;
+	}
+	
 	std::string method = _request->get_method();
 	if (method == "GET")
 		GET();
@@ -98,6 +115,7 @@ void Response::doMethod(void)
 		DELETE();
 }
 
+//todo better return on error
 std::filesystem::path Response::getrootDir()
 {
     std::filesystem::path currentPath = std::filesystem::current_path();
@@ -106,34 +124,40 @@ std::filesystem::path Response::getrootDir()
 	{
         currentPath = currentPath.parent_path();
         if (currentPath == currentPath.root_path())
-            return std::filesystem::path();
+            return ("");
     }
-	std::filesystem::path contentPath = currentPath / _contentDir;
-    if (std::filesystem::exists(contentPath))
-        return contentPath;
-	else
-		return ("");
+	return (currentPath);
 }
 
 void Response::error_body(int code, const std::string &errorMessage)
 {
 	if (code != _status_code)
     	_status_code = code;
-    setBody(_rootDir / "ERROR.html");
-    
-    size_t pos = 0;
-    while ((pos = _body.find("{{ERROR_CODE}}", pos)) != std::string::npos)
-	{
-        _body.replace(pos, std::string("{{ERROR_CODE}}").length(), std::to_string(code));
-        pos += std::string("{{ERROR_CODE}}").length();
-    }
 
-    pos = 0;
-    while ((pos = _body.find("{{ERROR_MESSAGE}}", pos)) != std::string::npos)
+	if (_location && !_location->getErrorPage(code).empty())
+		setBody(_workingDir / _location->getErrorPage(code));
+	else if (!_request->config->getErrorPage(code).empty())
+		setBody(_rootDir / _contentDir / _request->config->getErrorPage(code));
+	else
 	{
-        _body.replace(pos, std::string("{{ERROR_MESSAGE}}").length(), errorMessage);
-        pos += std::string("{{ERROR_MESSAGE}}").length();
-    }
+		_body = std::to_string(code) + " " + errorMessage;
+		_content_type = "text/plain";
+	}
+
+    
+    // size_t pos = 0;
+    // while ((pos = _body.find("{{ERROR_CODE}}", pos)) != std::string::npos)
+	// {
+    //     _body.replace(pos, std::string("{{ERROR_CODE}}").length(), std::to_string(code));
+    //     pos += std::string("{{ERROR_CODE}}").length();
+    // }
+
+    // pos = 0;
+    // while ((pos = _body.find("{{ERROR_MESSAGE}}", pos)) != std::string::npos)
+	// {
+    //     _body.replace(pos, std::string("{{ERROR_MESSAGE}}").length(), errorMessage);
+    //     pos += std::string("{{ERROR_MESSAGE}}").length();
+    // }
 }
 
 
@@ -160,5 +184,65 @@ void Response::setCode(int code)
 std::string Response::getResult() const
 {
 	return (_result);
+}
+
+
+void Response::checkLocation(void)
+{
+	std::filesystem::path path(_request->get_path());
+	// std::cout << "request Path CONFIG: " << path.string() << std::endl;
+	std::filesystem::path dir;
+
+
+	if (std::filesystem::is_directory(path))
+		dir = path;
+	else 
+		dir = path.parent_path();
+
+	_location = _request->config->getLocation(dir);
+	while(!_location)
+	{
+		if (dir.string() == "/")
+			break;
+
+		dir = dir.parent_path();
+		_location = _request->config->getLocation(dir);
+	}
+	// std::cout << "Directory part: " << dir << std::endl;
+
+
+	if (dir.string() != "/" && !_location)
+		throw Error(403, "location isn't configured in config: " + dir.string()); //correct error code
+
+
+	if (_location)
+	{
+		if (!_location->getAllowedMethods().empty())
+		{
+			bool flag = false;
+			for (auto method : _location->getAllowedMethods())
+			{
+				if (method == _request->get_method())
+				{
+					flag = true;
+					break;
+				}
+			}
+			if (!flag)
+				throw Error(403, "Method not defined in config: " + _request->get_method()); //error code
+		}
+
+
+		if (!_location->getRoot().empty())
+			_workingDir = _rootDir / _location->getRoot().substr(1) / dir.string().substr(1);
+		else
+			_workingDir /= dir.string().substr(1);
+		std::string p = _request->get_path();
+		if (dir.string() != "/")
+			p.erase(0, dir.string().size());
+		_request->setPath(p);
+	}
+
+	
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/29 11:23:16 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/29 16:56:30 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ void Server::_acceptClient(int serverFd)
 
 	try
 	{
-		Client *clientSocket = new Client(client_fd, client_address);
+		Client *clientSocket = new Client(client_fd, client_address, _config);
 		try{
 			_clients.insert(std::make_pair(client_fd, clientSocket));
 		}catch(...){
@@ -281,17 +281,4 @@ ServerConfig const &Server::_findConfig(int port)
 		}
 	}
 	throw std::runtime_error("No server config found for port " + std::to_string(port));
-}
-
-ServerConfig const &Server::_findConfig(std::string const &serverName)
-{
-	for(ServerConfig const &sc : _config)
-	{
-		for(std::string const &sn : sc.getServerNames())
-		{
-			if(sn == serverName)
-				return sc;
-		}
-	}
-	throw std::runtime_error("No server config found for server name " + serverName);
 }

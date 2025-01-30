@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/29 11:16:43 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/30 11:18:47 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,3 +122,24 @@ bool ServerConfig::isValid() const
 {
 	return _valid;
 }
+
+Location *ServerConfig::getLocation(std::string path)
+{
+	for (auto &lc : _locations)
+	{
+		if (lc.getPath() == path)
+		{
+			return (&lc);
+		}
+	}
+	return (nullptr);
+}
+
+std::string ServerConfig::getErrorPage(int code)
+{
+	auto it = _errorPages.find(code);
+	if (it != _errorPages.end())
+		return (it->second);
+	return ("");
+}
+

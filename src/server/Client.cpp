@@ -6,15 +6,16 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/27 18:49:49 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/30 16:05:15 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server/Client.hpp"
+#include "../../include/HTTP/requests/Request.hpp"
 #include <unistd.h>
 
-Client::Client(int clientFd, sockaddr_in addr)
-	: _clientFd(clientFd), _connected(true), _addr(addr), _state(COMPLETE)
+Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf)
+	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf), _state(COMPLETE)
 {
 }
 

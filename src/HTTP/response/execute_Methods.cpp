@@ -20,9 +20,10 @@ std::string Response::getMimeType(std::string path)
 
 void Response::populate_dropdown(void)
 {
+	// std::cout << "gg" << std::endl;
 	try
 	{
-        if (std::filesystem::exists(_rootDir / "uploads"))
+        if (std::filesystem::exists(_workingDir / "uploads"))
 		{
 			std::string options;
 			std::string str = "<option value=\"\" disabled selected>-- Select a file --</option>";
@@ -30,21 +31,25 @@ void Response::populate_dropdown(void)
             if (insert_pos != std::string::npos)
 			{
 				insert_pos += str.length();
-				for (const auto& entry : std::filesystem::directory_iterator(_rootDir / "uploads"))
+				for (const auto& entry : std::filesystem::directory_iterator(_workingDir / "uploads"))
 				{
 					if (std::filesystem::is_regular_file(entry.path()))
 					{
-						std::cout << entry.path().filename() << std::endl;
+						// std::cout << entry.path().filename() << std::endl;
 						std::string filename = entry.path().filename().string();
 						options += "<option value=\"" + filename + "\">" + filename + "</option>";
 					}
 				}
 				_body.insert(insert_pos, "\n\t\t" + options);
 			}
-			else
-				return ;
+			// else
+			// 	std::cout << "uu" << std::endl;
+
 				//error handling?
 		}
+		// else
+		// 	std::cout << "aa" << std::endl;
+
     }
 	catch (const std::filesystem::filesystem_error& e)
 	{
@@ -56,53 +61,61 @@ void Response::populate_dropdown(void)
 void Response::GET(void)
 {
 	std::string request_path = _request->get_path();
+	// std::cout << "request path GET: " << request_path << std::endl;
 	if (request_path.back() == '/')
-		request_path += "index.html";
-	request_path.erase(0, 1);
-	
-	std::filesystem::path path = _rootDir / request_path;
-	if (_rootDir.empty() || !std::filesystem::exists(path))
+	{
+		if (_location && !_location->getIndex().empty())
+			request_path += _location->getIndex();
+		else if (!_request->config->getIndex().empty())
+			request_path += _request->config->getIndex();
+		else
+		{
+			err_msg("no index found in config!");
+			error_body(403, "no index found in config!"); //right error
+			return ;
+		}
+	}
+	std::filesystem::path path = _workingDir / request_path.substr(1);
+	// std::cout << "active dir GET: " << _workingDir << std::endl;
+	// std::cout << "path: GET" << path << std::endl;
+	if (_workingDir.empty() || !std::filesystem::exists(path))
 	{
 		err_msg("file not found at path: " + std::string(path));
 		error_body(404, "couldn't find file at path: " + path.string());
 		return ;
 	}
-	// std::cout << "path: " << path << std::endl;
 	setBody(path);
-	if (request_path == "delete.html")
+	if (request_path == "/delete.html")
 		populate_dropdown();
 }
 
 void Response::fileCreation(std::vector<char> &content, std::string &filename)
 {
-	std::string request_path = _request->get_path();
-	request_path.erase(0, 1);
-	std::filesystem::path path = _rootDir / request_path;
 
 	if (filename.find('/') != std::string::npos)
 		throw Error(400, "Invalid filename: " + filename);
 
-	if (request_path.back() == '/')
-		throw Error(403,  "Forbidden: Cannot create directories with Post" + path.string());
-
-	if (path.string().find(_rootDir.string()) != 0)
-		throw Error(403,  "Forbidden: Cannot create directories outside /content." + path.string());
-	// std::cout << "dir: " << path.string() << std::endl;
-
-	try
-    {
-        if (!path.empty() && !std::filesystem::exists(path))
-        {
-            info_msg("Creating directory structure: " + path.string());
-            if (!std::filesystem::create_directories(path))
-				throw Error(500,  "Failed to create necessary directories");
-        }
-    }
-    catch (const std::filesystem::filesystem_error& e)
-    {
-		throw Error(500, "Failed to create directory structure");
-    }
+	std::string request_path = _request->get_path();
+	// std::cout << "request path POST: " << request_path << std::endl;
+	std::filesystem::path path = _workingDir / request_path.substr(1);
+	// std::cout << "path POST: " << path.string() << std::endl;
+	if (request_path != "/")
+	{
+		try
+		{
+			if (!std::filesystem::exists(path))
+			{
+				std::filesystem::create_directories(path);
+				debug_msg("successfully created directory structure: " + path.string());
+			}
+		}
+		catch (const std::filesystem::filesystem_error& e)
+		{
+			throw Error(500, "Failed to create directory structure");
+		}
+	}
 	std::filesystem::path filePath = path / filename;
+	// std::cout << "file path POST: " << filePath.string() << std::endl;
 	
 	std::string extension = filePath.extension().string();
 	ft_tolower(extension);
@@ -211,8 +224,7 @@ void Response::POST(void)
 void Response::DELETE(void)
 {
 	std::string request_path = _request->get_path();
-	request_path.erase(0, 1);
-	std::filesystem::path path = _rootDir / request_path;
+	std::filesystem::path path = _workingDir / request_path.substr(1);
    	if (!std::filesystem::exists(path))
     {
         err_msg("File not found at path: " + path.string());

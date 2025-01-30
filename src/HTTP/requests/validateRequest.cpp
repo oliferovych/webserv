@@ -44,8 +44,8 @@ void Request::validateRequestLine(void)
 		throw Error(403, "server doesn't allow .. in request target: " + request_line.path);
 	if (request_line.path[0] != '/')
 		throw Error(400, "request target must start with a /: " + request_line.path);
-	// if (request_line.path.back() == '/')
-	// 	throw Error(400, "request target cant end with a /: " + request_line.path);
+	if (request_line.method == "POST" && request_line.path.back() != '/')
+		throw Error(400, "request target for POST request must be a directory (end with a /): " + request_line.path);
 	bool last_was_slash = false;
 	for (auto c : request_line.path)
 	{
@@ -66,6 +66,10 @@ void Request::validateHeaders()
 	if (!request_line.absolute_host.empty())
 		headers["host"][0] = request_line.absolute_host;
 
+	config = _findConfig(headers["host"][0]);
+	if (!config)
+		throw Error(400, "unknown Host: " + headers["host"][0]);
+
 	auto it = headers.begin();
 	while (it != headers.end())
 	{
@@ -78,17 +82,18 @@ void Request::validateHeaders()
 	{
 		if (headers.find("transfer-encoding") != headers.end())
 			throw Error(400, "both transfer-encoding and content-length are present in the header");
-		//max content-length?
 		try
 		{
 			content_length = std::stol(it->second[0]);
-			if (content_length == 0)
-				throw Error(400, "content-length is invalid: " + std::to_string(content_length));
 		}
 		catch(...)
 		{
 			throw Error(500, "content_length parsing failed");
 		}
+		// if (content_length == 0)
+		// 	throw Error(400, "content-length is invalid: " + std::to_string(content_length)); //check
+		if (content_length > config->getMaxBodySize())
+			throw Error(400, "content-length is larger than MaxBodySize: " + std::to_string(content_length));
 
 	}
 	else if (request_line.method == "POST" && headers.find("transfer-encoding") == headers.end())

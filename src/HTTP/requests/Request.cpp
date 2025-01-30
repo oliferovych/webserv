@@ -1,8 +1,8 @@
 #include "../../../include/HTTP/requests/Request.hpp"
 #include <algorithm>
 
-Request::Request()
-	: content_length(0), state(PARSE_REQUEST_LINE)
+Request::Request(std::vector<ServerConfig> &conf)
+	: content_length(0), state(PARSE_REQUEST_LINE), configVec(conf), config(nullptr)
 {
 }
 
@@ -81,7 +81,7 @@ void Request::parse_headers(void)
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n', '\r', '\n'};
 	auto section_end = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-  if (section_end == buffer.end())
+  	if (section_end == buffer.end())
 	{
         return ;
 	}
@@ -159,8 +159,11 @@ void Request::parse_body(void)
 		return ;
 
 	// copy content-length bytes from the body
-	body.assign(buffer.begin(), buffer.begin() + content_length);
-	buffer.erase(buffer.begin(), buffer.begin() + content_length);
+	if (content_length > 0)
+	{
+		body.assign(buffer.begin(), buffer.begin() + content_length);
+		buffer.erase(buffer.begin(), buffer.begin() + content_length);
+	}
 
 	state = COMPLETE;
 }
@@ -200,6 +203,9 @@ void Request::parse_chunked_body()
             state = COMPLETE;
             return ;
         }
+		if (chunk_size > config->getMaxBodySize() - body.size())
+    		throw Error(400, "request body is larger than MaxBodySize: " + std::to_string(body.size() + chunk_size));
+
 		// Ensure there is enough data in the buffer for the current chunk and its CRLF
         if (buffer.size() < line_length + chunk_size + 2)
             return ;
@@ -261,4 +267,22 @@ const std::string &Request::get_version() const
 const std::vector<char> &Request::get_body() const
 {
 	return (body);
+}
+
+ServerConfig *Request::_findConfig(std::string &serverName)
+{
+	for(ServerConfig &sc : configVec)
+	{
+		for(std::string &sn : sc.getServerNames())
+		{
+			if(sn == serverName)
+				return &sc;
+		}
+	}
+	return (nullptr);
+}
+
+void Request::setPath(std::string str)
+{
+	request_line.path = str;
 }
