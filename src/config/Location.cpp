@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/26 00:10:27 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/30 11:01:08 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,4 +99,12 @@ void Location::printOut(int indent) const
 	for(auto method : _allowedMethods)
 		std::cout << method << " ";
 	std::cout << std::endl;
+}
+
+std::string Location::getErrorPage(int code)
+{
+	auto it = _errorPages.find(code);
+	if (it != _errorPages.end())
+		return (it->second);
+	return ("");
 }

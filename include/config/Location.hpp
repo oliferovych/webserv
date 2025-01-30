@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/25 23:25:33 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/30 11:01:24 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ class Location
 		std::string _root;
 		std::string _index;
 		std::vector<std::string> _allowedMethods;
+		std::unordered_map<int, std::string> _errorPages;
 		bool _valid;
 	public:
 		Location(std::ifstream &file, std::string const &path, std::string const &servRoot);
@@ -33,6 +34,7 @@ class Location
 		const std::string &getRoot() const { return _root; }
 		const std::string &getIndex() const { return _index; }
 		const std::vector<std::string> &getAllowedMethods() const { return _allowedMethods; }
+		std::string getErrorPage(int code);
 
 		void printOut(int indent) const;
 };

@@ -44,8 +44,8 @@ void Request::validateRequestLine(void)
 		throw Error(403, "server doesn't allow .. in request target: " + request_line.path);
 	if (request_line.path[0] != '/')
 		throw Error(400, "request target must start with a /: " + request_line.path);
-	// if (request_line.path.back() == '/')
-	// 	throw Error(400, "request target cant end with a /: " + request_line.path);
+	if (request_line.method == "POST" && request_line.path.back() != '/')
+		throw Error(400, "request target for POST request must be a directory (end with a /): " + request_line.path);
 	bool last_was_slash = false;
 	for (auto c : request_line.path)
 	{

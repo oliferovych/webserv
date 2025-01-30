@@ -17,12 +17,15 @@ class Response
 	private:
 		std::string _result;
 		int _status_code;
-		const Request *_request;
+		Request *_request;
 		std::string _contentDir;
 		std::filesystem::path _rootDir;
+		std::filesystem::path _workingDir;
 		std::string _body;
 		std::string _content_type;
 		std::unordered_map<std::string, std::string> _mimeTypes;
+
+		Location *_location;
 
 		void addHeaders(std::string category, std::vector<std::string> args);
 		void GET(void);
@@ -38,9 +41,11 @@ class Response
 		std::pair<std::string, std::vector<char>> extractData();
 		void populate_dropdown(void);
 
+		void checkLocation(void);
+
 
 	public:
-		Response(const Request& request);
+		Response(Request& request);
 		Response(void);
 		~Response();
 

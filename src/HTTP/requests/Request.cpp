@@ -1,8 +1,8 @@
 #include "../../../include/HTTP/requests/Request.hpp"
 #include <algorithm>
 
-Request::Request(const std::vector<ServerConfig> &conf)
-	: content_length(0), state(PARSE_REQUEST_LINE), config(nullptr), configVec(conf)
+Request::Request(std::vector<ServerConfig> &conf)
+	: content_length(0), state(PARSE_REQUEST_LINE), configVec(conf), config(nullptr)
 {
 }
 
@@ -269,15 +269,20 @@ const std::vector<char> &Request::get_body() const
 	return (body);
 }
 
-ServerConfig const *Request::_findConfig(std::string const &serverName)
+ServerConfig *Request::_findConfig(std::string &serverName)
 {
-	for(ServerConfig const &sc : configVec)
+	for(ServerConfig &sc : configVec)
 	{
-		for(std::string const &sn : sc.getServerNames())
+		for(std::string &sn : sc.getServerNames())
 		{
 			if(sn == serverName)
 				return &sc;
 		}
 	}
 	return (nullptr);
+}
+
+void Request::setPath(std::string str)
+{
+	request_line.path = str;
 }
