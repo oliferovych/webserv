@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/30 11:18:47 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/01/30 19:51:26 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,15 +74,56 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 				return false;
 			}
 		}
+		else if(isKeyWord(line, "error_page"))
+		{
+			std::vector<std::string> values;
+			try
+			{
+				values = getMultipleVarValue(line, "error_page");
+				if(values.size() != 2)
+				{
+					err_msg("Invalid error_page block: " + line);
+					return false;
+				}
+				if(values[1].front() == '/')
+					values[1] = values[1].substr(1);
+				_errorPages[std::stoi(values[0])] = values[1];
+			}
+			catch(const std::exception& e)
+			{
+				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
+				return false;
+			}
+		}
 		else
 		{
 			err_msg("Invalid keyword in server block: " + line);
 			return false;
 		}
 	}
+	if(!_errorPages.empty())
+	{
+		for(auto &err : _errorPages)
+		{
+			if(err.second.empty())
+			{
+				err_msg("Error page path is empty");
+				return false;
+			}
+			if(!fileExists(_root + err.second))
+			{
+				err_msg("Error page does not exist: " + err.second);
+				return false;
+			}
+		}
+	}
 	if(_maxConn == 0)
 		_maxConn = SOMAXCONN;
-	if(_ports.empty() || _serverNames.empty() || _root.empty() || _index.empty())
+	if(_serverNames.empty())
+	{
+		_serverNames.push_back("localhost:" + std::to_string(_ports[0]));
+	}
+	if(_ports.empty() || _root.empty() || _index.empty())
 		return false;
 	else if(!isDir(_root))
 	{
@@ -115,6 +156,9 @@ void ServerConfig::_printOut()
 	std::cout << "Index: " << _index << std::endl;
 	for(auto loc : _locations)
 		loc.printOut(1);
+	std::cout << std::endl;
+	for(auto err : _errorPages)
+		std::cout << "  err_page" << err.first << ": " << err.second << std::endl;
 	std::cout << std::endl;
 }
 

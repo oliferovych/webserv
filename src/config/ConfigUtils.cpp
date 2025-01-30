@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:16:12 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/26 00:02:30 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/30 19:26:52 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,6 @@ std::vector<std::string> getMultipleVarValue(std::string const &line, std::strin
 
 bool fileExists(const std::string &path)
 {
-	debug_msg("Checking if file exists: " + path);
 	if(path.empty())
 		return false;
 	std::string cleanPath;
@@ -74,6 +73,7 @@ bool fileExists(const std::string &path)
 		cleanPath = "." + path;
 	else
 		cleanPath = path;
+	debug_msg("Checking if file exists: " + cleanPath);
 	return (access(cleanPath.c_str(), F_OK) != -1);
 }
 
@@ -87,7 +87,8 @@ bool isDir(const std::string &path)
 		cleanPath = ".";
 	else
 		cleanPath = "." + cleanPath;
-	
+	debug_msg("Checking if directory exists: " + cleanPath);
+
 	struct stat buf;
 	return (stat(cleanPath.c_str(), &buf) == 0 && S_ISDIR(buf.st_mode));
 }
