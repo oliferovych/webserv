@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/29 16:56:30 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/02 16:49:29 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ void Server::createServerSockets()
 	{
 		for(int port : _conf.getPorts())
 		{
-			std::unique_ptr<Socket> s(new Socket(port, _conf.getMaxConn()));
+			std::unique_ptr<Socket> s(new Socket(port, _conf.getMaxConn() / _conf.getPorts().size()));
 			try
 			{
 				_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));

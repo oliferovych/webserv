@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:13:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/30 19:43:52 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/02 16:38:04 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,10 @@ class ServerConfig
 		unsigned int _maxConn;
 		bool _valid;
 		bool _parseServer(std::ifstream &file);
-		void _printOut();
+		bool _checkConfig();
 	public:
 		bool isValid() const;
+		void _printOut() const;
 
 		const std::vector<int> &getPorts() const { return _ports; }
 		std::vector<std::string> getServerNames() const { return _serverNames; }

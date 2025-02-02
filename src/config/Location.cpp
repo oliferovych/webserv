@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/31 21:26:49 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/02 17:34:18 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,63 @@
 #include "../../include/utils/utils.hpp"
 
 #include <fstream>
+
+bool Location::_checkLocation(std::string const &servRoot)
+{
+	if(!_root.empty() && !isDir(_root)){
+		err_msg("Location's root directory does not exist");
+		return false;
+	}
+	else if(!fileExists(_root + _index) && !fileExists(servRoot + _index))
+	{
+		err_msg("Location's index file does not exist");
+		return false;
+	}
+
+	if(!_index.empty())
+	{
+		if(_index.front() == '/' && !fileExists(servRoot + _index))
+		{
+			err_msg("Index file does not exist: " + servRoot + _index);
+			return false;
+		}
+		else if(_index.front() != '/' && !fileExists(_root + _index))
+		{
+			err_msg("Index file does not exist: " + _root + _index);
+			return false;
+		}
+	}
+
+	if(!_allowedMethods.empty())
+	{
+		for(auto &method : _allowedMethods)
+		{
+			if(method != "GET" && method != "POST" && method != "DELETE" && method != "PUT")
+			{
+				err_msg("Invalid method in location block: " + method);
+				return false;
+			}
+		}
+	}
+	
+	if(!_errorPages.empty())
+	{
+		for(auto &page : _errorPages)
+		{
+			if(page.second.front() == '/' && !fileExists(servRoot + page.second))
+			{
+				err_msg("Error page does not exist: " + servRoot + page.second);
+				return false;
+			}
+			else if(page.second.front() != '/' && !fileExists(_root + page.second))
+			{
+				err_msg("Error page does not exist: " + _root + page.second);
+				return false;
+			}
+		}
+	}
+	return true;
+}
 
 Location::Location(std::ifstream &file, std::string const &path, std::string const &servRoot)
 {
@@ -37,8 +94,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		else if(isKeyWord(line, "index"))
 		{
 			_index = getSingleVarValue(line, "index");
-			// if(_index.front() == '/')
-			// 	_index = _index.substr(1);
 		}
 		else if(isKeyWord(line, "allow_methods"))
 		{
@@ -54,7 +109,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		}
 		else if(isKeyWord(line, "error_page"))
 		{
-			std::cout << "aa" << std::endl;
 			std::vector<std::string> values;
 			try
 			{
@@ -64,8 +118,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 					err_msg("Invalid error_page block: " + line);
 					return ;
 				}
-				// if(values[1].front() == '/')
-				// 	values[1] = values[1].substr(1);
 				_errorPages[std::stoi(values[0])] = values[1];
 			}
 			catch(const std::exception& e)
@@ -78,20 +130,11 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		{
 			err_msg("Invalid keyword in location block: " + line);
 			_valid = false;
+			return;
 		}
 	}
-	if(!_root.empty() && !isDir(_root)){
-		err_msg("Location's root directory does not exist");
-		_valid = false;
-	}
-	else if(!fileExists(_root + _index) && !fileExists(servRoot + _index))
-	{
-		err_msg("Location's index file does not exist");
-		_valid = false;
-	}
-	else
-		_valid = true;
-
+	
+	_valid = _checkLocation(servRoot);
 	if(_valid)
 		debug_msg("Location block parsed");
 }
