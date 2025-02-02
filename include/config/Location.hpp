@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/30 16:25:01 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/02 16:59:12 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class Location
 		std::vector<std::string> _allowedMethods;
 		std::unordered_map<int, std::string> _errorPages;
 		bool _valid;
+		bool _checkLocation(std::string const &servRoot);
 	public:
 		Location(std::ifstream &file, std::string const &path, std::string const &servRoot);
 		~Location();
