@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/31 21:26:49 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/02 15:59:43 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		else if(isKeyWord(line, "index"))
 		{
 			_index = getSingleVarValue(line, "index");
-			// if(_index.front() == '/')
-			// 	_index = _index.substr(1);
 		}
 		else if(isKeyWord(line, "allow_methods"))
 		{
@@ -54,7 +52,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		}
 		else if(isKeyWord(line, "error_page"))
 		{
-			std::cout << "aa" << std::endl;
 			std::vector<std::string> values;
 			try
 			{
@@ -64,8 +61,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 					err_msg("Invalid error_page block: " + line);
 					return ;
 				}
-				// if(values[1].front() == '/')
-				// 	values[1] = values[1].substr(1);
 				_errorPages[std::stoi(values[0])] = values[1];
 			}
 			catch(const std::exception& e)
