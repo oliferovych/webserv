@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/30 19:24:37 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/31 21:26:49 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,8 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		else if(isKeyWord(line, "index"))
 		{
 			_index = getSingleVarValue(line, "index");
-			if(_index.front() == '/')
-				_index = _index.substr(1);
+			// if(_index.front() == '/')
+			// 	_index = _index.substr(1);
 		}
 		else if(isKeyWord(line, "allow_methods"))
 		{
@@ -50,6 +50,28 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 				err_msg("Error in location block: \""+ line + "\": " + std::string(e.what()));
 				_valid = false;
 				return;
+			}
+		}
+		else if(isKeyWord(line, "error_page"))
+		{
+			std::cout << "aa" << std::endl;
+			std::vector<std::string> values;
+			try
+			{
+				values = getMultipleVarValue(line, "error_page");
+				if(values.size() != 2)
+				{
+					err_msg("Invalid error_page block: " + line);
+					return ;
+				}
+				// if(values[1].front() == '/')
+				// 	values[1] = values[1].substr(1);
+				_errorPages[std::stoi(values[0])] = values[1];
+			}
+			catch(const std::exception& e)
+			{
+				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
+				return ;
 			}
 		}
 		else

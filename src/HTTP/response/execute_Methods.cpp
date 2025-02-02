@@ -61,13 +61,35 @@ void Response::populate_dropdown(void)
 void Response::GET(void)
 {
 	std::string request_path = _request->get_path();
-	// std::cout << "request path GET: " << request_path << std::endl;
+	std::filesystem::path path;
 	if (request_path.back() == '/')
 	{
 		if (_location && !_location->getIndex().empty())
-			request_path += _location->getIndex();
+		{
+			if (_location->getIndex()[0] != '/')
+			{
+				request_path += _location->getIndex();
+				path = _workingDir / request_path.substr(1);
+			}
+			else
+			{
+				request_path += _location->getIndex().substr(1);
+				path = _rootDir / _contentDir / request_path.substr(1);
+			}
+		}
 		else if (!_request->config->getIndex().empty())
-			request_path += _request->config->getIndex();
+		{
+			if (_request->config->getIndex().front() != '/')
+			{
+				request_path += _request->config->getIndex();
+				path = _workingDir / request_path.substr(1);
+			}
+			else
+			{
+				request_path = _request->config->getIndex();
+				path = _workingDir / request_path.substr(1);
+			}
+		}
 		else
 		{
 			err_msg("no index found in config!");
@@ -75,12 +97,11 @@ void Response::GET(void)
 			return ;
 		}
 	}
-	std::filesystem::path path = _workingDir / request_path.substr(1);
-	// std::cout << "active dir GET: " << _workingDir << std::endl;
-	// std::cout << "path: GET" << path << std::endl;
-	if (_workingDir.empty() || !std::filesystem::exists(path))
+	else
+		path = _workingDir / request_path.substr(1);
+	if (!std::filesystem::exists(path))
 	{
-		err_msg("file not found at path: " + std::string(path));
+		err_msg("file not found at path: " + path.string());
 		error_body(404, "couldn't find file at path: " + path.string());
 		return ;
 	}
@@ -96,9 +117,7 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 		throw Error(400, "Invalid filename: " + filename);
 
 	std::string request_path = _request->get_path();
-	// std::cout << "request path POST: " << request_path << std::endl;
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	// std::cout << "path POST: " << path.string() << std::endl;
 	if (request_path != "/")
 	{
 		try
@@ -115,7 +134,6 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 		}
 	}
 	std::filesystem::path filePath = path / filename;
-	// std::cout << "file path POST: " << filePath.string() << std::endl;
 	
 	std::string extension = filePath.extension().string();
 	ft_tolower(extension);
@@ -254,8 +272,9 @@ void Response::setBody(std::filesystem::path path)
 
 	if (!file.is_open())
 	{
-		err_msg("file not found at path: " + path.string());
-		error_body(404, "failed opening file at path: " + path.string());
+		err_msg("file not found at path (setBody): " + path.string());
+		_body = "404, File not found at path: " + path.string();
+		_content_type = "text/plain";
 		return;
 	}
 

@@ -135,7 +135,25 @@ void Response::error_body(int code, const std::string &errorMessage)
     	_status_code = code;
 
 	if (_location && !_location->getErrorPage(code).empty())
-		setBody(_workingDir / _location->getErrorPage(code));
+	{
+		if (_location->getErrorPage(code).front() != '/')
+		{
+			setBody(_workingDir / _location->getErrorPage(code));
+			return ;
+		}
+		else
+		{
+			std::filesystem::path p = _rootDir / _contentDir /_location->getErrorPage(code).substr(1);
+			if (std::filesystem::exists(p))
+				setBody(p);
+			else
+			{
+				_body = "Error page not found at path: " + p.string();
+				_body += "\nFor error: " + std::to_string(code) + " " + errorMessage;
+				_content_type = "text/plain";
+			}
+		}
+	}
 	else if (!_request->config->getErrorPage(code).empty())
 		setBody(_rootDir / _contentDir / _request->config->getErrorPage(code));
 	else
@@ -143,21 +161,6 @@ void Response::error_body(int code, const std::string &errorMessage)
 		_body = std::to_string(code) + " " + errorMessage;
 		_content_type = "text/plain";
 	}
-
-    
-    // size_t pos = 0;
-    // while ((pos = _body.find("{{ERROR_CODE}}", pos)) != std::string::npos)
-	// {
-    //     _body.replace(pos, std::string("{{ERROR_CODE}}").length(), std::to_string(code));
-    //     pos += std::string("{{ERROR_CODE}}").length();
-    // }
-
-    // pos = 0;
-    // while ((pos = _body.find("{{ERROR_MESSAGE}}", pos)) != std::string::npos)
-	// {
-    //     _body.replace(pos, std::string("{{ERROR_MESSAGE}}").length(), errorMessage);
-    //     pos += std::string("{{ERROR_MESSAGE}}").length();
-    // }
 }
 
 
@@ -190,7 +193,6 @@ std::string Response::getResult() const
 void Response::checkLocation(void)
 {
 	std::filesystem::path path(_request->get_path());
-	// std::cout << "request Path CONFIG: " << path.string() << std::endl;
 	std::filesystem::path dir;
 
 
@@ -202,17 +204,16 @@ void Response::checkLocation(void)
 	_location = _request->config->getLocation(dir);
 	while(!_location)
 	{
-		if (dir.string() == "/")
+		if (dir.parent_path() == "/")
 			break;
 
 		dir = dir.parent_path();
 		_location = _request->config->getLocation(dir);
 	}
-	// std::cout << "Directory part: " << dir << std::endl;
 
 
 	if (dir.string() != "/" && !_location)
-		throw Error(403, "location isn't configured in config: " + dir.string()); //correct error code
+		debug_msg("no location found for: " + dir.string());
 
 
 	if (_location)

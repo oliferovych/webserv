@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/30 19:51:26 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/01/31 22:24:42 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,8 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 		else if(isKeyWord(line, "index") && _index.empty())
 		{
 			_index = getSingleVarValue(line, "index");
-			if(_index.front() == '/')
-				_index = _index.substr(1);
+			// if(_index.front() == '/')
+			// 	_index = _index.substr(1);
 		}
 		else if(isKeyWord(line, "location"))
 		{
