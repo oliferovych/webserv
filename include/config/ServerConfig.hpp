@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:13:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/02 16:01:57 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/02 16:38:04 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class ServerConfig
 		unsigned int _maxConn;
 		bool _valid;
 		bool _parseServer(std::ifstream &file);
+		bool _checkConfig();
 	public:
 		bool isValid() const;
 		void _printOut() const;

@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/02 16:04:55 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/02 16:48:09 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,39 @@ ServerConfig::ServerConfig(std::ifstream &file) : _maxBodySize(0), _maxConn(0)
 
 ServerConfig::~ServerConfig()
 {
+}
+
+bool ServerConfig::_checkConfig()
+{
+	if(!_errorPages.empty())
+	{
+		for(auto &err : _errorPages)
+		{
+			if(err.second.empty())
+			{
+				err_msg("Error page path is empty");
+				return false;
+			}
+			if(!fileExists(_root + err.second))
+			{
+				err_msg("Error page does not exist: " + err.second);
+				return false;
+			}
+		}
+	}
+	if(_ports.empty() || _root.empty() || _index.empty())
+		return false;
+	if(!isDir(_root))
+	{
+		err_msg("Server's root directory does not exist");
+		return false;
+	}
+	else if(!fileExists(_root + _index))
+	{
+		err_msg("Server's index file does not exist");
+		return false;
+	}
+	return true;
 }
 
 bool ServerConfig::_parseServer(std::ifstream &file)
@@ -99,42 +132,16 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 			return false;
 		}
 	}
-	if(!_errorPages.empty())
-	{
-		for(auto &err : _errorPages)
-		{
-			if(err.second.empty())
-			{
-				err_msg("Error page path is empty");
-				return false;
-			}
-			if(!fileExists(_root + err.second))
-			{
-				err_msg("Error page does not exist: " + err.second);
-				return false;
-			}
-		}
-	}
+
 	if(_maxConn == 0)
-		_maxConn = SOMAXCONN;
+		_maxConn = SOMAXCONN * _ports.size();
+	if(_maxBodySize == 0)
+		_maxBodySize = 100000;
 	if(_serverNames.empty())
-	{
 		_serverNames.push_back("localhost:" + std::to_string(_ports[0]));
-	}
-	if(_ports.empty() || _root.empty() || _index.empty())
-		return false;
-	else if(!isDir(_root))
-	{
-		err_msg("Server's root directory does not exist");
-		return false;
-	}
-	else if(!fileExists(_root + _index))
-	{
-		err_msg("Server's index file does not exist");
-		return false;
-	}
+
 	_printOut();
-	return true;
+	return _checkConfig();
 }
 
 void ServerConfig::_printOut() const
