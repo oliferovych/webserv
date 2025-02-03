@@ -41,7 +41,6 @@ class Response
 		std::pair<std::string, std::vector<char>> extractData();
 		void populate_dropdown(void);
 
-		void checkLocation(void);
 
 
 	public:
@@ -51,6 +50,7 @@ class Response
 
 		void build(void);
 		void build_err(int code, std::string message);
+		void checkLocation(void);
 
 
 		void doMethod(void);

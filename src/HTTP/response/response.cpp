@@ -13,7 +13,7 @@ Response::Response(Request& request)
 }
 
 Response::Response(void)
-	: _result(""), _status_code(200), _request(nullptr), _contentDir("content"), _rootDir(getrootDir())
+	: _result(""), _status_code(200), _request(nullptr), _contentDir("content"), _rootDir(getrootDir()), _location(nullptr)
 {
 	init_mimeTypes();
 }
@@ -154,7 +154,7 @@ void Response::error_body(int code, const std::string &errorMessage)
 			}
 		}
 	}
-	else if (!_request->config->getErrorPage(code).empty())
+	else if (_request && !_request->config->getErrorPage(code).empty())
 		setBody(_rootDir / _contentDir / _request->config->getErrorPage(code));
 	else
 	{
@@ -192,6 +192,8 @@ std::string Response::getResult() const
 
 void Response::checkLocation(void)
 {
+	if (!_request)
+		return ;
 	std::filesystem::path path(_request->get_path());
 	std::filesystem::path dir;
 
