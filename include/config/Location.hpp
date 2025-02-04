@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/02 16:59:12 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/04 22:56:43 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ class Location
 		std::string _index;
 		std::vector<std::string> _allowedMethods;
 		std::unordered_map<int, std::string> _errorPages;
+		std::string _uploadDir;
+		std::string _autoindex;
 		bool _valid;
 		bool _checkLocation(std::string const &servRoot);
 	public:
