@@ -97,7 +97,14 @@ void Response::doMethod(void)
 {
 	try
 	{
+		std::string method = _request->get_method();
 		checkLocation();
+		if (method == "GET")
+			GET();
+		else if (method == "POST")
+			POST();
+		else
+			DELETE();
 	}
 	catch(const Error& e)
 	{
@@ -106,13 +113,6 @@ void Response::doMethod(void)
 		return ;
 	}
 	
-	std::string method = _request->get_method();
-	if (method == "GET")
-		GET();
-	else if (method == "POST")
-		POST();
-	else
-		DELETE();
 }
 
 //todo better return on error
@@ -240,6 +240,17 @@ void Response::checkLocation(void)
 			_workingDir = _rootDir / _location->getRoot().substr(1) / dir.string().substr(1);
 		else
 			_workingDir /= dir.string().substr(1);
+
+
+		if (_request->get_method() != "GET")
+		{
+			if (!_location->getUploadDir().empty())
+				_uploadDir = _rootDir / _location->getUploadDir().substr(1);
+			else
+				throw Error(403, "no upload dir defined in config!");
+		}
+
+		
 		std::string p = _request->get_path();
 		if (dir.string() != "/")
 			p.erase(0, dir.string().size());

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/02 17:34:18 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/04 18:46:53 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,10 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		else if(isKeyWord(line, "index"))
 		{
 			_index = getSingleVarValue(line, "index");
+		}
+		else if(isKeyWord(line, "uploadDir"))
+		{
+			_uploadDir = getSingleVarValue(line, "uploadDir");
 		}
 		else if(isKeyWord(line, "allow_methods"))
 		{

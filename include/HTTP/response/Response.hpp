@@ -26,6 +26,7 @@ class Response
 		std::unordered_map<std::string, std::string> _mimeTypes;
 
 		Location *_location;
+		std::string _uploadDir;
 
 		void addHeaders(std::string category, std::vector<std::string> args);
 		void GET(void);
