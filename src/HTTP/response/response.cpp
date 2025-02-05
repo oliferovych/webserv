@@ -204,18 +204,17 @@ void Response::checkLocation(void)
 		dir = path.parent_path();
 
 	_location = _request->config->getLocation(dir);
-	while(!_location)
+	while (!_location) 
 	{
-		if (dir.parent_path() == "/")
+		if (dir == "/")
+		{
+			_location = _request->config->getLocation("/");
 			break;
+		}
 
 		dir = dir.parent_path();
 		_location = _request->config->getLocation(dir);
 	}
-
-
-	if (dir.string() != "/" && !_location)
-		debug_msg("no location found for: " + dir.string());
 
 
 	if (_location)
@@ -247,7 +246,7 @@ void Response::checkLocation(void)
 			if (!_location->getUploadDir().empty())
 				_uploadDir = _rootDir / _location->getUploadDir().substr(1);
 			else
-				throw Error(403, "no upload dir defined in config!");
+				throw Error(403, "no uploadDir defined in config!");
 		}
 
 		
@@ -256,6 +255,13 @@ void Response::checkLocation(void)
 			p.erase(0, dir.string().size());
 		_request->setPath(p);
 	}
+	else
+	{
+		debug_msg("no location found for: " + dir.string());
+		if (_request->get_method() != "GET")
+			throw Error(403, "it isnt possbile to POST/DELETE outside a location!");
+	}
+
 
 	
 }
