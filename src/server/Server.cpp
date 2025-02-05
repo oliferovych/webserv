@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/02 16:49:29 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/03 00:38:50 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 Server::Server(std::string const &configPath)
 {
-
 	if(!_loadConfig(configPath))
 	{
 		err_msg("Invalid server config");
