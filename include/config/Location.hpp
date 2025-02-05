@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
 /*   Updated: 2025/02/04 22:56:43 by dolifero         ###   ########.fr       */
@@ -37,6 +37,7 @@ class Location
 		const std::string &getPath() const { return _path; }
 		const std::string &getRoot() const { return _root; }
 		const std::string &getIndex() const { return _index; }
+		const std::string &getUploadDir() const { return _uploadDir; }
 		const std::vector<std::string> &getAllowedMethods() const { return _allowedMethods; }
 		std::string getErrorPage(int code);
 

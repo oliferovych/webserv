@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
 /*   Updated: 2025/02/04 22:57:50 by dolifero         ###   ########.fr       */
@@ -78,8 +78,6 @@ bool Location::_checkLocation(std::string const &servRoot)
 		return false;
 	}
 
-	if(!_uploadDir.empty() && _uploadDir.back() != '/')
-		_uploadDir += "/";
 	if(!_uploadDir.empty() && _uploadDir.front() == '/' && !isDir(servRoot + _path + _uploadDir))
 	{
 		err_msg("Upload directory does not exist: " + _uploadDir);
@@ -141,6 +139,8 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		else if(isKeyWord(line, "upload_dir"))
 		{
 			_uploadDir = getSingleVarValue(line, "upload_dir");
+      if (_uploadDir.back() != '/')
+				_uploadDir += '/';
 		}
 		else if(isKeyWord(line, "error_page"))
 		{

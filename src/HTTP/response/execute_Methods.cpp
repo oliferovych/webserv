@@ -118,20 +118,20 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	if (request_path != "/")
+	// std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+	if (path != _uploadDir)
+		throw Error(403, "path is outside uploadDir!");
+	try
 	{
-		try
+		if (!std::filesystem::exists(path))
 		{
-			if (!std::filesystem::exists(path))
-			{
-				std::filesystem::create_directories(path);
-				debug_msg("successfully created directory structure: " + path.string());
-			}
+			std::filesystem::create_directories(path);
+			debug_msg("successfully created directory structure: " + path.string());
 		}
-		catch (const std::filesystem::filesystem_error& e)
-		{
-			throw Error(500, "Failed to create directory structure");
-		}
+	}
+	catch (const std::filesystem::filesystem_error& e)
+	{
+		throw Error(500, "Failed to create directory structure");
 	}
 	std::filesystem::path filePath = path / filename;
 	
@@ -243,6 +243,13 @@ void Response::DELETE(void)
 {
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
+	if (std::filesystem::is_directory(path))
+		throw Error(403, "cant delete directories");
+	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
+		throw Error(403, "cant find file for deletion at path: " + path.string());
+	// std::cout << "req: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
+	if (path.parent_path() / "" != _uploadDir)
+		throw Error(403, "path is outside uploadDir!");
    	if (!std::filesystem::exists(path))
     {
         err_msg("File not found at path: " + path.string());
