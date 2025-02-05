@@ -6,37 +6,39 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/04 19:25:49 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/04 22:57:50 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/Location.hpp"
 #include "../../include/utils/utils.hpp"
-
+#include <algorithm>
 #include <fstream>
 
 bool Location::_checkLocation(std::string const &servRoot)
 {
+	std::string correctPath;
+	if(_path.back() != '/')
+		correctPath = _path + "/";
+	else
+		correctPath = _path;
+
 	if(!_root.empty() && !isDir(_root)){
 		err_msg("Location's root directory does not exist");
-		return false;
-	}
-	else if(!fileExists(_root + _index) && !fileExists(servRoot + _index))
-	{
-		err_msg("Location's index file does not exist");
 		return false;
 	}
 
 	if(!_index.empty())
 	{
-		if(_index.front() == '/' && !fileExists(servRoot + _index))
+		if(_index.front() == '/' && !fileExists(servRoot  + correctPath + _index))
 		{
-			err_msg("Index file does not exist: " + servRoot + _index);
+			err_msg("Index file does not exist: " + servRoot + correctPath + _index);
 			return false;
 		}
-		else if(_index.front() != '/' && !fileExists(_root + _index))
+		else if(_index.front() != '/' && !fileExists(_root + correctPath + _index))
 		{
-			err_msg("Index file does not exist: " + _root + _index);
+			err_msg("Index file does not exist: " + _root + correctPath + _index);
+			debug_msg("here");
 			return false;
 		}
 	}
@@ -45,36 +47,60 @@ bool Location::_checkLocation(std::string const &servRoot)
 	{
 		for(auto &method : _allowedMethods)
 		{
-			if(method != "GET" && method != "POST" && method != "DELETE" && method != "PUT")
+			if(method != "GET" && method != "POST" && method != "DELETE")
 			{
 				err_msg("Invalid method in location block: " + method);
 				return false;
 			}
 		}
 	}
-	
+
 	if(!_errorPages.empty())
 	{
 		for(auto &page : _errorPages)
 		{
-			if(page.second.front() == '/' && !fileExists(servRoot + page.second))
+			if(page.second.front() == '/' && !fileExists(servRoot + correctPath + page.second))
 			{
-				err_msg("Error page does not exist: " + servRoot + page.second);
+				err_msg("Error page does not exist: " + servRoot + correctPath + page.second);
 				return false;
 			}
-			else if(page.second.front() != '/' && !fileExists(_root + page.second))
+			else if(page.second.front() != '/' && !fileExists(_root + correctPath + page.second))
 			{
-				err_msg("Error page does not exist: " + _root + page.second);
+				err_msg("Error page does not exist: " + _root + correctPath + page.second);
 				return false;
 			}
 		}
 	}
+
+	if(_autoindex != "on" && _autoindex != "off")
+	{
+		err_msg("Invalid autoindex value: " + _autoindex);
+		return false;
+	}
+
+	if(!_uploadDir.empty() && _uploadDir.front() == '/' && !isDir(servRoot + _path + _uploadDir))
+	{
+		err_msg("Upload directory does not exist: " + _uploadDir);
+		return false;
+	}
+	else if(!_uploadDir.empty() && _uploadDir.front() != '/' && !isDir(_root + _path + _uploadDir))
+	{
+		err_msg("Upload directory does not exist: " + _root + _path + _uploadDir);
+		return false;
+	}
+	else if(!_uploadDir.empty() && (_allowedMethods.empty()
+		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
+		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end()))
+	{
+		err_msg("Upload directory specified without proper methods allowed");
+		return false;
+	}
+
 	return true;
 }
 
-Location::Location(std::ifstream &file, std::string const &path, std::string const &servRoot)
+Location::Location(std::ifstream &file, std::string const &path, std::string const &servRoot) : _path(path), _autoindex("off"), _valid(false)
 {
-	_path = path;
 	std::string line;
 	while(std::getline(file, line))
 	{
@@ -95,12 +121,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		{
 			_index = getSingleVarValue(line, "index");
 		}
-		else if(isKeyWord(line, "uploadDir"))
-		{
-			_uploadDir = getSingleVarValue(line, "uploadDir");
-			if (_uploadDir.back() != '/')
-				_uploadDir += '/';
-		}
 		else if(isKeyWord(line, "allow_methods"))
 		{
 			try
@@ -109,9 +129,18 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 			}
 			catch(const std::exception& e){
 				err_msg("Error in location block: \""+ line + "\": " + std::string(e.what()));
-				_valid = false;
 				return;
 			}
+		}
+		else if(isKeyWord(line, "autoindex"))
+		{
+			_autoindex = getSingleVarValue(line, "autoindex");
+		}
+		else if(isKeyWord(line, "upload_dir"))
+		{
+			_uploadDir = getSingleVarValue(line, "upload_dir");
+      if (_uploadDir.back() != '/')
+				_uploadDir += '/';
 		}
 		else if(isKeyWord(line, "error_page"))
 		{
@@ -135,14 +164,16 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		else
 		{
 			err_msg("Invalid keyword in location block: " + line);
-			_valid = false;
 			return;
 		}
 	}
-	
+	if(_root.empty())
+		_root = servRoot;
 	_valid = _checkLocation(servRoot);
 	if(_valid)
 		debug_msg("Location block parsed");
+	else
+		err_msg("Location block invalid");
 }
 
 Location::~Location()
@@ -166,6 +197,13 @@ void Location::printOut(int indent) const
 	std::cout << "Allowed methods: ";
 	for(auto method : _allowedMethods)
 		std::cout << method << " ";
+	std::cout << std::endl;
+	for(int i = 0; i < indent; i++)
+		std::cout << "  ";
+	std::cout << "Autoindex: " << _autoindex << std::endl;
+	for(int i = 0; i < indent; i++)
+		std::cout << "  ";
+	std::cout << "Upload directory: " << _uploadDir << std::endl;
 	std::cout << std::endl;
 }
 

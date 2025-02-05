@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   global.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:35:37 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/28 12:33:45 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/03 00:37:36 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "server/Client.hpp"
 #include "utils/utils.hpp"
 
+std::string cgi_handler(const std::string &path);
 
 #include <sstream>
 

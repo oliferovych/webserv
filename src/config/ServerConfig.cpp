@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/02 16:48:09 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/04 22:50:10 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,7 +164,7 @@ void ServerConfig::_printOut() const
 		loc.printOut(1);
 	std::cout << std::endl;
 	for(auto err : _errorPages)
-		std::cout << "  err_page" << err.first << ": " << err.second << std::endl;
+		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
 	std::cout << std::endl;
 }
 
