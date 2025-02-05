@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/04 22:56:43 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/05 12:42:42 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ class Location
 		std::string _uploadDir;
 		std::string _autoindex;
 		bool _valid;
-		bool _checkLocation(std::string const &servRoot);
+		bool _checkLocation();
+		void _resolvePathVars(std::string const &servRoot);
 	public:
 		Location(std::ifstream &file, std::string const &path, std::string const &servRoot);
 		~Location();

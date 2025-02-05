@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/04 22:57:50 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/05 12:45:33 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,34 +15,18 @@
 #include <algorithm>
 #include <fstream>
 
-bool Location::_checkLocation(std::string const &servRoot)
-{
-	std::string correctPath;
-	if(_path.back() != '/')
-		correctPath = _path + "/";
-	else
-		correctPath = _path;
 
+bool Location::_checkLocation()
+{
 	if(!_root.empty() && !isDir(_root)){
 		err_msg("Location's root directory does not exist");
 		return false;
 	}
-
-	if(!_index.empty())
+	if(!_index.empty() && !fileExists(_index))
 	{
-		if(_index.front() == '/' && !fileExists(servRoot  + correctPath + _index))
-		{
-			err_msg("Index file does not exist: " + servRoot + correctPath + _index);
-			return false;
-		}
-		else if(_index.front() != '/' && !fileExists(_root + correctPath + _index))
-		{
-			err_msg("Index file does not exist: " + _root + correctPath + _index);
-			debug_msg("here");
-			return false;
-		}
+		err_msg("Location's index file does not exist");
+		return false;
 	}
-
 	if(!_allowedMethods.empty())
 	{
 		for(auto &method : _allowedMethods)
@@ -54,38 +38,25 @@ bool Location::_checkLocation(std::string const &servRoot)
 			}
 		}
 	}
-
 	if(!_errorPages.empty())
 	{
 		for(auto &page : _errorPages)
 		{
-			if(page.second.front() == '/' && !fileExists(servRoot + correctPath + page.second))
+			if(!fileExists(page.second))
 			{
-				err_msg("Error page does not exist: " + servRoot + correctPath + page.second);
-				return false;
-			}
-			else if(page.second.front() != '/' && !fileExists(_root + correctPath + page.second))
-			{
-				err_msg("Error page does not exist: " + _root + correctPath + page.second);
+				err_msg("Error page does not exist: " + page.second);
 				return false;
 			}
 		}
 	}
-
 	if(_autoindex != "on" && _autoindex != "off")
 	{
 		err_msg("Invalid autoindex value: " + _autoindex);
 		return false;
 	}
-
-	if(!_uploadDir.empty() && _uploadDir.front() == '/' && !isDir(servRoot + _path + _uploadDir))
+	if(!_uploadDir.empty() && !isDir(_uploadDir))
 	{
 		err_msg("Upload directory does not exist: " + _uploadDir);
-		return false;
-	}
-	else if(!_uploadDir.empty() && _uploadDir.front() != '/' && !isDir(_root + _path + _uploadDir))
-	{
-		err_msg("Upload directory does not exist: " + _root + _path + _uploadDir);
 		return false;
 	}
 	else if(!_uploadDir.empty() && (_allowedMethods.empty()
@@ -95,8 +66,48 @@ bool Location::_checkLocation(std::string const &servRoot)
 		err_msg("Upload directory specified without proper methods allowed");
 		return false;
 	}
-
 	return true;
+}
+
+std::string resolvePath(std::string const &root, std::string const &servRoot, std::string const &path, std::string const &destination)
+{
+	std::string result;
+	std::string finalPath;
+
+	if(destination.front() == '/')
+		result = servRoot + '/' + path + '/' + destination;
+	else
+		result = root + '/' + path + '/' + destination;
+
+	bool lastWasSlash = false;
+	for (char ch : result)
+	{
+		if (ch == '/')
+		{
+			if (!lastWasSlash)
+			{
+				finalPath += ch;
+				lastWasSlash = true;
+			}
+		}
+		else
+		{
+			finalPath += ch;
+			lastWasSlash = false;
+		}
+	}
+	return finalPath;
+}
+
+void Location::_resolvePathVars(std::string const &servRoot)
+{
+	if(!_index.empty())
+		_index = resolvePath(_root, servRoot, _path, _index);
+	if(!_uploadDir.empty())
+		_uploadDir = resolvePath(_root, servRoot, _path, _uploadDir);
+	for(auto &err : _errorPages)
+		err.second = resolvePath(_root, servRoot, _path, err.second);
+
 }
 
 Location::Location(std::ifstream &file, std::string const &path, std::string const &servRoot) : _path(path), _autoindex("off"), _valid(false)
@@ -117,7 +128,7 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 			if(_root.back() != '/')
 				_root += "/";
 		}
-		else if(isKeyWord(line, "index"))
+		if(isKeyWord(line, "index"))
 		{
 			_index = getSingleVarValue(line, "index");
 		}
@@ -139,7 +150,7 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		else if(isKeyWord(line, "upload_dir"))
 		{
 			_uploadDir = getSingleVarValue(line, "upload_dir");
-      if (_uploadDir.back() != '/')
+			if (_uploadDir.back() != '/')
 				_uploadDir += '/';
 		}
 		else if(isKeyWord(line, "error_page"))
@@ -169,7 +180,8 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 	}
 	if(_root.empty())
 		_root = servRoot;
-	_valid = _checkLocation(servRoot);
+	_resolvePathVars(servRoot);
+	_valid = _checkLocation();
 	if(_valid)
 		debug_msg("Location block parsed");
 	else

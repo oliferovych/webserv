@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/04 22:50:10 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/05 12:49:14 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ bool ServerConfig::_checkConfig()
 				err_msg("Error page path is empty");
 				return false;
 			}
-			if(!fileExists(_root + err.second))
+			if(!fileExists(err.second))
 			{
 				err_msg("Error page does not exist: " + err.second);
 				return false;
@@ -48,7 +48,7 @@ bool ServerConfig::_checkConfig()
 		err_msg("Server's root directory does not exist");
 		return false;
 	}
-	else if(!fileExists(_root + _index))
+	else if(!fileExists(_index))
 	{
 		err_msg("Server's index file does not exist");
 		return false;
@@ -84,6 +84,9 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 		else if(isKeyWord(line, "index") && _index.empty())
 		{
 			_index = getSingleVarValue(line, "index");
+			if(_index.front() == '/')
+				_index = _index.substr(1);
+			_index = _root + _index;
 		}
 		else if(isKeyWord(line, "location"))
 		{
@@ -118,7 +121,7 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 				}
 				if(values[1].front() == '/')
 					values[1] = values[1].substr(1);
-				_errorPages[std::stoi(values[0])] = values[1];
+				_errorPages[std::stoi(values[0])] = _root + values[1];
 			}
 			catch(const std::exception& e)
 			{
