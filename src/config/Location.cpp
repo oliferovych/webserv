@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/05 12:45:33 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/06 16:03:50 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,12 +123,10 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		if(isKeyWord(line, "root"))
 		{
 			_root = getSingleVarValue(line, "root");
-			if(_root.front() != '/')
-				_root = '/' + _root;
 			if(_root.back() != '/')
 				_root += "/";
 		}
-		if(isKeyWord(line, "index"))
+		else if(isKeyWord(line, "index"))
 		{
 			_index = getSingleVarValue(line, "index");
 		}
@@ -180,6 +178,13 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 	}
 	if(_root.empty())
 		_root = servRoot;
+	else if(_root.front() != '/')
+		_root = '/' + _root;
+	else if(_root.front() == '/' && _root.size() > 1)
+	{
+		_root = _root.substr(1);
+		_root = servRoot + _root;
+	}
 	_resolvePathVars(servRoot);
 	_valid = _checkLocation();
 	if(_valid)
