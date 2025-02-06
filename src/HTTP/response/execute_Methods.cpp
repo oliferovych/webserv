@@ -57,6 +57,43 @@ void Response::populate_dropdown(void)
     }
 }
 
+void Response::autoIndex(std::string requestPath)
+{
+    _body = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + requestPath;
+	_body += "</title>\n";
+    _body += "<style>body { font-family: Arial, sans-serif; }</style>\n</head>\n<body>\n";
+    _body += "<h1>Index of " + requestPath;
+	_body += "</h1>\n<ul>\n";
+
+    // Parent directory link
+    if (requestPath != "/")
+        _body += "<li><a href=\"../\">../ (Parent Directory)</a></li>\n";
+	
+	std::filesystem::path path = _workingDir / requestPath.substr(1);
+	std::cout << "req: " << requestPath << "aa: " << path << std::endl;
+    // List files and directories
+	if (!std::filesystem::is_directory(path))
+	{
+		error_body(404, "directory doesnt exist. Cant do autoIndex on it! Path: " + path.string());
+		return ;
+	}
+    for (const auto& entry : std::filesystem::directory_iterator(path))
+    {
+        std::string fileName = entry.path().filename().string();
+        std::string filePath = path.string() + fileName;
+
+        if (entry.is_directory())
+            filePath += "/"; // Add trailing slash for directories
+
+        _body += "<li><a href=\"" + filePath;
+		_body += "\">" + fileName;
+		_body += "</a></li>\n";
+    }
+
+    _body += "</ul>\n</body>\n</html>";
+}
+
+
 
 void Response::GET(void)
 {
@@ -64,31 +101,19 @@ void Response::GET(void)
 	std::filesystem::path path;
 	if (request_path.back() == '/')
 	{
-		if (_location && !_location->getIndex().empty())
+		if (_location)
 		{
-			if (_location->getIndex()[0] != '/')
+			if (!_location->getIndex().empty())
+				path = _rootDir / _location->getIndex().substr(1);
+			else if (_location->getAutoIndex() == "on")
 			{
-				request_path += _location->getIndex();
-				path = _workingDir / request_path.substr(1);
-			}
-			else
-			{
-				request_path += _location->getIndex().substr(1);
-				path = _rootDir / _contentDir / request_path.substr(1);
+				autoIndex(request_path);
+				return;
 			}
 		}
 		else if (!_request->config->getIndex().empty())
 		{
-			if (_request->config->getIndex().front() != '/')
-			{
-				request_path += _request->config->getIndex();
-				path = _workingDir / request_path.substr(1);
-			}
-			else
-			{
-				request_path = _request->config->getIndex();
-				path = _workingDir / request_path.substr(1);
-			}
+			path = _request->config->getIndex().substr(1);
 		}
 		else
 		{
@@ -118,7 +143,7 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	// std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+	std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
 	if (path != _uploadDir)
 		throw Error(403, "path is outside uploadDir!");
 	try
@@ -247,7 +272,7 @@ void Response::DELETE(void)
 		throw Error(403, "cant delete directories");
 	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
 		throw Error(403, "cant find file for deletion at path: " + path.string());
-	// std::cout << "req: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
+	std::cout << "req: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
 	if (path.parent_path() / "" != _uploadDir)
 		throw Error(403, "path is outside uploadDir!");
    	if (!std::filesystem::exists(path))

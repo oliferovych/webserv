@@ -4,11 +4,11 @@ Response::Response(Request& request)
 	: _result(""), _status_code(200), _request(&request), _rootDir(getrootDir()), _location(nullptr)
 {
 	init_mimeTypes();
-	_contentDir = _request->config->getRoot();
+	// _contentDir = _request->config->getRoot();
 	// std::cout << "con dir: " << _contentDir << std::endl;
-	if (_contentDir[0] == '/')
-    	_contentDir = _contentDir.substr(1);
-	_workingDir = _rootDir / _contentDir;
+	// if (_contentDir[0] == '/')
+    // 	_contentDir = _contentDir.substr(1);
+	_workingDir = _rootDir / _request->config->getRoot().substr(1);
 	// std::cout << "active con: " << _workingDir << std::endl;
 }
 
@@ -136,26 +136,10 @@ void Response::error_body(int code, const std::string &errorMessage)
 
 	if (_location && !_location->getErrorPage(code).empty())
 	{
-		if (_location->getErrorPage(code).front() != '/')
-		{
-			setBody(_workingDir / _location->getErrorPage(code));
-			return ;
-		}
-		else
-		{
-			std::filesystem::path p = _rootDir / _contentDir /_location->getErrorPage(code).substr(1);
-			if (std::filesystem::exists(p))
-				setBody(p);
-			else
-			{
-				_body = "Error page not found at path: " + p.string();
-				_body += "\nFor error: " + std::to_string(code) + " " + errorMessage;
-				_content_type = "text/plain";
-			}
-		}
+			setBody(_rootDir / _location->getErrorPage(code).substr(1));
 	}
 	else if (_request && !_request->config->getErrorPage(code).empty())
-		setBody(_rootDir / _contentDir / _request->config->getErrorPage(code));
+		setBody(_rootDir / _request->config->getErrorPage(code).substr(1));
 	else
 	{
 		_body = std::to_string(code) + " " + errorMessage;
@@ -236,20 +220,11 @@ void Response::checkLocation(void)
 
 
 		if (!_location->getRoot().empty())
-			_workingDir = _rootDir / _location->getRoot().substr(1) / dir.string().substr(1);
-		else
-			_workingDir /= dir.string().substr(1);
-
+			_workingDir = _rootDir / _location->getRoot().substr(1);
 
 		if (_request->get_method() != "GET")
-		{
-			if (!_location->getUploadDir().empty())
-				_uploadDir = _rootDir / _location->getUploadDir().substr(1);
-			else
-				throw Error(403, "no uploadDir defined in config!");
-		}
+			_uploadDir = _rootDir / _location->getUploadDir().substr(1);
 
-		
 		std::string p = _request->get_path();
 		if (dir.string() != "/")
 			p.erase(0, dir.string().size());

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/05 12:45:33 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/06 16:06:58 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,14 @@ bool Location::_checkLocation()
 		err_msg("Invalid autoindex value: " + _autoindex);
 		return false;
 	}
-	if(!_uploadDir.empty() && !isDir(_uploadDir))
-	{
-		err_msg("Upload directory does not exist: " + _uploadDir);
-		return false;
-	}
-	else if(!_uploadDir.empty() && (_allowedMethods.empty()
-		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
-		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end()))
+	// if(!_uploadDir.empty() && !isDir(_uploadDir))
+	// {
+	// 	err_msg("Upload directory does not exist: " + _uploadDir);
+	// 	return false;
+	// }
+	else if(!_uploadDir.empty() && (_allowedMethods.empty() 
+		|| (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
+		&& std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end())))
 	{
 		err_msg("Upload directory specified without proper methods allowed");
 		return false;
@@ -128,7 +128,7 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 			if(_root.back() != '/')
 				_root += "/";
 		}
-		if(isKeyWord(line, "index"))
+		else if(isKeyWord(line, "index"))
 		{
 			_index = getSingleVarValue(line, "index");
 		}
@@ -180,6 +180,10 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 	}
 	if(_root.empty())
 		_root = servRoot;
+	else if(_root.front() != '/')
+		_root = '/' + _root;
+	else if(_root.front() == '/' && _root.size() > 1)
+		_root = servRoot + _root;
 	_resolvePathVars(servRoot);
 	_valid = _checkLocation();
 	if(_valid)

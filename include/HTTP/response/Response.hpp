@@ -41,6 +41,8 @@ class Response
 		void fileCreation(std::vector<char> &content, std::string &filename);
 		std::pair<std::string, std::vector<char>> extractData();
 		void populate_dropdown(void);
+		void autoIndex(std::string requestPath);
+
 
 
 
