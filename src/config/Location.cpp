@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/06 16:03:50 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/06 16:23:08 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,10 +60,17 @@ bool Location::_checkLocation()
 		return false;
 	}
 	else if(!_uploadDir.empty() && (_allowedMethods.empty()
-		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
-		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end()))
+		|| (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
+		&& std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end())))
 	{
 		err_msg("Upload directory specified without proper methods allowed");
+		return false;
+	}
+	else if(_uploadDir.empty() && !_allowedMethods.empty()
+		&& (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") != _allowedMethods.end()
+		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") != _allowedMethods.end()))
+	{
+		err_msg("Methods POST or DELETE allowed without specifying upload directory");
 		return false;
 	}
 	return true;
@@ -180,7 +187,7 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		_root = servRoot;
 	else if(_root.front() != '/')
 		_root = '/' + _root;
-	else if(_root.front() == '/' && _root.size() > 1)
+	else if(_root.front() == '/')
 	{
 		_root = _root.substr(1);
 		_root = servRoot + _root;
