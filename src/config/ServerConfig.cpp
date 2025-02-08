@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/05 12:49:14 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/08 14:19:03 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,11 +163,10 @@ void ServerConfig::_printOut() const
 	std::cout << "Max clients: " << _maxConn << std::endl;
 	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Index: " << _index << std::endl;
-	for(auto loc : _locations)
-		loc.printOut(1);
-	std::cout << std::endl;
 	for(auto err : _errorPages)
 		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
+	for(auto loc : _locations)
+		loc.printOut(1);
 	std::cout << std::endl;
 }
 

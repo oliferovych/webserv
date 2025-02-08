@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/06 16:06:58 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/08 17:16:34 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,11 +59,18 @@ bool Location::_checkLocation()
 	// 	err_msg("Upload directory does not exist: " + _uploadDir);
 	// 	return false;
 	// }
-	else if(!_uploadDir.empty() && (_allowedMethods.empty() 
+	else if(!_uploadDir.empty() && (_allowedMethods.empty()
 		|| (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
 		&& std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end())))
 	{
 		err_msg("Upload directory specified without proper methods allowed");
+		return false;
+	}
+	else if(_uploadDir.empty() && !_allowedMethods.empty()
+		&& (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") != _allowedMethods.end()
+		|| std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") != _allowedMethods.end()))
+	{
+		err_msg("Methods POST or DELETE allowed without specifying upload directory");
 		return false;
 	}
 	return true;
@@ -220,6 +227,15 @@ void Location::printOut(int indent) const
 	for(int i = 0; i < indent; i++)
 		std::cout << "  ";
 	std::cout << "Upload directory: " << _uploadDir << std::endl;
+	for(int i = 0; i < indent; i++)
+		std::cout << "  ";
+	std::cout << "Error Pages: " << std::endl;
+	for(auto err : _errorPages)
+	{
+		for(int i = 0; i <= indent; i++)
+			std::cout << "  ";
+		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
+	}
 	std::cout << std::endl;
 }
 
