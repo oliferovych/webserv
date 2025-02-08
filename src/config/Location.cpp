@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/08 17:16:34 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/08 17:19:47 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,10 +187,6 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 	}
 	if(_root.empty())
 		_root = servRoot;
-	else if(_root.front() != '/')
-		_root = '/' + _root;
-	else if(_root.front() == '/' && _root.size() > 1)
-		_root = servRoot + _root;
 	_resolvePathVars(servRoot);
 	_valid = _checkLocation();
 	if(_valid)
