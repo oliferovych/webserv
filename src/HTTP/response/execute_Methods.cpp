@@ -59,18 +59,18 @@ void Response::populate_dropdown(void)
 
 void Response::autoIndex(std::string requestPath)
 {
-    _body = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + requestPath;
+	std::filesystem::path path = _workingDir / requestPath.substr(1);
+    _body = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path.string();
 	_body += "</title>\n";
     _body += "<style>body { font-family: Arial, sans-serif; }</style>\n</head>\n<body>\n";
-    _body += "<h1>Index of " + requestPath;
+    _body += "<h1>Index of " + path.string();
 	_body += "</h1>\n<ul>\n";
 
     // Parent directory link
     if (requestPath != "/")
         _body += "<li><a href=\"../\">../ (Parent Directory)</a></li>\n";
 	
-	std::filesystem::path path = _workingDir / requestPath.substr(1);
-	std::cout << "req: " << requestPath << "aa: " << path << std::endl;
+	std::cout << "req: " << path.string() << std::endl;
     // List files and directories
 	if (!std::filesystem::is_directory(path))
 	{
@@ -80,10 +80,10 @@ void Response::autoIndex(std::string requestPath)
     for (const auto& entry : std::filesystem::directory_iterator(path))
     {
         std::string fileName = entry.path().filename().string();
-        std::string filePath = path.string() + fileName;
+        std::string filePath = requestPath + fileName;
 
         if (entry.is_directory())
-            filePath += "/"; // Add trailing slash for directories
+            filePath += "/";
 
         _body += "<li><a href=\"" + filePath;
 		_body += "\">" + fileName;
@@ -99,6 +99,12 @@ void Response::GET(void)
 {
 	std::string request_path = _request->get_path();
 	std::filesystem::path path;
+	if (std::filesystem::is_directory(_workingDir / _request->get_path().substr(1)) && request_path.back() != '/')
+	{
+		_status_code = 301;
+		_redirect = request_path + "/";
+		return;
+	}
 	if (request_path.back() == '/')
 	{
 		if (_location)
@@ -112,13 +118,11 @@ void Response::GET(void)
 			}
 		}
 		else if (!_request->config->getIndex().empty())
-		{
 			path = _request->config->getIndex().substr(1);
-		}
 		else
 		{
-			err_msg("no index found in config!");
-			error_body(403, "no index found in config!"); //right error
+			err_msg("no index or autoindex found in config!");
+			error_body(403, "no index or autoindex found in config!"); //right error
 			return ;
 		}
 	}
@@ -131,8 +135,6 @@ void Response::GET(void)
 		return ;
 	}
 	setBody(path);
-	if (request_path == "/delete.html")
-		populate_dropdown();
 }
 
 void Response::fileCreation(std::vector<char> &content, std::string &filename)
@@ -143,9 +145,9 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+		std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
 	if (path != _uploadDir)
-		throw Error(403, "path is outside uploadDir!");
+		throw Error(403, "path is outside the uploadDir defined in the config!");
 	try
 	{
 		if (!std::filesystem::exists(path))
@@ -274,7 +276,7 @@ void Response::DELETE(void)
 		throw Error(403, "cant find file for deletion at path: " + path.string());
 	std::cout << "req: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
 	if (path.parent_path() / "" != _uploadDir)
-		throw Error(403, "path is outside uploadDir!");
+		throw Error(403, "path is outside the uploadDir defined in the config!");
    	if (!std::filesystem::exists(path))
     {
         err_msg("File not found at path: " + path.string());

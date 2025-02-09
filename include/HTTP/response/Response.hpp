@@ -24,6 +24,7 @@ class Response
 		std::string _body;
 		std::string _content_type;
 		std::unordered_map<std::string, std::string> _mimeTypes;
+		std::string _redirect;
 
 		Location *_location;
 		std::string _uploadDir;
