@@ -59,24 +59,35 @@ void Response::populate_dropdown(void)
 
 void Response::autoIndex(std::string requestPath)
 {
-	std::filesystem::path path = _workingDir / requestPath.substr(1);
-    _body = "<!DOCTYPE html>\n<html>\n<head>\n<title>Index of " + path.string();
-	_body += "</title>\n";
-    _body += "<style>body { font-family: Arial, sans-serif; }</style>\n</head>\n<body>\n";
-    _body += "<h1>Index of " + path.string();
-	_body += "</h1>\n<ul>\n";
+    std::filesystem::path path = _workingDir / requestPath.substr(1);
+	std::string displayPath = _location->getRoot() + requestPath.substr(1);
 
-    // Parent directory link
+    if (!std::filesystem::is_directory(path))
+    {
+        error_body(404, "Directory does not exist. Cannot generate autoIndex. Path: " + path.string());
+        return;
+    }
+    _body = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n";
+    _body += "<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+    _body += "<title>Index of " + displayPath + "</title>\n";
+    _body += "<style>\n"
+             "body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #333; display: flex; "
+             "justify-content: center; align-items: center; height: 100vh; margin: 0; }\n"
+             ".container { max-width: 600px; width: 90%; background: white; padding: 20px; border-radius: 12px; "
+             "box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }\n"
+             "h1 { font-size: 1.5em; margin-bottom: 10px; }\n"
+             "ul { list-style: none; padding: 0; margin: 0; }\n"
+             "li { padding: 10px; border-radius: 8px; transition: background 0.2s, transform 0.2s; }\n"
+             "li:hover { background: #f0f0f0; transform: scale(1.05); }\n"
+             "a { text-decoration: none; color: #007aff; font-weight: 500; display: flex; align-items: center; }\n"
+             "a:hover { color: #0056b3; }\n"
+             ".icon { margin-right: 8px; font-size: 1.2em; transition: transform 0.2s; }\n"
+             "li:hover .icon { transform: scale(1.2); }\n"
+             "</style>\n</head>\n<body>\n";
+    _body += "<div class='container'>\n<h1>📂 Index of " + displayPath + "</h1>\n<ul>\n";
+
     if (requestPath != "/")
-        _body += "<li><a href=\"../\">../ (Parent Directory)</a></li>\n";
-	
-	std::cout << "req: " << path.string() << std::endl;
-    // List files and directories
-	if (!std::filesystem::is_directory(path))
-	{
-		error_body(404, "directory doesnt exist. Cant do autoIndex on it! Path: " + path.string());
-		return ;
-	}
+        _body += "<li><a href=\"../\"><span class='icon'>⬅</span> ../ Parent Directory</a></li>\n";
     for (const auto& entry : std::filesystem::directory_iterator(path))
     {
         std::string fileName = entry.path().filename().string();
@@ -85,13 +96,16 @@ void Response::autoIndex(std::string requestPath)
         if (entry.is_directory())
             filePath += "/";
 
-        _body += "<li><a href=\"" + filePath;
-		_body += "\">" + fileName;
-		_body += "</a></li>\n";
-    }
+        std::string icon = entry.is_directory() ? "📁" : "📄";
 
-    _body += "</ul>\n</body>\n</html>";
+        _body += "<li><a href=\"" + filePath + "\"><span class='icon'>" + icon + "</span>" + fileName + "</a></li>\n";
+    }
+    _body += "</ul>\n</div>\n</body>\n</html>";
 }
+
+
+
+
 
 
 
