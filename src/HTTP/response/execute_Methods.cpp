@@ -57,43 +57,86 @@ void Response::populate_dropdown(void)
     }
 }
 
+void Response::autoIndex(std::string requestPath)
+{
+    std::filesystem::path path = _workingDir / requestPath.substr(1);
+	std::string displayPath = _location->getRoot() + requestPath.substr(1);
+
+    if (!std::filesystem::is_directory(path))
+    {
+        error_body(404, "Directory does not exist. Cannot generate autoIndex. Path: " + path.string());
+        return;
+    }
+    _body = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n";
+    _body += "<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+    _body += "<title>Index of " + displayPath + "</title>\n";
+    _body += "<style>\n"
+             "body { font-family: 'Inter', sans-serif; background: #f5f5f7; color: #333; display: flex; "
+             "justify-content: center; align-items: center; height: 100vh; margin: 0; }\n"
+             ".container { max-width: 600px; width: 90%; background: white; padding: 20px; border-radius: 12px; "
+             "box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }\n"
+             "h1 { font-size: 1.5em; margin-bottom: 10px; }\n"
+             "ul { list-style: none; padding: 0; margin: 0; }\n"
+             "li { padding: 10px; border-radius: 8px; transition: background 0.2s, transform 0.2s; }\n"
+             "li:hover { background: #f0f0f0; transform: scale(1.05); }\n"
+             "a { text-decoration: none; color: #007aff; font-weight: 500; display: flex; align-items: center; }\n"
+             "a:hover { color: #0056b3; }\n"
+             ".icon { margin-right: 8px; font-size: 1.2em; transition: transform 0.2s; }\n"
+             "li:hover .icon { transform: scale(1.2); }\n"
+             "</style>\n</head>\n<body>\n";
+    _body += "<div class='container'>\n<h1>📂 Index of " + displayPath + "</h1>\n<ul>\n";
+
+    if (requestPath != "/")
+        _body += "<li><a href=\"../\"><span class='icon'>⬅</span> ../ Parent Directory</a></li>\n";
+    for (const auto& entry : std::filesystem::directory_iterator(path))
+    {
+        std::string fileName = entry.path().filename().string();
+        std::string filePath = requestPath + fileName;
+
+        if (entry.is_directory())
+            filePath += "/";
+
+        std::string icon = entry.is_directory() ? "📁" : "📄";
+
+        _body += "<li><a href=\"" + filePath + "\"><span class='icon'>" + icon + "</span>" + fileName + "</a></li>\n";
+    }
+    _body += "</ul>\n</div>\n</body>\n</html>";
+}
+
+
+
+
+
+
 
 void Response::GET(void)
 {
 	std::string request_path = _request->get_path();
 	std::filesystem::path path;
+	if (std::filesystem::is_directory(_workingDir / _request->get_path().substr(1)) && request_path.back() != '/')
+	{
+		_status_code = 301;
+		_redirect = request_path + "/";
+		return;
+	}
 	if (request_path.back() == '/')
 	{
-		if (_location && !_location->getIndex().empty())
+		if (_location)
 		{
-			if (_location->getIndex()[0] != '/')
+			if (!_location->getIndex().empty())
+				path = _rootDir / _location->getIndex().substr(1);
+			else if (_location->getAutoIndex() == "on")
 			{
-				request_path += _location->getIndex();
-				path = _workingDir / request_path.substr(1);
-			}
-			else
-			{
-				request_path += _location->getIndex().substr(1);
-				path = _rootDir / _contentDir / request_path.substr(1);
+				autoIndex(request_path);
+				return;
 			}
 		}
 		else if (!_request->config->getIndex().empty())
-		{
-			if (_request->config->getIndex().front() != '/')
-			{
-				request_path += _request->config->getIndex();
-				path = _workingDir / request_path.substr(1);
-			}
-			else
-			{
-				request_path = _request->config->getIndex();
-				path = _workingDir / request_path.substr(1);
-			}
-		}
+			path = _request->config->getIndex().substr(1);
 		else
 		{
-			err_msg("no index found in config!");
-			error_body(403, "no index found in config!"); //right error
+			err_msg("no index or autoindex found in config!");
+			error_body(403, "no index or autoindex found in config!"); //right error
 			return ;
 		}
 	}
@@ -106,8 +149,6 @@ void Response::GET(void)
 		return ;
 	}
 	setBody(path);
-	if (request_path == "/delete.html")
-		populate_dropdown();
 }
 
 void Response::fileCreation(std::vector<char> &content, std::string &filename)
@@ -118,9 +159,9 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	// std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+		std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
 	if (path != _uploadDir)
-		throw Error(403, "path is outside uploadDir!");
+		throw Error(403, "path is outside the uploadDir defined in the config!");
 	try
 	{
 		if (!std::filesystem::exists(path))
@@ -247,9 +288,9 @@ void Response::DELETE(void)
 		throw Error(403, "cant delete directories");
 	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
 		throw Error(403, "cant find file for deletion at path: " + path.string());
-	// std::cout << "req: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
+	std::cout << "req: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
 	if (path.parent_path() / "" != _uploadDir)
-		throw Error(403, "path is outside uploadDir!");
+		throw Error(403, "path is outside the uploadDir defined in the config!");
    	if (!std::filesystem::exists(path))
     {
         err_msg("File not found at path: " + path.string());

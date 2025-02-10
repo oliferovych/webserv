@@ -4,12 +4,10 @@ Response::Response(Request& request)
 	: _result(""), _status_code(200), _request(&request), _rootDir(getrootDir()), _location(nullptr)
 {
 	init_mimeTypes();
-	_contentDir = _request->config->getRoot();
-	// std::cout << "con dir: " << _contentDir << std::endl;
-	if (_contentDir[0] == '/')
-    	_contentDir = _contentDir.substr(1);
-	_workingDir = _rootDir / _contentDir;
-	// std::cout << "active con: " << _workingDir << std::endl;
+	if (!_request->config->getRoot().empty())
+		_workingDir = _rootDir / _request->config->getRoot().substr(1);
+	else
+		throw Error(403, "no root defined in config!"); //error code
 }
 
 Response::Response(void)
@@ -53,7 +51,7 @@ void Response::addHeaders(std::string category, std::vector<std::string> args)
 
 void Response::build(void)
 {
-	std::string errorMessage = _status_code == 200 || _status_code == 201 ? "OK" : "KO";
+	std::string errorMessage = _status_code == 200 || _status_code == 201 || _status_code == 301 ? "OK" : "KO";
 	_result += "HTTP/1.1 " + std::to_string(_status_code);
 	_result += " " + errorMessage;
 	_result += "\r\n";
@@ -66,6 +64,8 @@ void Response::build(void)
 	}
 	else
 		addHeaders("Content-Length", {"0"});
+	if (!_redirect.empty())
+		addHeaders("Location", {_redirect});
 	auto connection = _request->get_header("connection");
 	if (!connection.empty() && connection[0] == "close")
 			addHeaders("connection", {"close"});
@@ -136,26 +136,10 @@ void Response::error_body(int code, const std::string &errorMessage)
 
 	if (_location && !_location->getErrorPage(code).empty())
 	{
-		if (_location->getErrorPage(code).front() != '/')
-		{
-			setBody(_workingDir / _location->getErrorPage(code));
-			return ;
-		}
-		else
-		{
-			std::filesystem::path p = _rootDir / _contentDir /_location->getErrorPage(code).substr(1);
-			if (std::filesystem::exists(p))
-				setBody(p);
-			else
-			{
-				_body = "Error page not found at path: " + p.string();
-				_body += "\nFor error: " + std::to_string(code) + " " + errorMessage;
-				_content_type = "text/plain";
-			}
-		}
+			setBody(_rootDir / _location->getErrorPage(code).substr(1));
 	}
 	else if (_request && !_request->config->getErrorPage(code).empty())
-		setBody(_rootDir / _contentDir / _request->config->getErrorPage(code));
+		setBody(_rootDir / _request->config->getErrorPage(code).substr(1));
 	else
 	{
 		_body = std::to_string(code) + " " + errorMessage;
@@ -231,29 +215,15 @@ void Response::checkLocation(void)
 				}
 			}
 			if (!flag)
-				throw Error(403, "Method not defined in config: " + _request->get_method()); //error code
+				throw Error(403, "Method not defined in config for this location: " + _request->get_method()); //error code
 		}
 
 
-		if (!_location->getRoot().empty())
-			_workingDir = _rootDir / _location->getRoot().substr(1) / dir.string().substr(1);
-		else
-			_workingDir /= dir.string().substr(1);
-
+		if (!_location->getRoot().empty() && _location->getRoot() != _request->config->getRoot())
+			_workingDir = _rootDir / _location->getRoot().substr(1);
 
 		if (_request->get_method() != "GET")
-		{
-			if (!_location->getUploadDir().empty())
-				_uploadDir = _rootDir / _location->getUploadDir().substr(1);
-			else
-				throw Error(403, "no uploadDir defined in config!");
-		}
-
-		
-		std::string p = _request->get_path();
-		if (dir.string() != "/")
-			p.erase(0, dir.string().size());
-		_request->setPath(p);
+			_uploadDir = _rootDir / _location->getUploadDir().substr(1);
 	}
 	else
 	{
