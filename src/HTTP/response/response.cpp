@@ -1,7 +1,7 @@
 #include "../../../include/HTTP/response/Response.hpp"
 
 Response::Response(Request *request)
-	: _result(""), _status_code(200), _request(request), _rootDir(getrootDir()), _location(nullptr)
+	: _result(""), _status_code(200), _request(request), _rootDir(getrootDir()), _location(nullptr), _isCGI(false)
 {
 	init_mimeTypes();
 	if (!_request->config->getRoot().empty())
@@ -11,7 +11,7 @@ Response::Response(Request *request)
 }
 
 Response::Response(void)
-	: _result(""), _status_code(200), _request(nullptr), _contentDir("content"), _rootDir(getrootDir()), _location(nullptr)
+	: _result(""), _status_code(200), _request(nullptr), _rootDir(getrootDir()), _location(nullptr), _isCGI(false)
 {
 	init_mimeTypes();
 }
@@ -24,15 +24,21 @@ Response::~Response(void)
 void Response::init_mimeTypes(void)
 {
 	_mimeTypes = {
-			{".html", "text/html"},
-            {".txt", "text/plain"},
-            {".css", "text/css"},
-            {".js", "application/javascript"},
-            {".jpg", "image/jpeg"},
-            {".png", "image/png"},
-			{".gif", "image/gif"},
-            {".ico", "image/x-icon"}
-		};
+		{".html", "text/html"},
+		{".txt", "text/plain"},
+		{".css", "text/css"},
+		{".js", "application/javascript"},
+		{".jpg", "image/jpeg"},
+		{".png", "image/png"},
+		{".gif", "image/gif"},
+		{".ico", "image/x-icon"},
+		{".pl", "application/x-perl"},
+		{".py", "application/x-python-code"},
+		{".php", "application/x-httpd-php"},
+		{".sh", "application/x-sh"},
+		{".rb", "application/x-ruby"}
+	};
+	
 }
 
 
@@ -225,10 +231,22 @@ void Response::checkLocation(void)
 
 		if (_request->get_method() != "GET")
 			_uploadDir = _rootDir / _location->getUploadDir().substr(1);
+		if (!_location.getCGI().empty)
+		{
+			std::vector<std::string> cgiBase = _location.getCGI();
+			if (std::search(cgiBase.begin(), cgiBase.end(), path.extension()) != cgiBase.end())
+				_isCGI = true;
+		}
 	}
 	else
 	{
 		debug_msg("no location found for: " + dir.string());
+		if (!_request->config.getCGI().empty)
+		{
+			std::vector<std::string> cgiBase = _request->config.getCGI();
+			if (std::search(cgiBase.begin(), cgiBase.end(), path.extension()) != cgiBase.end())
+				_isCGI = true;
+		}
 		if (_request->get_method() != "GET")
 			throw Error(403, "it isnt possbile to POST/DELETE outside a location!");
 	}

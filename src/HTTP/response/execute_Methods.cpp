@@ -336,6 +336,14 @@ void Response::DELETE(void)
 
 void Response::setBody(std::filesystem::path path)
 {
+	if (_isCGI)
+	{
+		_body = cgi_handler(path);
+		_content_type = "text/html";
+		return ;
+	}
+
+
 	std::ifstream file(path, std::ios::binary);
 
 	if (!file.is_open())
