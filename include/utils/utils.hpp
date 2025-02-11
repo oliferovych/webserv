@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 01:52:35 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/11 12:23:01 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 
 class Error : public std::exception

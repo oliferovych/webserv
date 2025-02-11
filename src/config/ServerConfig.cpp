@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/08 14:19:03 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/11 15:56:06 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,16 +41,14 @@ bool ServerConfig::_checkConfig()
 			}
 		}
 	}
-	if(_ports.empty() || _root.empty() || _index.empty())
+	if(_ports.empty() || _root.empty())
+	{
+		err_msg("One of the vital server config variables  is missing");
 		return false;
+	}
 	if(!isDir(_root))
 	{
 		err_msg("Server's root directory does not exist");
-		return false;
-	}
-	else if(!fileExists(_index))
-	{
-		err_msg("Server's index file does not exist");
 		return false;
 	}
 	return true;
@@ -90,7 +88,7 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 		}
 		else if(isKeyWord(line, "location"))
 		{
-			Location loc(file, getSingleVarValue(line, "location"), _root);
+			Location loc(file, getSingleVarValue(line, "location"), *this);
 			if(!loc.isValid())
 				return false;
 			_locations.push_back(loc);
@@ -125,6 +123,17 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 			}
 			catch(const std::exception& e)
 			{
+				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
+				return false;
+			}
+		}
+		else if(isKeyWord(line, "cgi"))
+		{
+			try
+			{
+				_cgi = getMultipleVarValue(line, "cgi");
+			}
+			catch(const std::exception& e){
 				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
 				return false;
 			}
