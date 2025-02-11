@@ -130,5 +130,5 @@ void Request::validateHeaders()
 	}
 	if (_sessionID.empty())
     	_sessionID = addSession(_sessionDB);
-	std::cout << "uu: " << _sessionID << " aa: " << _sessionDB[_sessionID]["background_color"] << std::endl;
+	// std::cout << "uu: " << _sessionID << " aa: " << _sessionDB[_sessionID]["background_color"] << std::endl;
 }

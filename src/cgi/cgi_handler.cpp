@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 16:02:56 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/11 16:20:51 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,8 @@ std::string Response::cgi_handler(const std::string &path)
 	int pipeFd[2];
 	std::string output;
 	char buffer[4096];
-	
-	char cwd[4096];
-	if (getcwd(cwd, sizeof(cwd)) == NULL)
-		throw Error(500, "Getcwd failed");
-	std::string full_path = std::string(cwd) + path;
+
+	// debug_msg(path);
 
 	if (pipe(pipeFd) == -1)
 		throw Error(500, "Pipe failed");
@@ -63,7 +60,7 @@ std::string Response::cgi_handler(const std::string &path)
 
 		char *execve_args[3];
 		execve_args[0] = strdup(interpreter.c_str());
-		execve_args[1] = strdup(full_path.c_str());
+		execve_args[1] = strdup(path.c_str());
 		execve_args[2] = NULL;
 	
 		char *envp[] = {NULL};

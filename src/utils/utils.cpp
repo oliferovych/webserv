@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 02:13:52 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/11 16:22:48 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,6 @@ std::string addSession(std::unordered_map<std::string, std::unordered_map<std::s
     std::string color = generate_random_color();
 
 	_sessionDB[session_id]["background_color"] = color;
-	std::cout << "added new session. ID: " << session_id << " color: " << color << std::endl;
+	info_msg("Added new session: ID: " + session_id + " colour: " + color);
 	return (session_id);
 }

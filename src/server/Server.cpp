@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 01:58:40 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/11 16:24:36 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,9 +176,8 @@ void Server::_closeClient(int clientFd)
 	if (!sessionID.empty())
 	{
         _sessionDB.erase(sessionID);
-        std::cout << "Removed session: " << sessionID << std::endl;
+        info_msg("Removed session: " + sessionID);
     }
-	
 	delete _clients[clientFd];
 	_clients.erase(clientFd);
 	info_msg("Client socket closed on FD " + std::to_string(clientFd));
