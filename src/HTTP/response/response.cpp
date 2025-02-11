@@ -1,7 +1,7 @@
 #include "../../../include/HTTP/response/Response.hpp"
 
-Response::Response(Request& request)
-	: _result(""), _status_code(200), _request(&request), _rootDir(getrootDir()), _location(nullptr)
+Response::Response(Request *request)
+	: _result(""), _status_code(200), _request(request), _rootDir(getrootDir()), _location(nullptr)
 {
 	init_mimeTypes();
 	if (!_request->config->getRoot().empty())
@@ -71,6 +71,7 @@ void Response::build(void)
 			addHeaders("connection", {"close"});
 	else
 		addHeaders("connection", {"keep-alive"});
+	addHeaders("Set-Cookie", {"session_id=" + _request->get_sessionID()});
 	_result += "\r\n";
 	_result += _body;
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/03 00:38:50 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/11 01:58:40 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,7 +143,7 @@ void Server::_acceptClient(int serverFd)
 
 	try
 	{
-		Client *clientSocket = new Client(client_fd, client_address, _config);
+		Client *clientSocket = new Client(client_fd, client_address, _config, _sessionDB);
 		try{
 			_clients.insert(std::make_pair(client_fd, clientSocket));
 		}catch(...){
@@ -168,8 +168,17 @@ bool Server::_isServer(int fd)
 
 void Server::_closeClient(int clientFd)
 {
+	// Response resp;
+	// resp.build_err()
 	close(clientFd);
 	_poll.removeFd(clientFd);
+	std::string sessionID = _clients[clientFd]->getSessionID();
+	if (!sessionID.empty())
+	{
+        _sessionDB.erase(sessionID);
+        std::cout << "Removed session: " << sessionID << std::endl;
+    }
+	
 	delete _clients[clientFd];
 	_clients.erase(clientFd);
 	info_msg("Client socket closed on FD " + std::to_string(clientFd));
@@ -281,3 +290,5 @@ ServerConfig const &Server::_findConfig(int port)
 	}
 	throw std::runtime_error("No server config found for port " + std::to_string(port));
 }
+
+

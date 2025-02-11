@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/03 00:40:47 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/11 02:13:52 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/global.hpp"
+#include <random>
 
 std::string timestamp()
 {
@@ -157,4 +158,41 @@ bool isFiletype(std::string type, std::string const &path)
 	} catch (...) {
 		return false;
 	}
+}
+
+std::string generate_random_color()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dis(0, 15);
+
+    const char hex_chars[] = "0123456789ABCDEF";
+    std::string color = "#";
+    for (int i = 0; i < 6; ++i)
+        color += hex_chars[dis(gen)];
+    return color;
+}
+
+std::string generate_random_sessionID()
+{
+	std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dis(0, 61);
+
+    const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::string session_id;
+    for (int i = 0; i < 16; ++i)
+        session_id += alphanum[dis(gen)];
+	return (session_id);
+}
+
+
+std::string addSession(std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &_sessionDB)
+{
+    std::string session_id = generate_random_sessionID();
+    std::string color = generate_random_color();
+
+	_sessionDB[session_id]["background_color"] = color;
+	std::cout << "added new session. ID: " << session_id << " color: " << color << std::endl;
+	return (session_id);
 }

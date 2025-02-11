@@ -43,12 +43,13 @@ class Response
 		std::pair<std::string, std::vector<char>> extractData();
 		void populate_dropdown(void);
 		void autoIndex(std::string requestPath);
+		void insert_sessionData(void);
 
 
 
 
 	public:
-		Response(Request& request);
+		Response(Request *request);
 		Response(void);
 		~Response();
 

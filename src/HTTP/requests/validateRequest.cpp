@@ -103,4 +103,32 @@ void Request::validateHeaders()
 		throw Error(400, "content-type is missing for POST request");
 	if (it != headers.end() && request_line.method == "POST" && it->second[0].compare(0, 19, "multipart/form-data") != 0)
 		throw Error(501, "server only supports multipart/form-data content type for POST request. Requested content-type: " + it->second[0]);
+
+	it = headers.find("cookie");
+	if (it != headers.end())
+	{
+		std::string id;
+		for (const auto &val : it->second)
+		{
+			size_t pos = val.find("session_id=");
+			if (pos != std::string::npos)
+			{
+				pos += 11;
+				id = val.substr(pos);
+				if (id == "reset")
+				{
+					if (!_sessionID.empty())
+						_sessionDB.erase(_sessionID);
+					_sessionID = addSession(_sessionDB);
+					std::cout << "session reset" << std::endl;
+				}
+				else if (!_sessionID.empty())
+					_sessionID = id;
+				break;
+			}
+		}
+	}
+	if (_sessionID.empty())
+    	_sessionID = addSession(_sessionDB);
+	std::cout << "uu: " << _sessionID << " aa: " << _sessionDB[_sessionID]["background_color"] << std::endl;
 }

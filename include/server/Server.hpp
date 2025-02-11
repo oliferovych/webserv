@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 15:53:51 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/29 11:19:27 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/10 22:48:31 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ class Server
 		std::vector<ServerConfig> _config;
 		std::unordered_map<int, Socket*> _sockets;
 		std::unordered_map<int, Client*> _clients;
+		std::unordered_map<std::string, std::unordered_map<std::string, std::string>> _sessionDB;
 		SocketPoll _poll;
 		static bool _running;  // Static member for signal handling
 		static void _signalHandler(int signum);
