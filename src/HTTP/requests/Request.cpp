@@ -1,8 +1,8 @@
 #include "../../../include/HTTP/requests/Request.hpp"
 #include <algorithm>
 
-Request::Request(std::vector<ServerConfig> &conf)
-	: content_length(0), state(PARSE_REQUEST_LINE), configVec(conf), config(nullptr)
+Request::Request(std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB, std::string &sessionID)
+	: content_length(0), state(PARSE_REQUEST_LINE), configVec(conf), _sessionDB(sessionDB), _sessionID(sessionID), config(nullptr)
 {
 }
 
@@ -112,9 +112,13 @@ void Request::parse_headers(void)
 
 		//checking for multiple vals
 		size_t content_start = 0;
+		size_t pos_comma = 0;
 		while (content_start < value_line.length())
 		{
-			size_t pos_comma = value_line.find(",", content_start);
+			if (key != "cookie")
+				pos_comma = value_line.find(",", content_start);
+			else
+				pos_comma = value_line.find(";", content_start);
 			if (pos_comma == std::string::npos)
 				pos_comma = value_line.length();
 
@@ -286,3 +290,15 @@ void Request::setPath(std::string str)
 {
 	request_line.path = str;
 }
+
+std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &Request::getSessionDB(void)
+{
+	return (_sessionDB);
+}
+
+const std::string &Request::get_sessionID() const
+{
+	return (_sessionID);
+}
+
+

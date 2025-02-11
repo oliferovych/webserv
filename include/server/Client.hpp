@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/01/30 11:28:23 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/11 01:43:41 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,9 @@ class Client
     	};
 		
 		int _clientFd;
+		
+		std::string _sessionID;
+		
 		bool _connected;
 		sockaddr_in _addr;
 		Request _request;
@@ -47,11 +50,11 @@ class Client
 	
 	public:
 		int handle_message();
-		Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf);
+		Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB);
 		~Client();
 		const int &getClientFd() const { return _clientFd; }
 		const sockaddr_in &getAddr() const { return _addr; }
 		bool hasTimedOut() const;
-
+		std::string getSessionID(void);
 		
 };

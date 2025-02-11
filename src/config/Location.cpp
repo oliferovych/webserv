@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/08 17:19:47 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/11 15:58:57 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ void Location::_resolvePathVars(std::string const &servRoot)
 
 }
 
-Location::Location(std::ifstream &file, std::string const &path, std::string const &servRoot) : _path(path), _autoindex("off"), _valid(false)
+Location::Location(std::ifstream &file, std::string const &path, ServerConfig const &serv) : _path(path), _autoindex("off"), _valid(false)
 {
 	std::string line;
 	while(std::getline(file, line))
@@ -179,6 +179,17 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 				return ;
 			}
 		}
+		else if(isKeyWord(line, "cgi"))
+		{
+			try
+			{
+				_cgi = getMultipleVarValue(line, "cgi");
+			}
+			catch(const std::exception& e){
+				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
+				return ;
+			}
+		}
 		else
 		{
 			err_msg("Invalid keyword in location block: " + line);
@@ -186,8 +197,12 @@ Location::Location(std::ifstream &file, std::string const &path, std::string con
 		}
 	}
 	if(_root.empty())
-		_root = servRoot;
-	_resolvePathVars(servRoot);
+		_root = serv.getRoot();
+	_resolvePathVars(serv.getRoot());
+	if(_index.empty())
+		_index = serv.getIndex();
+	if(_cgi.empty())
+		_cgi = serv.getCGI();
 	_valid = _checkLocation();
 	if(_valid)
 		debug_msg("Location block parsed");
@@ -232,6 +247,11 @@ void Location::printOut(int indent) const
 			std::cout << "  ";
 		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
 	}
+	for(int i = 0; i < indent; i++)
+		std::cout << "  ";
+	std::cout << "CGI: ";
+	for(auto handler : _cgi)
+		std::cout << handler << " ";
 	std::cout << std::endl;
 }
 

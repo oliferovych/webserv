@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/06 14:14:04 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/11 15:58:13 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 #include <iostream>
 #include "../utils/utils.hpp"
 #include <unordered_map>
+#include "ServerConfig.hpp"
+
+class ServerConfig;
 
 class Location
 {
@@ -26,11 +29,12 @@ class Location
 		std::unordered_map<int, std::string> _errorPages;
 		std::string _uploadDir;
 		std::string _autoindex;
+		std::vector<std::string> _cgi;
 		bool _valid;
 		bool _checkLocation();
 		void _resolvePathVars(std::string const &servRoot);
 	public:
-		Location(std::ifstream &file, std::string const &path, std::string const &servRoot);
+		Location(std::ifstream &file, std::string const &path, ServerConfig const &serv);
 		~Location();
 
 		bool isValid() const { return _valid; }
@@ -41,6 +45,7 @@ class Location
 		const std::string &getUploadDir() const { return _uploadDir; }
 		const std::string &getAutoIndex() const { return _autoindex; }
 		const std::vector<std::string> &getAllowedMethods() const { return _allowedMethods; }
+		const std::vector<std::string> &getCGI() const { return _cgi; }
 		std::string getErrorPage(int code);
 
 		void printOut(int indent) const;

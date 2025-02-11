@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/04 18:18:55 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/11 16:21:23 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #include "../../include/HTTP/requests/Request.hpp"
 #include <unistd.h>
 
-Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf)
-	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf), _state(COMPLETE)
+Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB)
+	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, sessionDB, _sessionID), _state(COMPLETE)
 {
 }
 
@@ -62,7 +62,7 @@ int Client::handle_message()
 		changeState(SENDING);
 		info_msg("Message recieved from client on FD " + std::to_string(_clientFd));
 			// _request.debug_print();
-        Response response(_request);
+        Response response(&_request);
 		response.doMethod();
 		response.build();
 			// std::cout << "\nResponse:\n" << response.getResult() << std::endl;
@@ -111,3 +111,7 @@ void Client::changeState(Status newState)
 	_lastActivityTime = std::chrono::steady_clock::now();
 }
 
+std::string Client::getSessionID(void)
+{
+	return (_sessionID);
+}

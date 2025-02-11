@@ -18,13 +18,14 @@ class Response
 		std::string _result;
 		int _status_code;
 		Request *_request;
-		std::string _contentDir;
 		std::filesystem::path _rootDir;
 		std::filesystem::path _workingDir;
 		std::string _body;
 		std::string _content_type;
 		std::unordered_map<std::string, std::string> _mimeTypes;
 		std::string _redirect;
+
+		bool _isCGI;
 
 		Location *_location;
 		std::string _uploadDir;
@@ -43,12 +44,14 @@ class Response
 		std::pair<std::string, std::vector<char>> extractData();
 		void populate_dropdown(void);
 		void autoIndex(std::string requestPath);
+		void insert_sessionData(void);
+		std::string cgi_handler(const std::string &path);
 
 
 
 
 	public:
-		Response(Request& request);
+		Response(Request *request);
 		Response(void);
 		~Response();
 

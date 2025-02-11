@@ -103,6 +103,26 @@ void Response::autoIndex(std::string requestPath)
     _body += "</ul>\n</div>\n</body>\n</html>";
 }
 
+void Response::insert_sessionData(void)
+{
+	std::cout << _request->get_sessionID() << std::endl;
+	std::string background_color;
+	auto &sessionDB = _request->getSessionDB();
+	auto &sessionID = _request->get_sessionID();
+	auto session_it = sessionDB.find(sessionID);
+	if (session_it != sessionDB.end() && session_it->second.count("background_color"))
+		background_color = session_it->second["background_color"];
+	else
+		throw Error(500, "session not found: " + sessionID);
+
+	size_t pos = _body.find("background-color: #333;");
+	if (pos != std::string::npos)
+		_body.replace(pos, 22, "background-color: " + background_color);
+	else
+		throw Error(500, "no background for replacement found");
+}
+
+
 
 
 
@@ -316,6 +336,14 @@ void Response::DELETE(void)
 
 void Response::setBody(std::filesystem::path path)
 {
+	if (_isCGI)
+	{
+		_body = cgi_handler(path);
+		_content_type = "text/html";
+		return ;
+	}
+
+
 	std::ifstream file(path, std::ios::binary);
 
 	if (!file.is_open())
@@ -332,4 +360,7 @@ void Response::setBody(std::filesystem::path path)
 
 	_content_type = getMimeType(path.string());
 	_body = buffer.str();
+
+	if (path.filename() == "template.html")
+		insert_sessionData();
 }

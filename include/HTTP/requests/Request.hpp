@@ -47,6 +47,9 @@ class Request
 
 		std::vector<ServerConfig> &configVec;
 
+		std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &_sessionDB;
+		std::string &_sessionID;
+
 
 		void parse_request_line();
 		void parse_headers();
@@ -60,8 +63,10 @@ class Request
 		ServerConfig *_findConfig(std::string &serverName);
 
 
+
+
 	public:
-		Request(std::vector<ServerConfig> &conf);
+		Request(std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB, std::string &sessionID);
 		~Request();
 
 		ServerConfig *config;
@@ -78,6 +83,8 @@ class Request
 		const std::string &get_version() const;
 		const std::vector<char> &get_body() const;
 		const std::vector<std::string> get_header(const std::string& key) const;
+		std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &getSessionDB(void);
+		const std::string &get_sessionID() const;
 
 		void setPath(std::string str);
 
