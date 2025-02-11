@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/08 17:16:20 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/11 16:02:56 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,12 @@ std::string get_interpreter_path(const std::string &path)
 	else if (extension == "sh")
 		interpreter += "/bin/bash";
 	else
-		throw std::runtime_error("Unsupported CGI extension: " + extension);
+		throw Error(500, "Unsupported CGI extension: " + extension);
 
 	return interpreter;
 }
 
-std::string cgi_handler(const std::string &path)
+std::string Response::cgi_handler(const std::string &path)
 {
 	std::string interpreter = get_interpreter_path(path);
 	int pipeFd[2];
@@ -43,17 +43,17 @@ std::string cgi_handler(const std::string &path)
 	
 	char cwd[4096];
 	if (getcwd(cwd, sizeof(cwd)) == NULL)
-		throw std::runtime_error("Getcwd failed");
+		throw Error(500, "Getcwd failed");
 	std::string full_path = std::string(cwd) + path;
 
 	if (pipe(pipeFd) == -1)
-		throw std::runtime_error("Pipe failed");
+		throw Error(500, "Pipe failed");
 	pid_t pid = fork();
 	if (pid == -1)
 	{
 		close(pipeFd[0]);
 		close(pipeFd[1]);
-		throw std::runtime_error("Fork failed");
+		throw Error(500, "Fork failed");
 	}
 	else if (pid == 0) //child
 	{
@@ -69,7 +69,7 @@ std::string cgi_handler(const std::string &path)
 		char *envp[] = {NULL};
 
 		if (execve(interpreter.c_str(), execve_args, envp) == -1)
-			throw std::runtime_error("Execve failed");
+			throw Error(500, "Execve failed");
 		exit(1);
 	}
 	//parent
