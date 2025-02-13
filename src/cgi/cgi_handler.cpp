@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 16:20:51 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/13 17:58:14 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,9 @@ std::string get_interpreter_path(const std::string &path)
 
 std::string Response::cgi_handler(const std::string &path)
 {
+	_content_type = "text/html"; //really??
+	if (!std::filesystem::exists(path) || std::filesystem::is_directory(path))
+		throw Error(400, "invalid path for cgi: " + path);
 	std::string interpreter = get_interpreter_path(path);
 	int pipeFd[2];
 	std::string output;

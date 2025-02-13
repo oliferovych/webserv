@@ -248,7 +248,7 @@ void Request::parse_chunked_body()
             return ;
         }
 		if (chunk_size > config->getMaxBodySize() - body.size())
-    		throw Error(400, "request body is larger than MaxBodySize: " + std::to_string(body.size() + chunk_size));
+    		throw Error(413, "request body is larger than MaxBodySize: " + std::to_string(body.size() + chunk_size));
 
 		// Ensure there is enough data in the buffer for the current chunk and its CRLF
         if (buffer.size() < line_length + chunk_size + 2)

@@ -200,7 +200,9 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-		std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+	if (!std::filesystem::is_directory(path))
+		throw Error(400, "Request Target needs to be a directory for POST methode: " + path.string());
+	std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
 	if (path != _uploadDir)
 		throw Error(403, "path is outside the uploadDir defined in the config!");
 	try
@@ -310,7 +312,11 @@ void Response::POST(void)
 	std::pair<std::string, std::vector<char>> result;
 	try
 	{
-
+		if (_isCGI)
+		{
+			_body = cgi_handler(_workingDir / _request->get_path().substr(1));
+			return ;
+		}
 		result = extractData();
 		fileCreation(result.second, result.first);
 	}
@@ -361,7 +367,6 @@ void Response::setBody(std::filesystem::path path)
 	if (_isCGI)
 	{
 		_body = cgi_handler(path);
-		_content_type = "text/html";
 		return ;
 	}
 
