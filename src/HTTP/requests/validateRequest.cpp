@@ -39,7 +39,7 @@ void Request::validateRequestLine(void)
 	if (request_line.version != "HTTP/1.1")
 		throw Error(505, "server does not support HTTP version used: " + request_line.version);
 
-	handle_absolute_path();
+	handle_absolute_path(); //check
 	if (request_line.path.find("..") != std::string::npos)
 		throw Error(403, "server doesn't allow .. in request target: " + request_line.path);
 	if (request_line.path[0] != '/')
@@ -90,8 +90,6 @@ void Request::validateHeaders()
 		{
 			throw Error(500, "content_length parsing failed");
 		}
-		// if (content_length == 0)
-		// 	throw Error(400, "content-length is invalid: " + std::to_string(content_length)); //check
 		if (content_length > config->getMaxBodySize())
 			throw Error(400, "content-length is larger than MaxBodySize: " + std::to_string(content_length));
 

@@ -55,11 +55,6 @@ void Request::parse_request_line(void)
 	request_line.path = str_buffer.substr(space_1 + 1, space_2 - space_1 - 1);
 	request_line.version = str_buffer.substr(space_2 + 1, str_buffer.length() - space_2 - 1);
 
-	// check if path is a query string
-	size_t query = request_line.path.find("?");
-	if (query != std::string::npos)
-		request_line.path = request_line.path.substr(0, query);
-
 	if (request_line.path.find("%") != std::string::npos)
 		ft_decode(request_line.path);
 
@@ -133,6 +128,15 @@ void Request::parse_headers(void)
 
 		start = pos_line_end + 2;
 	}
+
+	// check if path is a query string
+	size_t query = request_line.path.find("?");
+	if (query != std::string::npos)
+	{
+		parse_query_string(request_line.path.substr(query + 1), query);
+
+	}
+
 	// delete header section from buffer
 	buffer.erase(buffer.begin(), buffer.begin() + str_buffer.length() + 2);
 
@@ -155,6 +159,42 @@ void Request::parse_headers(void)
 		state = PARSE_BODY;
 	else
 		state = COMPLETE;
+}
+
+void Request::parse_query_string(std::string str, size_t query_pos)
+{
+	request_line.path = request_line.path.substr(0, query_pos);
+
+	size_t start = 0;
+    size_t end;
+	std::string sub_str;
+	size_t equals;
+    
+    while ((end = str.find('&', start)) != std::string::npos)
+    {
+        sub_str = str.substr(start, end - start);
+        equals = sub_str.find('=');
+        if (equals != std::string::npos)
+        {
+            std::string key = sub_str.substr(0, equals);
+            std::string value = sub_str.substr(equals + 1);
+			ft_decode(value);
+			query_vars[key] = value;
+        }
+        start = end + 1;
+    }
+    
+    sub_str = str.substr(start);
+    equals = sub_str.find('=');
+    if (equals != std::string::npos)
+    {
+        std::string key = sub_str.substr(0, equals);
+        std::string value = sub_str.substr(equals + 1);
+		ft_decode(value);
+        query_vars[key] = value;
+    }
+	else
+		throw Error(400, "Wrong query-string format: " + str);
 }
 
 void Request::parse_body(void)
