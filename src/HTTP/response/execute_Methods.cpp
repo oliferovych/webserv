@@ -143,16 +143,37 @@ void Response::GET(void)
 	{
 		if (_location)
 		{
-			if (!_location->getIndex().empty())
-				path = _rootDir / _location->getIndex().substr(1);
-			else if (_location->getAutoIndex() == "on")
+			std::string index = _location->getIndex();
+			if (!index.empty() && index.substr(index.length() - 4) != "/off")
 			{
-				autoIndex(request_path);
-				return;
+				if (index.front() == '/')
+					path = _rootDir / index.substr(1);
+				else
+					path = _workingDir / request_path.substr(1) / _location->getIndex();
+				std::cout << path.string() << std::endl;
+				if (!std::filesystem::exists(path))
+				{
+					if (_location->getAutoIndex() == "on")
+						autoIndex(request_path);
+					else
+					{
+						err_msg("no index or autoindex found for location!!");
+						error_body(403, "forbidden");
+					}
+					return ;
+				}
+			}
+			else if (_location->getAutoIndex() == "on")
+				return (autoIndex(request_path));
+			else
+			{
+				err_msg("no index or autoindex found for location!");
+				error_body(403, "forbidden"); //right error
+				return ;
 			}
 		}
-		else if (!_request->config->getIndex().empty())
-			path = _request->config->getIndex().substr(1);
+		else if (!_request->config->getIndex().empty() && _request->config->getIndex().substr(_request->config->getIndex().length() - 4) != "/off")
+			path = _workingDir / request_path.substr(1) / _request->config->getIndex();
 		else
 		{
 			err_msg("no index or autoindex found in config!");
@@ -289,6 +310,7 @@ void Response::POST(void)
 	std::pair<std::string, std::vector<char>> result;
 	try
 	{
+
 		result = extractData();
 		fileCreation(result.second, result.first);
 	}
