@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 16:22:48 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/12 23:21:25 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,13 +176,15 @@ std::string generate_random_color()
 std::string generate_random_sessionID()
 {
 	std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dis(0, 61);
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dis(0, 61);
 
-    const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    std::string session_id;
-    for (int i = 0; i < 16; ++i)
-        session_id += alphanum[dis(gen)];
+	const char alphanum[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	std::string session_id;
+	for (int i = 0; i < 16; ++i)
+	{
+		session_id += alphanum[dis(gen)];
+	}
 	return (session_id);
 }
 
