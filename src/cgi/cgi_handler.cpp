@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 16:20:51 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/12 23:53:09 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,22 @@ std::string Response::cgi_handler(const std::string &path)
 	int pipeFd[2];
 	std::string output;
 	char buffer[4096];
+	std::unordered_map<std::string, std::string> env;
 
-	// debug_msg(path);
+	env["REQUEST_METHOD"] = _request->get_method();
+	env["SCRIPT_NAME"] = path;
+	env["PATH_INFO"] = path;
+	env["CONTENT_LENGTH"] = std::to_string(_request->get_body().size());
+	env["UPLOAD_DIR"] = path.substr(0, path.find_last_of('/'));
+	// ADD MORE ENV VARIABLES
+
+	std::vector<std::string> envStrings;
+	std::vector<char*> envp;
+	for (const auto& [key, value] : env) {
+		envStrings.push_back(key + "=" + value);
+		envp.push_back(const_cast<char*>(envStrings.back().data()));
+	}
+	envp.push_back(nullptr);
 
 	if (pipe(pipeFd) == -1)
 		throw Error(500, "Pipe failed");
@@ -62,10 +76,8 @@ std::string Response::cgi_handler(const std::string &path)
 		execve_args[0] = strdup(interpreter.c_str());
 		execve_args[1] = strdup(path.c_str());
 		execve_args[2] = NULL;
-	
-		char *envp[] = {NULL};
 
-		if (execve(interpreter.c_str(), execve_args, envp) == -1)
+		if (execve(interpreter.c_str(), execve_args, envp.data()) == -1)
 			throw Error(500, "Execve failed");
 		exit(1);
 	}
