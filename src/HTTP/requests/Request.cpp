@@ -133,8 +133,10 @@ void Request::parse_headers(void)
 	size_t query = request_line.path.find("?");
 	if (query != std::string::npos)
 	{
-		parse_query_string(request_line.path.substr(query + 1), query);
-
+		query_vars = request_line.path.substr(query + 1);
+		if (query_vars.find('=') == std::string::npos)
+			throw Error(400, "Wrong query-string format: " + query_vars);
+		request_line.path = request_line.path.substr(0, query);
 	}
 
 	// delete header section from buffer
@@ -159,42 +161,6 @@ void Request::parse_headers(void)
 		state = PARSE_BODY;
 	else
 		state = COMPLETE;
-}
-
-void Request::parse_query_string(std::string str, size_t query_pos)
-{
-	request_line.path = request_line.path.substr(0, query_pos);
-
-	size_t start = 0;
-    size_t end;
-	std::string sub_str;
-	size_t equals;
-    
-    while ((end = str.find('&', start)) != std::string::npos)
-    {
-        sub_str = str.substr(start, end - start);
-        equals = sub_str.find('=');
-        if (equals != std::string::npos)
-        {
-            std::string key = sub_str.substr(0, equals);
-            std::string value = sub_str.substr(equals + 1);
-			ft_decode(value);
-			query_vars[key] = value;
-        }
-        start = end + 1;
-    }
-    
-    sub_str = str.substr(start);
-    equals = sub_str.find('=');
-    if (equals != std::string::npos)
-    {
-        std::string key = sub_str.substr(0, equals);
-        std::string value = sub_str.substr(equals + 1);
-		ft_decode(value);
-        query_vars[key] = value;
-    }
-	else
-		throw Error(400, "Wrong query-string format: " + str);
 }
 
 void Request::parse_body(void)
@@ -293,7 +259,7 @@ const std::vector<std::string> Request::get_header(const std::string& key) const
 	if (it != headers.end())
 		return (it->second);
 	else
-		return {};
+		return {""};
 }
 
 const std::string &Request::get_method() const
@@ -340,5 +306,17 @@ const std::string &Request::get_sessionID() const
 {
 	return (_sessionID);
 }
+
+size_t Request::get_content_length() const
+{
+	return (content_length);
+}
+
+const std::string &Request::get_query_string() const
+{
+	return (query_vars);
+}
+
+
 
 

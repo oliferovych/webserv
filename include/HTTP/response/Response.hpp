@@ -45,7 +45,8 @@ class Response
 		void populate_dropdown(void);
 		void autoIndex(std::string requestPath);
 		void insert_sessionData(void);
-		std::string cgi_handler(const std::string &path);
+		std::string cgi_handler(const std::filesystem::path &path);
+
 
 
 
