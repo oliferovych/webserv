@@ -42,6 +42,8 @@ class Request
 
 		std::vector<char> buffer;
 
+		std::unordered_map<std::string, std::string> query_vars;
+
 		long	content_length;
 		ParseState state;
 
@@ -61,6 +63,7 @@ class Request
 		void validateHeaders();
 
 		ServerConfig *_findConfig(std::string &serverName);
+		void parse_query_string(std::string str, size_t query_pos);
 
 
 

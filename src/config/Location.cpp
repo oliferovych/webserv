@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 15:58:57 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/13 16:41:53 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,11 @@ bool Location::_checkLocation()
 		err_msg("Location's root directory does not exist");
 		return false;
 	}
-	if(!_index.empty() && !fileExists(_index))
-	{
-		err_msg("Location's index file does not exist");
-		return false;
-	}
+	// if(!_index.empty() && _index != _root + "off" && !fileExists(_index))
+	// {
+	// 	err_msg("Location's index file does not exist");
+	// 	return false;
+	// }
 	if(!_allowedMethods.empty())
 	{
 		for(auto &method : _allowedMethods)
@@ -54,11 +54,6 @@ bool Location::_checkLocation()
 		err_msg("Invalid autoindex value: " + _autoindex);
 		return false;
 	}
-	// if(!_uploadDir.empty() && !isDir(_uploadDir))
-	// {
-	// 	err_msg("Upload directory does not exist: " + _uploadDir);
-	// 	return false;
-	// }
 	else if(!_uploadDir.empty() && (_allowedMethods.empty()
 		|| (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
 		&& std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end())))
@@ -76,50 +71,64 @@ bool Location::_checkLocation()
 	return true;
 }
 
-std::string resolvePath(std::string const &root, std::string const &servRoot, std::string const &path, std::string const &destination)
-{
-	std::string result;
-	std::string finalPath;
+// std::string resolvePath(std::string const &root, std::string const &servRoot, std::string const &path, std::string const &destination)
+// {
+// 	std::string result;
+// 	std::string finalPath;
+// 	if(destination.front() == '/')
+// 		result = servRoot + '/' + path + '/' + destination;
+// 	else
+// 		result = root + '/' + path + '/' + destination;
 
-	if(destination.front() == '/')
-		result = servRoot + '/' + path + '/' + destination;
-	else
-		result = root + '/' + path + '/' + destination;
-
-	bool lastWasSlash = false;
-	for (char ch : result)
-	{
-		if (ch == '/')
-		{
-			if (!lastWasSlash)
-			{
-				finalPath += ch;
-				lastWasSlash = true;
-			}
-		}
-		else
-		{
-			finalPath += ch;
-			lastWasSlash = false;
-		}
-	}
-	return finalPath;
-}
+// 	bool lastWasSlash = false;
+// 	for (char ch : result)
+// 	{
+// 		if (ch == '/')
+// 		{
+// 			if (!lastWasSlash)
+// 			{
+// 				finalPath += ch;
+// 				lastWasSlash = true;
+// 			}
+// 		}
+// 		else
+// 		{
+// 			finalPath += ch;
+// 			lastWasSlash = false;
+// 		}
+// 	}
+// 	return finalPath;
+// }
 
 void Location::_resolvePathVars(std::string const &servRoot)
 {
-	if(!_index.empty())
-		_index = resolvePath(_root, servRoot, _path, _index);
+	if(!_index.empty() && _index.front() == '/')
+		_index = servRoot + _index.substr(1);
 	if(!_uploadDir.empty())
-		_uploadDir = resolvePath(_root, servRoot, _path, _uploadDir);
+	{
+		if (_path != "/")
+			_uploadDir = _root + _path.substr(1) + _uploadDir;
+		else
+			_uploadDir = _root + _uploadDir.substr(1);
+
+	}
+	std::cout << "root: " << _root << " path: " << _path << " upload: " << _uploadDir << std::endl;
 	for(auto &err : _errorPages)
-		err.second = resolvePath(_root, servRoot, _path, err.second);
+	{
+		if (err.second.front() == '/')
+			err.second = servRoot + err.second.substr(1);
+		else
+			err.second = _root + _path.substr(1) + '/' + err.second;
+		
+	}
 
 }
 
 Location::Location(std::ifstream &file, std::string const &path, ServerConfig const &serv) : _path(path), _autoindex("off"), _valid(false)
 {
 	std::string line;
+	if (_path != "/" && _path.back() == '/')
+		_path.pop_back();
 	while(std::getline(file, line))
 	{
 		if(line.empty() || line[0] == '#')
@@ -157,6 +166,8 @@ Location::Location(std::ifstream &file, std::string const &path, ServerConfig co
 		else if(isKeyWord(line, "upload_dir"))
 		{
 			_uploadDir = getSingleVarValue(line, "upload_dir");
+			if (_uploadDir.front() != '/')
+				_uploadDir = '/' + _uploadDir;
 			if (_uploadDir.back() != '/')
 				_uploadDir += '/';
 		}
@@ -220,34 +231,34 @@ void Location::printOut(int indent) const
 	for(int i = 0; i < indent; i++)
 		std::cout << "  ";
 	std::cout << "Location: " << _path << std::endl;
-	for(int i = 0; i < indent; i++)
+	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
 	std::cout << "Root: " << _root << std::endl;
-	for(int i = 0; i < indent; i++)
+	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
 	std::cout << "Index: " << _index << std::endl;
-	for(int i = 0; i < indent; i++)
+	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
 	std::cout << "Allowed methods: ";
 	for(auto method : _allowedMethods)
 		std::cout << method << " ";
 	std::cout << std::endl;
-	for(int i = 0; i < indent; i++)
+	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
 	std::cout << "Autoindex: " << _autoindex << std::endl;
-	for(int i = 0; i < indent; i++)
+	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
 	std::cout << "Upload directory: " << _uploadDir << std::endl;
-	for(int i = 0; i < indent; i++)
+	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
 	std::cout << "Error Pages: " << std::endl;
 	for(auto err : _errorPages)
 	{
-		for(int i = 0; i <= indent; i++)
+		for(int i = 0; i <= indent + 1; i++)
 			std::cout << "  ";
 		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
 	}
-	for(int i = 0; i < indent; i++)
+	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
 	std::cout << "CGI: ";
 	for(auto handler : _cgi)
