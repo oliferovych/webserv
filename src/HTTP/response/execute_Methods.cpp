@@ -150,7 +150,6 @@ void Response::GET(void)
 					path = _rootDir / index.substr(1);
 				else
 					path = _workingDir / request_path.substr(1) / _location->getIndex();
-				std::cout << path.string() << std::endl;
 				if (!std::filesystem::exists(path))
 				{
 					if (_location->getAutoIndex() == "on")
