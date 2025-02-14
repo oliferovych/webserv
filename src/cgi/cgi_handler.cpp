@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/14 13:28:13 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/14 15:08:26 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,45 @@ std::string get_interpreter_path(const std::filesystem::path &path)
 		throw Error(500, "Unsupported CGI extension: " + extension);
 
 	return interpreter;
+}
+
+void Response::parseHeaders_cgi(std::string &str)
+{
+	size_t start = 0;
+	while (start < str.length())
+	{
+		size_t pos_line_end = str.find("\r\n", start);
+		if (pos_line_end == std::string::npos)
+			throw Error(400, "bad format (there is no \r\n at the end of a line in the header) (CGI)");
+		size_t pos_colon = str.find(":", start);
+		if (pos_colon == std::string::npos)
+			throw Error(400, "bad format (there is no : in a header-line) (CGI)");
+		std::string key = str.substr(start, pos_colon - start);
+		std::string value_line = str.substr(pos_colon + 1, pos_line_end - pos_colon - 1);
+		ft_tolower(key);
+
+		size_t content_start = 0;
+		size_t pos_comma = 0;
+		std::vector<std::string> vals;
+		while (content_start < value_line.length())
+		{
+			if (key != "set-cookie")
+				pos_comma = value_line.find(",", content_start);
+			else
+				pos_comma = value_line.find(";", content_start);
+			if (pos_comma == std::string::npos)
+				pos_comma = value_line.length();
+
+			std::string val = value_line.substr(content_start, pos_comma - content_start);
+			ft_trim(val);
+			if (val.find("%") != std::string::npos)
+				ft_decode(val);
+			vals.push_back(val);
+			content_start = pos_comma + 1;
+		}
+		addHeaders(key, vals);
+		start = pos_line_end + 2;
+	}
 }
 
 std::string Response::cgi_handler(const std::filesystem::path &path)
@@ -133,6 +172,16 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
             throw Error(500, "CGI script failed with status: " + std::to_string(WEXITSTATUS(status)));
 	}
 
+	size_t header_end = output.find("\r\n\r\n");
+	if (header_end == std::string::npos)
+	{
+		header_end = output.find("\r\n");
+		if (header_end == std::string::npos)
+			return (output);
+	}
+	std::string headers = output.substr(0, header_end + 1);
+	std::string body = output.substr(header_end + (output[header_end + 2] == '\n' ? 2 : 4));
+	parseHeaders_cgi(headers);
 	//parse output
 
 	return output;

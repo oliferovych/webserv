@@ -46,6 +46,7 @@ class Response
 		void autoIndex(std::string requestPath);
 		void insert_sessionData(void);
 		std::string cgi_handler(const std::filesystem::path &path);
+		void parseHeaders_cgi(std::string &str);
 
 
 
