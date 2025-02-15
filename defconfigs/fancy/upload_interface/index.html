@@ -108,7 +108,7 @@
 
             // Function to fetch and display files
             function fetchFiles() {
-                fetch('/upload_interface/')
+                fetch('/uploaded_files')
                     .then(response => response.json())
                     .then(files => {
                         fileList.innerHTML = '';
@@ -125,20 +125,27 @@
             }
 
             // Function to delete a file
-            window.deleteFile = function(fileName) {
-                fetch('/uploaded_files', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ file_name: fileName })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message);
-                    fetchFiles();
-                });
-            }
+            window.deleteFile = async function(fileName) {
+                try {
+                    const response = await fetch(`/uploaded_files/${encodeURIComponent(fileName)}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        fetchFiles();
+                    } else {
+                        const contentType = response.headers.get('Content-Type');
+                        if (contentType && contentType.includes('text/html')) {
+                            const newHtml = await response.text();
+                            document.open();
+                            document.write(newHtml);
+                            document.close();
+                        }
+                    }
+                } catch (error) {
+                    alert(`Error deleting file: ${error.message}`);
+                }
+            };
 
             // Handle file upload
             fileInput.addEventListener('change', function() {
