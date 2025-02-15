@@ -23,11 +23,11 @@ void Request::debug_print() const
 
     std::cout << "  query vars: " <<  query_vars << std::endl;
     // Print body
-    // std::cout << "  Body (as text, might contain binary data):" << std::endl;
-	// if (body.empty())
-	// 	std::cout << "  Body wasnt read" << std::endl;
-	// else
-    // 	std::cout << "    " << std::string(body.begin(), body.end()) << std::endl;
+    std::cout << "  Body (as text, might contain binary data):" << std::endl;
+	if (body.empty())
+		std::cout << "  Body wasnt read" << std::endl;
+	else
+    	std::cout << "    " << std::string(body.begin(), body.end()) << std::endl;
 
     // Print buffer (truncated if too large for readability)
     std::cout << "  Buffer (size " << buffer.size() << ")" << std::endl;

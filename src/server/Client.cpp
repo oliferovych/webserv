@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/15 13:08:30 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/15 14:50:51 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ int Client::handle_message()
 	{
 		changeState(SENDING);
 		info_msg("Message recieved from client on FD " + std::to_string(_clientFd));
-			// _request.debug_print();
+			_request.debug_print();
         Response response(&_request);
 		response.doMethod();
 		response.build();

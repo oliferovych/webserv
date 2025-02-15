@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/15 14:19:49 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/15 15:36:06 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,7 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 	env["REQUEST_METHOD"] = _request->get_method();
 	env["SCRIPT_NAME"] = path.string();
 	env["PATH_INFO"] = path.string();
-	env["CONTENT_LENGTH"] = _request->get_content_length();
+	env["CONTENT_LENGTH"] = std::to_string(_request->get_content_length());
 	env["UPLOAD_DIR"] = _uploadDir.empty() ? path.parent_path().string() : _uploadDir;
 	env["CONTENT_TYPE"] = _request->get_header("Content-Type")[0];
     env["QUERY_STRING"] = _request->get_query_string();
