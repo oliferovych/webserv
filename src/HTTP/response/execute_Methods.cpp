@@ -203,6 +203,8 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 	if (!std::filesystem::is_directory(path))
 		throw Error(400, "Request Target needs to be a directory for POST methode: " + path.string());
 	std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+	if(path.string().back() != '/')
+		path += "/";
 	if (path != _uploadDir)
 		throw Error(403, "path is outside the uploadDir defined in the config!");
 	try
