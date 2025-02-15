@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/13 16:41:53 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/15 14:24:11 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,55 +71,52 @@ bool Location::_checkLocation()
 	return true;
 }
 
-// std::string resolvePath(std::string const &root, std::string const &servRoot, std::string const &path, std::string const &destination)
-// {
-// 	std::string result;
-// 	std::string finalPath;
-// 	if(destination.front() == '/')
-// 		result = servRoot + '/' + path + '/' + destination;
-// 	else
-// 		result = root + '/' + path + '/' + destination;
+std::string resolvePath(std::string const &path)
+{
+	std::string finalPath;
+	bool lastWasSlash = false;
 
-// 	bool lastWasSlash = false;
-// 	for (char ch : result)
-// 	{
-// 		if (ch == '/')
-// 		{
-// 			if (!lastWasSlash)
-// 			{
-// 				finalPath += ch;
-// 				lastWasSlash = true;
-// 			}
-// 		}
-// 		else
-// 		{
-// 			finalPath += ch;
-// 			lastWasSlash = false;
-// 		}
-// 	}
-// 	return finalPath;
-// }
+	for (char ch : path)
+	{
+		if (ch == '/')
+		{
+			if (!lastWasSlash)
+			{
+				finalPath += ch;
+				lastWasSlash = true;
+			}
+		}
+		else
+		{
+			finalPath += ch;
+			lastWasSlash = false;
+		}
+	}
+	return finalPath;
+}
 
 void Location::_resolvePathVars(std::string const &servRoot)
 {
 	if(!_index.empty() && _index.front() == '/')
+	{
 		_index = servRoot + _index.substr(1);
+		_index = resolvePath(_index);
+	}
 	if(!_uploadDir.empty())
 	{
 		if (_path != "/")
 			_uploadDir = _root + _path.substr(1) + _uploadDir;
 		else
 			_uploadDir = _root + _uploadDir.substr(1);
-
+		_uploadDir = resolvePath(_uploadDir);
 	}
-	std::cout << "root: " << _root << " path: " << _path << " upload: " << _uploadDir << std::endl;
 	for(auto &err : _errorPages)
 	{
 		if (err.second.front() == '/')
 			err.second = servRoot + err.second.substr(1);
 		else
 			err.second = _root + _path.substr(1) + '/' + err.second;
-		
+		err.second = resolvePath(err.second);
 	}
 
 }
