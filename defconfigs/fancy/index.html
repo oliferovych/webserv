@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Webserv Project</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f0f0f0;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+		}
+		.title {
+			font-size: 3em;
+			color: #333;
+			animation: fadeIn 2s ease-in-out infinite alternate;
+		}
+		@keyframes fadeIn {
+			from { opacity: 0; }
+			to { opacity: 1; }
+		}
+		.links {
+			margin: 20px 0;
+		}
+		.links a {
+			margin: 0 10px;
+			text-decoration: none;
+			color: #007bff;
+		}
+		.tabs {
+			display: flex;
+			justify-content: center;
+			margin-top: 20px;
+		}
+		.tab {
+			padding: 10px 20px;
+			margin: 0 5px;
+			background-color: #007bff;
+			color: white;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+		.tab:hover {
+			background-color: #0056b3;
+		}
+	</style>
+</head>
+<body>
+	<div class="title">Webserv Project</div>
+	<div class="links">
+		<a href="https://github.com/oliferovych" target="_blank">DIMA</a>
+		<a href="https://github.com/t-ecker" target="_blank">TOM</a>
+	</div>
+	<div class="tabs">
+		<div class="tab">Cookies</div>
+		<a href="/upload_interface" class="tab">Upload/Delete Interface</a>
+		<div class="tab">CGI</div>
+	</div>
+</body>
+</html>
