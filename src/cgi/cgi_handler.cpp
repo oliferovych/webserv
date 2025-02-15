@@ -6,12 +6,13 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/14 15:08:26 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/15 14:19:49 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/global.hpp"
 #include <sys/wait.h>
+#include <array>
 
 std::string get_interpreter_path(const std::filesystem::path &path)
 {
@@ -35,6 +36,11 @@ std::string get_interpreter_path(const std::filesystem::path &path)
 
 	return interpreter;
 }
+
+// std::string Response::_cgiRead(int pipeFd[2])
+// {
+	
+// }
 
 void Response::parseHeaders_cgi(std::string &str)
 {
@@ -84,7 +90,6 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 	std::string interpreter = get_interpreter_path(path);
 	int pipeFd[2];
 	std::string output;
-	char buffer[4096];
 	std::unordered_map<std::string, std::string> env;
 
 	// std::filesystem::path script_dir = path.parent_path();
@@ -124,29 +129,26 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 		dup2(pipeFd[1], 1);
 		close(pipeFd[1]);
 
-		char *execve_args[3];
-		execve_args[0] = strdup(interpreter.c_str()); //should get freeed later!
-		execve_args[1] = strdup(path.c_str()); //"Your program should call the CGI with the file requested as first argument."
-		execve_args[2] = NULL;
+		std::array<char *, 3> execve_args;
+		execve_args[0] = const_cast<char*>(interpreter.c_str()); // Cast to char* to remove const qualifier
+		execve_args[1] = const_cast<char*>(path.c_str()); // Cast to char* to remove const qualifier
+		execve_args[2] = nullptr; // Null-terminate the arguments
 
-		execve(interpreter.c_str(), execve_args, envp.data());
+		execve(interpreter.c_str(), execve_args.data(), envp.data());
 		exit(1);
 	}
 	else//parent
 	{
-		close(pipeFd[1]);
-		struct pollfd pollFd[1];
+		close(pipeFd[0]);
+		
+		struct pollfd pollFd[2]; //0 is for input, 1 is for output
 		pollFd[0].fd = pipeFd[0];
 		pollFd[0].events = POLLIN;
-
-		if (_request->get_method() == "POST")
-		{
-			const std::string body(_request->get_body().begin(), _request->get_body().end());
-			// write to child
-			// check if writing failed
-		}
-
-		int ret = poll(pollFd, 1, 5000);
+		
+		pollFd[1].fd = pipeFd[1];
+		pollFd[1].events = POLLOUT;
+		
+		int ret = poll(pollFd, 2, 5000);
 		if (ret == -1)
 		{
 			close(pipeFd[0]);
@@ -157,6 +159,29 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 			close(pipeFd[0]);
 			throw Error(500, "Poll timed out");
 		}
+
+		if(_request->get_method() == "POST")
+		{
+			if (pollFd[1].revents & POLLOUT)
+			{
+				const std::string write_body(_request->get_body().begin(), _request->get_body().end());
+				size_t totalWritten = 0;
+				while (totalWritten < write_body.size())
+				{
+				    ssize_t bytesWritten = write(pollFd[1].fd, write_body.c_str() + totalWritten, write_body.size() - totalWritten);
+				    if (bytesWritten == -1)
+					{
+				        close(pipeFd[1]);
+				        throw Error(500, "Write to CGI script failed");
+				    }
+				    totalWritten += bytesWritten;
+				}
+				
+				close(pipeFd[1]);
+			}
+		}
+
+		char buffer[4096];
 		if (pollFd[0].revents & POLLIN)
 		{
 			ssize_t bytesRead;
