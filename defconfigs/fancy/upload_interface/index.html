@@ -146,7 +146,7 @@
                 const formData = new FormData();
                 formData.append('file', file);
 
-                fetch('/upload_interface', {
+                fetch('/upload_interface/uploaded_files/', {
                     method: 'POST',
                     body: formData
                 })

@@ -1,66 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Webserv Project</title>
-	<style>
-		body {
-			font-family: Arial, sans-serif;
-			background-color: #f0f0f0;
-			margin: 0;
-			padding: 0;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			height: 100vh;
-		}
-		.title {
-			font-size: 3em;
-			color: #333;
-			animation: fadeIn 2s ease-in-out infinite alternate;
-		}
-		@keyframes fadeIn {
-			from { opacity: 0; }
-			to { opacity: 1; }
-		}
-		.links {
-			margin: 20px 0;
-		}
-		.links a {
-			margin: 0 10px;
-			text-decoration: none;
-			color: #007bff;
-		}
-		.tabs {
-			display: flex;
-			justify-content: center;
-			margin-top: 20px;
-		}
-		.tab {
-			padding: 10px 20px;
-			margin: 0 5px;
-			background-color: #007bff;
-			color: white;
-			border-radius: 5px;
-			cursor: pointer;
-		}
-		.tab:hover {
-			background-color: #0056b3;
-		}
-	</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv Project</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #282c34;
+            color: #61dafb;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        .title {
+            margin: 20px 0;
+            font-size: 3em; /* Increased font size */
+            color: #61dafb;
+            animation: neon 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes neon {
+            from {
+                text-shadow: 0 0 5px #61dafb, 0 0 10px #61dafb, 0 0 15px #61dafb, 0 0 20px #61dafb, 0 0 25px #61dafb, 0 0 30px #61dafb, 0 0 35px #61dafb;
+            }
+            to {
+                text-shadow: 0 0 10px #61dafb, 0 0 20px #61dafb, 0 0 30px #61dafb, 0 0 40px #61dafb, 0 0 50px #61dafb, 0 0 60px #61dafb, 0 0 70px #61dafb;
+            }
+        }
+        .container {
+            background-color: #20232a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 500px;
+            text-align: center;
+        }
+        .links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #282c34;
+            border: 1px solid #61dafb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 0 10px;
+            text-align: center;
+            width: 200px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        .card img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+        }
+        .card a {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .tab:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-	<div class="title">Webserv Project</div>
-	<div class="links">
-		<a href="https://github.com/oliferovych" target="_blank">DIMA</a>
-		<a href="https://github.com/t-ecker" target="_blank">TOM</a>
-	</div>
-	<div class="tabs">
-		<div class="tab">Cookies</div>
-		<a href="/upload_interface" class="tab">Upload/Delete Interface</a>
-		<div class="tab">CGI</div>
-	</div>
+    <div class="title">Webserv Project</div>
+    <div class="container">
+        <div class="links" id="githubProfiles">
+            <!-- GitHub profiles will be displayed here -->
+        </div>
+        <div class="tabs">
+            <a href="/cookies" class="tab">Cookies</a>
+            <a href="/upload_interface" class="tab">Upload/Delete Interface</a>
+            <div class="tab">CGI</div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const githubProfiles = document.getElementById('githubProfiles');
+            const users = [
+                { username: 'oliferovych', profileUrl: 'https://github.com/oliferovych' },
+                { username: 't-ecker', profileUrl: 'https://github.com/t-ecker' }
+            ];
+
+            users.forEach(user => {
+                fetch(`https://api.github.com/users/${user.username}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <a href="${user.profileUrl}" target="_blank">
+                                <img src="${data.avatar_url}" alt="${data.name}">
+                                <h3>${data.name}</h3>
+                                <p>${user.username}</p>
+                            </a>
+                        `;
+                        githubProfiles.appendChild(card);
+                    });
+            });
+        });
+    </script>
 </body>
 </html>
