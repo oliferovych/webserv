@@ -1,5 +1,8 @@
 #!/bin/bash
 
+printf "Content-Type: text/html\r\n"
+printf "\r\n"
+
 # Get the current time
 current_time=$(date +"%Y-%m-%d %H:%M:%S")
 
@@ -16,4 +19,4 @@ html_content="
 </html>"
 
 # Write the HTML content to a file
-echo "$html_content"
+printf "$html_content"
