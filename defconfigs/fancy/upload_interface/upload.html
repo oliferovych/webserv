@@ -108,7 +108,7 @@
 
             // Function to fetch and display files
             function fetchFiles() {
-                fetch('/uploaded_files')
+                fetch('/upload_interface/uploaded_files/')
                     .then(response => response.json())
                     .then(files => {
                         fileList.innerHTML = '';
@@ -127,7 +127,7 @@
             // Function to delete a file
             window.deleteFile = async function(fileName) {
                 try {
-                    const response = await fetch(`/uploaded_files/${encodeURIComponent(fileName)}`, {
+                    const response = await fetch(`/upload_interface/uploaded_files/${encodeURIComponent(fileName)}`, {
                         method: 'DELETE'
                     });
 
