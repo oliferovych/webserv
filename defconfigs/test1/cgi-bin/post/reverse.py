@@ -3,8 +3,7 @@
 import cgi
 import os
 
-print("Content-Type: text/html\r\n")  # Required for CGI output
-print("\r\n")
+print("Content-Type: text/html\r\n\r\n")  # Required for CGI output
 # Get uploaded file
 form = cgi.FieldStorage()
 file_item = form["file"]

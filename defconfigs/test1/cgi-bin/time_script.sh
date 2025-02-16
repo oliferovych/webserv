@@ -1,7 +1,6 @@
 #!/bin/bash
 
-printf "Content-Type: text/html\r\n"
-printf "\r\n"
+printf "Content-Type: text/html\r\n\r\n"
 
 # Get the current time
 current_time=$(date +"%Y-%m-%d %H:%M:%S")

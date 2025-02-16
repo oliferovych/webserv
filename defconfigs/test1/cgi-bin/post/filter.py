@@ -47,7 +47,7 @@ def process_image_file(file_content, filename):
     return f'<h1>Grayscale Image</h1><p>Original: {filename}</p><p>Filtered Image:<br><img src="{filtered_path}" alt="Grayscale Image"></p>'
 
 def main():
-    print("Content-type: text/html\n")
+    print("Content-type: text/html\r\n\r\n")
     print("<html><head><title>File Processing</title></head><body>")
 
     form = cgi.FieldStorage()
