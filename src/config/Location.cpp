@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/16 01:13:28 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/16 22:49:31 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ Location::Location(std::ifstream &file, std::string const &path, ServerConfig co
 		_path.pop_back();
 	while(std::getline(file, line))
 	{
-		if(line.empty() || line[0] == '#')
+		if(line.empty() || line[line.find_first_not_of(" \t\r")] == '#')
 			continue;
 		if(isLineConsistsOnlyOf(line, "}"))
 			break;

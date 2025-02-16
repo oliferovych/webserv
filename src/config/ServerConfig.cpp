@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/13 16:40:14 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/16 22:49:37 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 	std::string line;
 	while(std::getline(file, line))
 	{
-		if(line.empty() || line[0] == '#')
+		if(line.empty() || line[line.find_first_not_of(" \t\r")] == '#')
 			continue;
 		if(isLineConsistsOnlyOf(line, "}"))
 			break;
