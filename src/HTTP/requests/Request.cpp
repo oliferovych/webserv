@@ -71,7 +71,7 @@ void Request::parse_headers(void)
 	if (buffer.size() < 2)
         return ;
 	if (buffer[0] == '\r' && buffer[1] == '\n')
-		throw Error(400, "bad format (there is a \r\n between request-line and headers)");
+		throw Error(400, "bad format (there is a \\r\\n between request-line and headers)");
 
 	// check if whole header section is presesnt
 	std::vector<char> del = {'\r', '\n', '\r', '\n'};
@@ -97,7 +97,7 @@ void Request::parse_headers(void)
 	{
 		size_t pos_line_end = str_buffer.find("\r\n", start);
 		if (pos_line_end == std::string::npos)
-			throw Error(400, "bad format (there is no \r\n at the end of a line in the header)");
+			throw Error(400, "bad format (there is no \\r\\n at the end of a line in the header)");
 		size_t pos_colon = str_buffer.find(":", start);
 		if (pos_colon == std::string::npos)
 			throw Error(400, "bad format (there is no : in a header-line)");

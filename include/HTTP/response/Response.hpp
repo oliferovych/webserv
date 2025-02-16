@@ -49,7 +49,8 @@ class Response
 		void insert_sessionData(void);
 		std::string cgi_handler(const std::filesystem::path &path);
 		void parseHeaders_cgi(std::string &str);
-
+		std::vector<char*> createEnvp(const std::filesystem::path &path);
+		std::string parseBody_CGI(std::string &output);
 
 
 
