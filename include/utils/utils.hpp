@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 12:23:01 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/17 22:18:14 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,4 +53,5 @@ bool fileExists(const std::string &path);
 bool isDir(const std::string &path);
 bool isFiletype(std::string type, std::string const &path);
 
-std::string addSession(std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &_sessionDB);
+std::string newSession(void);
+

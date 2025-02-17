@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/16 14:58:57 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/18 00:04:51 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,8 @@ std::vector<char*> Response::createEnvp(const std::filesystem::path &path)
 	std::unordered_map<std::string, std::string> env;
 	
 	env["REQUEST_METHOD"] = _request->get_method();
+	env["SESSION_ID"] = _request->get_sessionID();
+	env["SESSION_DB"] = "sessionDB.json";
 	env["SCRIPT_NAME"] = path.string();
 	env["PATH_INFO"] = path.string();
 	env["UPLOAD_DIR"] = _uploadDir.empty() ? path.parent_path().string() : _uploadDir;
@@ -88,23 +90,24 @@ std::vector<char*> Response::createEnvp(const std::filesystem::path &path)
     env["CONTENT_TYPE"] = _request->get_header("content-type")[0].empty() ? "" : _request->get_header("content-type")[0];
 	env["QUERY_STRING"] = _request->get_query_string();
 	env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	
-	std::vector<std::string> envStrings;
-	envStrings.reserve(env.size());
-	for (const auto& [key, value] : env)
-		envStrings.push_back(key + "=" + value);
-	
-    std::vector<char*> envp;
-    envp.reserve(env.size() + 1);
-	for (auto& str : envStrings)
-		envp.push_back(str.data());
-	envp.push_back(nullptr);
-	return (envp);
+
+	// std::cout << "id: " << env["SESSION_ID"] << " DB: " << env["SESSION_DB"] << std::endl;
+
+	std::vector<char*> envp;
+    for (const auto& [key, value] : env)
+	{
+        std::string envStr = key + "=" + value;
+        char* envVar = new char[envStr.length() + 1];
+        std::copy(envStr.begin(), envStr.end(), envVar);
+        envVar[envStr.length()] = '\0';
+        envp.push_back(envVar);
+    }
+    envp.push_back(nullptr);
+    return envp;
 }
 
 std::string Response::parseBody_CGI(std::string &output)
 {
-	std::cout << output << std::endl;
 	size_t header_end = output.find("\r\n\r\n");
 	if (header_end == std::string::npos)
 	{
@@ -222,12 +225,16 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 	{
 		close(inputPipe[1]);   // Close unused parent write end
 		close(outputPipe[0]);  // Close unused parent read end
-
+		
 		dup2(inputPipe[0], STDIN_FILENO); //reading of child becomes stdin
 		dup2(outputPipe[1], STDOUT_FILENO);	//writing from child becomes stdout
-
+		
 		close(inputPipe[0]);
 		close(outputPipe[1]);
+		
+		if (chdir(path.parent_path().string().c_str()) != 0)
+			exit(1);
+
 
 		std::vector<char*> args;
 		args.push_back(const_cast<char*>(interpreter.c_str()));
@@ -235,10 +242,20 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 		args.push_back(nullptr);
 
 		execve(interpreter.c_str(), args.data(), envp.data());
+		for (char* ptr : envp)
+		{
+			if (ptr)
+				delete[] ptr;
+		}
 		exit(1);
 	}
 	else
 	{
+		for (char* ptr : envp)
+		{
+			if (ptr)
+				delete[] ptr;
+		}
 		close(inputPipe[0]);   // close unused child reading end
 		close(outputPipe[1]);  // Close unused child writing end
 

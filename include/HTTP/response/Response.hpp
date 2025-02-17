@@ -26,7 +26,7 @@ class Response
 		std::unordered_map<std::string, std::string> _mimeTypes;
 		std::string _redirect;
 		std::map<std::string, std::set<std::string>> headers;
-		bool _isCGI;
+		std::vector<std::string> _cgiBase;
 
 		Location *_location;
 		std::string _uploadDir;
@@ -51,6 +51,8 @@ class Response
 		void parseHeaders_cgi(std::string &str);
 		std::vector<char*> createEnvp(const std::filesystem::path &path);
 		std::string parseBody_CGI(std::string &output);
+		bool isCGI(std::filesystem::path path);
+
 
 
 
