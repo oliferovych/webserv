@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/15 14:24:11 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/17 12:00:57 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,12 @@ bool Location::_checkLocation()
 		err_msg("Invalid autoindex value: " + _autoindex);
 		return false;
 	}
-	else if(!_uploadDir.empty() && (_allowedMethods.empty()
+	// if(!_uploadDir.empty() && !isDir(_uploadDir))
+	// {
+	// 	err_msg("Specified upload directory does not exist");
+	// 	return false;
+	// }
+	if(!_uploadDir.empty() && (_allowedMethods.empty()
 		|| (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
 		&& std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end())))
 	{
@@ -128,7 +133,7 @@ Location::Location(std::ifstream &file, std::string const &path, ServerConfig co
 		_path.pop_back();
 	while(std::getline(file, line))
 	{
-		if(line.empty() || line[0] == '#')
+		if(line.empty() || line[line.find_first_not_of(" \t\r")] == '#')
 			continue;
 		if(isLineConsistsOnlyOf(line, "}"))
 			break;
