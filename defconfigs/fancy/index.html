@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webserv Project</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Neon&display=swap');
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #282c34;
+            color: #61dafb;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        .title, .neon-text {
+            margin: 50px 0;
+            font-size: 10em;
+            color: #61dafb;
+            font-family: 'Neon', sans-serif;
+            animation: neon 1.5s ease-in-out infinite alternate, flicker 3s infinite;
+        }
+        h2, h3 {
+            color: #61dafb;
+            font-family: 'Neon', sans-serif;
+            animation: neon 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes neon {
+            from {
+                text-shadow: 0 0 5px #61dafb, 0 0 10px #61dafb, 0 0 15px #61dafb, 0 0 20px #61dafb, 0 0 25px #61dafb, 0 0 30px #61dafb, 0 0 35px #61dafb;
+            }
+            to {
+                text-shadow: 0 0 10px #61dafb, 0 0 20px #61dafb, 0 0 30px #61dafb, 0 0 40px #61dafb, 0 0 50px #61dafb, 0 0 60px #61dafb, 0 0 70px #61dafb;
+            }
+        }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+            }
+            20%, 24%, 55% {
+                opacity: 0.5;
+            }
+            22% {
+                opacity: 0.1;
+            }
+        }
+        .container, .quote-container, .description-container {
+            background-color: #20232a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 500px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .quote-container {
+            font-style: italic;
+            color: #d3d3d3;
+        }
+        .description-container {
+			text-align: left;
+            color: #d3d3d3;
+        }
+        .links {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0px;
+        }
+        .card {
+            background-color: #282c34;
+            border: 1px solid #61dafb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 0 10px;
+            text-align: center;
+            width: 200px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        .card img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+        }
+        .card a {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        .tabs-popup {
+            position: fixed;
+            top: 50%;
+            right: -250px;
+            transform: translateY(-50%);
+            background-color: #20232a;
+			align-items: center;
+            padding: 20px;
+            border-radius: 10px 0 0 10px;
+            box-shadow: -5px 0 10px rgba(0, 0, 0, 0.5);
+            transition: right 0.3s ease;
+			height: 200px;
+			display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .tabs-popup.open {
+            right: 0;
+        }
+        .tabs {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 5px 0;
+            background-color: #61dafb;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .tab:hover {
+            background-color: #0056b3;
+        }
+        .toggle-btn, .close-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #61dafb;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px 0 0 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, right 0.3s ease;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+			height: 200px;
+        }
+        .toggle-btn {
+            right: 0;
+        }
+        .close-btn {
+            right: 180px;
+            display: none;
+        }
+        .toggle-btn:hover, .close-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">Webserv</div>
+    <div class="quote-container">
+        "This is when you finally understand why a URL starts with HTTP"
+    </div>
+    <button class="toggle-btn" onclick="toggleTabs()">◀</button>
+    <button class="close-btn" onclick="toggleTabs()">▶</button>
+    <div class="tabs-popup" id="tabsPopup">
+        <div class="tabs">
+            <a href="/cookies" class="tab">Cookies</a>
+            <a href="/upload_interface" class="tab">Upload/Delete</a>
+            <a href="/cgi" class="tab">CGI</a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="links" id="githubProfiles">
+            <!-- GitHub profiles will be displayed here -->
+        </div>
+    </div>
+    <div class="description-container">
+		<h2>About</h2>
+        <p>This project is a web server implementation that aims to provide a robust and efficient solution for serving web content. It supports various features such as handling HTTP requests, serving static files, and executing CGI scripts. The server is designed to be lightweight and easy to configure, making it suitable for both development and production environments.</p>
+		<h3>Features</h3>
+		<ul>
+			<li>HTTP/1.1 protocol support</li>
+			<li>Configuration file handling</li>
+			<li>GET, POST and DELETE request handling</li>
+			<li>CGI script execution</li>
+			<li>Handling multiple CGI</li>
+			<li>Cookie creation</li>
+			<li>Logging and error handling</li>
+		</ul>
+		<p>To test those features feel free to use shortcuts on the right -></p>
+	</div>
+    <script>
+        function toggleTabs() {
+            const tabsPopup = document.getElementById('tabsPopup');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const closeBtn = document.querySelector('.close-btn');
+            if (tabsPopup.classList.contains('open')) {
+                tabsPopup.classList.remove('open');
+					toggleBtn.style.display = 'block';
+                    closeBtn.style.display = 'none';
+            } else {
+                tabsPopup.classList.add('open');
+                setTimeout(() => {
+                    toggleBtn.style.display = 'none';
+                    closeBtn.style.display = 'block';
+                }, 300); // Match the transition duration
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const githubProfiles = document.getElementById('githubProfiles');
+            const users = [
+                { username: 'oliferovych', profileUrl: 'https://github.com/oliferovych' },
+                { username: 't-ecker', profileUrl: 'https://github.com/t-ecker' }
+            ];
+
+            users.forEach(user => {
+                fetch(`https://api.github.com/users/${user.username}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <a href="${user.profileUrl}" target="_blank">
+                                <img src="${data.avatar_url}" alt="${data.name}">
+                                <h3>${data.name}</h3>
+                                <p>${user.username}</p>
+                            </a>
+                        `;
+                        githubProfiles.appendChild(card);
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

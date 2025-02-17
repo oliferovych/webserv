@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		body {
+			font-family: 'Arial', sans-serif;
+			background-color: #282c34;
+			color: #61dafb;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+		}
+
+		.container {
+			background-color: #20232a;
+			padding: 20px;
+			border-radius: 10px;
+			box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+			width: 500px;
+			text-align: center;
+		}
+
+		.container h1 {
+			margin-bottom: 20px;
+			font-size: 4em;
+			color: #61dafb;
+			animation: glow 1s ease-in-out infinite alternate;
+		}
+
+		@keyframes glow {
+			from {
+				text-shadow: 0 0 10px #61dafb, 0 0 20px #61dafb, 0 0 30px #61dafb, 0 0 40px #61dafb, 0 0 50px #61dafb, 0 0 60px #61dafb, 0 0 70px #61dafb;
+			}
+
+			to {
+				text-shadow: 0 0 20px #61dafb, 0 0 30px #61dafb, 0 0 40px #61dafb, 0 0 50px #61dafb, 0 0 60px #61dafb, 0 0 70px #61dafb, 0 0 80px #61dafb;
+			}
+		}
+
+		.upload-btn-wrapper {
+			position: relative;
+			overflow: hidden;
+			display: inline-block;
+		}
+
+		.btn {
+			border: 2px solid #61dafb;
+			color: #61dafb;
+			background-color: transparent;
+			padding: 10px 20px;
+			border-radius: 8px;
+			font-size: 16px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+		}
+
+		.btn:hover {
+			background-color: #61dafb;
+			color: #20232a;
+		}
+
+		.upload-btn-wrapper input[type=file] {
+			font-size: 100px;
+			position: absolute;
+			left: 0;
+			top: 0;
+			opacity: 0;
+		}
+
+		.file-list {
+			margin-top: 20px;
+			text-align: left;
+			color: #61dafb;
+		}
+
+		.file-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 10px;
+			border-bottom: 1px solid #61dafb;
+		}
+
+		.delete-btn {
+			background-color: #f44336;
+			color: white;
+			border: none;
+			padding: 5px 10px;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+		}
+
+		.delete-btn:hover {
+			background-color: #d32f2f;
+		}
+
+		.dropdown {
+			margin-top: 10px;
+			background-color: #333;
+			border-radius: 8px;
+			padding: 10px;
+			display: none;
+			text-align: left;
+		}
+
+		.dropdown h2 {
+			margin: 0;
+			font-size: 1.5em;
+			color: #61dafb;
+		}
+
+		.dropdown p {
+			margin: 10px 0;
+			color: #61dafb;
+		}
+
+		.dropdown-btn {
+			background-color: #61dafb;
+			color: #20232a;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+		}
+
+		.dropdown-btn:hover {
+			background-color: #4a90e2;
+		}
+
+		.upload-zone {
+			border: 2px dashed #61dafb;
+			padding: 40px;
+			text-align: center;
+			margin: 20px 0;
+			border-radius: 8px;
+			transition: border-color 0.3s ease;
+			cursor: pointer;
+		}
+
+		.upload-zone:hover {
+			border-color: #4a90e2;
+		}
+
+		.upload-button {
+			background-color: #61dafb;
+			color: #20232a;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+		}
+
+		.upload-button:hover {
+			background-color: #4a90e2;
+		}
+
+		.file-input {
+			display: none;
+		}
+
+		.delete-input {
+			margin-top: 20px;
+			padding: 10px;
+			border: 2px solid #61dafb;
+			border-radius: 8px;
+			background-color: transparent;
+			color: #61dafb;
+			font-size: 16px;
+			width: calc(100% - 24px);
+		}
+
+		.delete-input::placeholder {
+			color: #61dafb;
+		}
+
+		.delete-file-btn {
+			margin-top: 10px;
+			background-color: #f44336;
+			color: white;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 8px;
+			cursor: pointer;
+			transition: background-color 0.3s ease;
+		}
+
+		.delete-file-btn:hover {
+			background-color: #d32f2f;
+		}
+
+		.message {
+			margin-top: 20px;
+			padding: 10px;
+			border-radius: 8px;
+			background-color: #333;
+			color: #61dafb;
+			display: none;
+		}
+	</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Files</h1>
+        <div class="upload-zone" id="dropZone">
+			<input type="file" id="fileInput" class="file-input">
+            <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+				Choose File
+            </button>
+		</div>
+		<button class="dropdown-btn" onclick="toggleDropdown()">More Info</button>
+		<div class="dropdown" id="dropdown">
+			<h2>Instructions</h2>
+			<p>Drag and drop files into the upload zone or click the "Choose File" button to select files from your computer.</p>
+			<p>You will be able to delete the uploaded files from the server by typing the filename down below and pressing "Delete File".</p>
+		</div>
+        <input type="text" id="deleteInput" class="delete-input" placeholder="Enter file name to delete">
+        <button class="delete-file-btn" onclick="deleteFile()">Delete File</button>
+        <div class="message" id="message"></div>
+    	</div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+                        const fileInput = document.getElementById('fileInput');
+            const dropZone = document.getElementById('dropZone');
+            const deleteInput = document.getElementById('deleteInput');
+            const message = document.getElementById('message');
+
+            function handleFile(file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/upload_interface/uploaded_files/', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showMessage(`File "${file.name}" uploaded successfully.`);
+                    } else {
+                        showMessage(`Failed to upload file "${file.name}".`);
+                    }
+                })
+                .catch(error => {
+					console.error('Upload failed:', error);
+                    showMessage(`Failed to upload file "${file.name}".`);
+                });
+            }
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) handleFile(e.target.files[0]);
+            });
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#7289da';
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = '#555';
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#555';
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            window.deleteFile = function() {
+                const fileName = deleteInput.value.trim();
+                if (!fileName) {
+                    alert('Please enter a file name to delete.');
+                    return;
+                }
+
+                fetch(`/upload_interface/uploaded_files/${encodeURIComponent(fileName)}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                                                deleteInput.value = '';
+                        showMessage(`File "${fileName}" deleted successfully.`);
+                    } else {
+                        showMessage(`Failed to delete file "${fileName}".`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete failed:', error);
+                    showMessage(`Failed to delete file "${fileName}".`);
+                });
+            };
+
+            function showMessage(msg) {
+                message.textContent = msg;
+                message.style.display = 'block';
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

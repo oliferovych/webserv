@@ -118,7 +118,7 @@ void Request::validateHeaders()
 					if (!_sessionID.empty())
 						_sessionDB.erase(_sessionID);
 					_sessionID = addSession(_sessionDB);
-					std::cout << "session reset" << std::endl;
+					info_msg("Cookie reset");
 				}
 				else if (!_sessionID.empty())
 					_sessionID = id;

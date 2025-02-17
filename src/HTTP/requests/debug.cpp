@@ -21,12 +21,7 @@ void Request::debug_print() const
         std::cout << std::endl;
     }
 
-    std::cout << "  query vars:" << std::endl;
-    for (auto entry : query_vars)
-    {
-        std::cout << "      type: " << entry.first << "   value: " << entry.second << std::endl;
-    }
-
+    std::cout << "  query vars: " <<  query_vars << std::endl;
     // Print body
     // std::cout << "  Body (as text, might contain binary data):" << std::endl;
 	// if (body.empty())

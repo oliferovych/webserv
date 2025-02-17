@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 16:24:36 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/15 14:14:46 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,6 +229,11 @@ void Server::run()
 		}
 		for(auto &pfd : _poll.getFds())
 		{
+			// if ( _clients[pfd.fd]->hasTimedOut())
+			// {
+			// 	_closeClient(pfd.fd);
+			// 	break;	
+			// }
 			if(pfd.revents & POLLIN)
 			{
 				if(_isServer(pfd.fd))
@@ -237,7 +242,7 @@ void Server::run()
 					_acceptClient(pfd.fd);
 					break ;
 				}
-				if (_clients[pfd.fd]->handle_message() < 0)
+				if (_clients[pfd.fd]->hasTimedOut() || _clients[pfd.fd]->handle_message() < 0)
 				{
 					_closeClient(pfd.fd);
 					break ;

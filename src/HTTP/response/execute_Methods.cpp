@@ -105,7 +105,7 @@ void Response::autoIndex(std::string requestPath)
 
 void Response::insert_sessionData(void)
 {
-	std::cout << _request->get_sessionID() << std::endl;
+	//std::cout << _request->get_sessionID() << std::endl;
 	std::string background_color;
 	auto &sessionDB = _request->getSessionDB();
 	auto &sessionID = _request->get_sessionID();
@@ -150,13 +150,14 @@ void Response::GET(void)
 					path = _rootDir / index.substr(1);
 				else
 					path = _workingDir / request_path.substr(1) / _location->getIndex();
+				//std::cout << path.string() << std::endl;
 				if (!std::filesystem::exists(path))
 				{
 					if (_location->getAutoIndex() == "on")
 						autoIndex(request_path);
 					else
 					{
-						err_msg("no index or autoindex found for location!!");
+						err_msg("no index or autoindex found for location!");
 						error_body(403, "forbidden");
 					}
 					return ;
@@ -199,9 +200,11 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	if (!std::filesystem::is_directory(path))
-		throw Error(400, "Request Target needs to be a directory for POST methode: " + path.string());
-	std::cout << "req: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+	if (path.string().back() != '/')
+		throw Error(400, "Request Target needs to be a directory for POST method: " + path.string());
+	std::cout << "postreq: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+	if(path.string().back() != '/')
+		path += "/";
 	if (path != _uploadDir)
 		throw Error(403, "path is outside the uploadDir defined in the config!");
 	try
@@ -216,6 +219,8 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 	{
 		throw Error(500, "Failed to create directory structure");
 	}
+	if (!std::filesystem::is_directory(path))
+		throw Error(500, "fileCreation failed!");
 	std::filesystem::path filePath = path / filename;
 	
 	std::string extension = filePath.extension().string();
@@ -313,7 +318,7 @@ void Response::POST(void)
 	{
 		if (_isCGI)
 		{
-			_body = cgi_handler(_workingDir / _request->get_path().substr(1));
+			_body = cgi_handler((_workingDir / _request->get_path().substr(1)).string());
 			return ;
 		}
 		result = extractData();
@@ -331,11 +336,16 @@ void Response::DELETE(void)
 {
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
+	if (_isCGI)
+	{
+		_body = cgi_handler((_workingDir / _request->get_path().substr(1)).string());
+		return ;
+	}
 	if (std::filesystem::is_directory(path))
 		throw Error(403, "cant delete directories");
 	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
 		throw Error(403, "cant find file for deletion at path: " + path.string());
-	std::cout << "req: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
+	std::cout << "delreq: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
 	if (path.parent_path() / "" != _uploadDir)
 		throw Error(403, "path is outside the uploadDir defined in the config!");
    	if (!std::filesystem::exists(path))
@@ -365,7 +375,7 @@ void Response::setBody(std::filesystem::path path)
 {
 	if (_isCGI)
 	{
-		_body = cgi_handler(path);
+		_body = cgi_handler(path.string());
 		return ;
 	}
 

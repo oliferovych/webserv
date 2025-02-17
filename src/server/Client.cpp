@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 16:21:23 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/15 13:08:30 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB)
-	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, sessionDB, _sessionID), _state(COMPLETE)
+	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, sessionDB, _sessionID), _state(COMPLETE), _request_timeout(2)
 {
 }
 
@@ -86,7 +86,7 @@ bool Client::hasTimedOut() const
 	{
 		auto now = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - _lastActivityTime);
-        if (duration.count() > TIMER)
+        if (duration.count() > _request_timeout)
             return true;
 	}
 	return (false);

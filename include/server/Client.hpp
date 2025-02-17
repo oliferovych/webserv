@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 01:43:41 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/15 14:09:52 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class Client
     	};
 		
 		int _clientFd;
+
 		
 		std::string _sessionID;
 		
@@ -44,6 +45,7 @@ class Client
 		Request _request;
 		Status _state;
 		std::chrono::steady_clock::time_point _lastActivityTime;
+		int _request_timeout;
 		
 		int sendResponse(std::string response);
 		void changeState(Status newState);
