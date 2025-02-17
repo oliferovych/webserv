@@ -3,19 +3,15 @@
 #include <sstream>
 #include <algorithm>
 
-std::string Response::getMimeType(std::string path)
+std::string Response::getMimeType(std::filesystem::path path)
 {
-	ft_tolower(path);
-	size_t dot = path.find(".");
-	if (dot != std::string::npos)
-	{
-		std::string end = path.substr(dot, path.length() - dot);
-		auto it = _mimeTypes.find(end);
-		if (it != _mimeTypes.end())
-			return (it->second);
-	}
-	// error handling?
-	return ("");
+	std::string extension = path.extension().string();
+	ft_tolower(extension);
+	auto it = _mimeTypes.find(extension);
+	if (it != _mimeTypes.end())
+		return (it->second);
+	throw Error(400, "unknown filetype: " + extension); //error code
+	return ("wrong");
 }
 
 void Response::populate_dropdown(void)
@@ -101,6 +97,7 @@ void Response::autoIndex(std::string requestPath)
         _body += "<li><a href=\"" + filePath + "\"><span class='icon'>" + icon + "</span>" + fileName + "</a></li>\n";
     }
     _body += "</ul>\n</div>\n</body>\n</html>";
+	_content_type = "text/html";
 }
 
 void Response::insert_sessionData(void)
@@ -150,9 +147,10 @@ void Response::GET(void)
 					path = _rootDir / index.substr(1);
 				else
 					path = _workingDir / request_path.substr(1) / _location->getIndex();
-				//std::cout << path.string() << std::endl;
+
 				if (!std::filesystem::exists(path))
 				{
+					std::cout << "index not found!" << std::endl;
 					if (_location->getAutoIndex() == "on")
 						autoIndex(request_path);
 					else
@@ -336,11 +334,11 @@ void Response::DELETE(void)
 {
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	if (_isCGI)
-	{
-		_body = cgi_handler((_workingDir / _request->get_path().substr(1)).string());
-		return ;
-	}
+	// if (_isCGI)
+	// {
+	// 	_body = cgi_handler((_workingDir / _request->get_path().substr(1)).string());
+	// 	return ;
+	// }
 	if (std::filesystem::is_directory(path))
 		throw Error(403, "cant delete directories");
 	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
@@ -394,7 +392,7 @@ void Response::setBody(std::filesystem::path path)
 	buffer << file.rdbuf();
 	file.close();
 
-	_content_type = getMimeType(path.string());
+	_content_type = getMimeType(path);
 	_body = buffer.str();
 
 	if (path.filename() == "template.html")

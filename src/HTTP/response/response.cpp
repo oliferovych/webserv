@@ -43,47 +43,41 @@ void Response::init_mimeTypes(void)
 
 
 
-void Response::addHeaders(std::string category, std::vector<std::string> args)
+void Response::addHeaders(const std::string &category, const std::vector<std::string> &args)
 {
-	size_t exisiting = _result.find(category + ": ");
-	if (exisiting == std::string::npos)
-	{
-		_result += category + ": ";
-		for (size_t i = 0; i < args.size(); i++)
+    // if (category == "Set-Cookie" || headers.find(category) == headers.end())
+	// {
+        for (const std::string &arg : args)
 		{
-			_result += args[i];
-			if (i + 1 < args.size())
-				_result += ", ";
+			if (!arg.empty())
+            	headers[category].insert(arg);
 		}
-		_result += "\r\n";
-	}
-	else
+    // }
+}
+
+std::string Response::buildHeaders(void)
+{
+    for (const auto &entry : headers)
 	{
-		size_t val_start = exisiting + category.length() + 2;
-		size_t val_end = _result.find("\r\n", val_start);
-		if (val_end == std::string::npos)
-			throw Error(500, "building headers failed!");
-		std::string existing_vals = _result.substr(val_start, val_end - val_start);
-		std::string to_append;
-		for (const std::string &val : args)
+        _result += entry.first + ": ";
+        bool first = true;
+        for (const auto &val : entry.second)
 		{
-			if (existing_vals.find(val) == std::string::npos)
-			{
-				if (!to_append.empty())
-					to_append += ", ";
-				to_append += val;
-			}
-		}
-		if (!to_append.empty())
-			_result.insert(val_end, ", " + to_append);
-	}
+            if (!first)
+                _result += ", ";
+            _result += val;
+            first = false;
+        }
+        _result += "\r\n";
+    }
+    return _result;
 }
 
 void Response::build(void)
 {
 	std::string errorMessage = _status_code == 200 || _status_code == 201 || _status_code == 301 ? "OK" : "KO";
 	_result.insert(0, "HTTP/1.1 " + std::to_string(_status_code) + " " + errorMessage + "\r\n");
-
+	
 	addHeaders("date", {getDateHeader()});
 	if (!_body.empty())
 	{
@@ -100,6 +94,8 @@ void Response::build(void)
 	else
 		addHeaders("connection", {"keep-alive"});
 	addHeaders("Set-Cookie", {"session_id=" + _request->get_sessionID()});
+	buildHeaders();
+	
 	_result += "\r\n";
 	_result += _body;
 }
@@ -119,6 +115,7 @@ void Response::build_err(int code, std::string message)
 	addHeaders("Content-Type", {_content_type});
 	addHeaders("date", {getDateHeader()});
 	addHeaders("connection", {"close"});
+	buildHeaders();
 	_result += "\r\n";
 	_result += _body;
 }

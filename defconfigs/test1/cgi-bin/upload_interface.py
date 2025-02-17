@@ -73,6 +73,5 @@ elif 'delete' in os.environ.get('QUERY_STRING', ''):
     message = handle_delete()
 
 # Print the HTML response
-print("Content-Type: text/html")
-print()
+print("Content-Type: text/html\r\n\r\n")
 print(generate_html(message))

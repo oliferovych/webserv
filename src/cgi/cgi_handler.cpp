@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/15 14:19:49 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/16 14:58:57 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,6 @@ std::string get_interpreter_path(const std::filesystem::path &path)
 	return interpreter;
 }
 
-// std::string Response::_cgiRead(int pipeFd[2])
-// {
-	
-// }
 
 void Response::parseHeaders_cgi(std::string &str)
 {
@@ -49,13 +45,12 @@ void Response::parseHeaders_cgi(std::string &str)
 	{
 		size_t pos_line_end = str.find("\r\n", start);
 		if (pos_line_end == std::string::npos)
-			throw Error(400, "bad format (there is no \r\n at the end of a line in the header) (CGI)");
+			throw Error(400, "bad format (there is no \\r\\n at the end of a line in the header) (CGI)");
 		size_t pos_colon = str.find(":", start);
 		if (pos_colon == std::string::npos)
 			throw Error(400, "bad format (there is no : in a header-line) (CGI)");
 		std::string key = str.substr(start, pos_colon - start);
 		std::string value_line = str.substr(pos_colon + 1, pos_line_end - pos_colon - 1);
-		ft_tolower(key);
 
 		size_t content_start = 0;
 		size_t pos_comma = 0;
@@ -81,133 +76,184 @@ void Response::parseHeaders_cgi(std::string &str)
 	}
 }
 
-std::string Response::cgi_handler(const std::filesystem::path &path)
+std::vector<char*> Response::createEnvp(const std::filesystem::path &path)
 {
-	_content_type = "text/html"; //really??
-	if (!std::filesystem::exists(path) || std::filesystem::is_directory(path))
-		throw Error(400, "invalid path for cgi: " + path.string());
-
-	std::string interpreter = get_interpreter_path(path);
-	int pipeFd[2];
-	std::string output;
 	std::unordered_map<std::string, std::string> env;
-
-	// std::filesystem::path script_dir = path.parent_path();
-	// chdir(script_dir.c_str()); //"The CGI should be run in the correct directory for relative path file access."
-
+	
 	env["REQUEST_METHOD"] = _request->get_method();
 	env["SCRIPT_NAME"] = path.string();
 	env["PATH_INFO"] = path.string();
-	env["CONTENT_LENGTH"] = _request->get_content_length();
 	env["UPLOAD_DIR"] = _uploadDir.empty() ? path.parent_path().string() : _uploadDir;
-	env["CONTENT_TYPE"] = _request->get_header("Content-Type")[0];
-    env["QUERY_STRING"] = _request->get_query_string();
-    env["SERVER_PROTOCOL"] = "HTTP/1.1";
-	// debug_msg(_uploadDir);
-	// ADD MORE ENV VARIABLES
-
+	env["CONTENT_LENGTH"] = std::to_string(_request->get_content_length());
+    env["CONTENT_TYPE"] = _request->get_header("content-type")[0].empty() ? "" : _request->get_header("content-type")[0];
+	env["QUERY_STRING"] = _request->get_query_string();
+	env["SERVER_PROTOCOL"] = "HTTP/1.1";
+	
 	std::vector<std::string> envStrings;
-	std::vector<char*> envp;
-	for (const auto& [key, value] : env) {
+	envStrings.reserve(env.size());
+	for (const auto& [key, value] : env)
 		envStrings.push_back(key + "=" + value);
-		envp.push_back(const_cast<char*>(envStrings.back().data()));
-	}
+	
+    std::vector<char*> envp;
+    envp.reserve(env.size() + 1);
+	for (auto& str : envStrings)
+		envp.push_back(str.data());
 	envp.push_back(nullptr);
+	return (envp);
+}
 
-	if (pipe(pipeFd) == -1)
-		throw Error(500, "Pipe failed");
-	pid_t pid = fork();
-	if (pid == -1)
-	{
-		close(pipeFd[0]);
-		close(pipeFd[1]);
-		throw Error(500, "Fork failed");
-	}
-	else if (pid == 0) //child
-	{
-		close(pipeFd[0]);
-		dup2(pipeFd[1], 1);
-		close(pipeFd[1]);
-
-		std::array<char *, 3> execve_args;
-		execve_args[0] = const_cast<char*>(interpreter.c_str()); // Cast to char* to remove const qualifier
-		execve_args[1] = const_cast<char*>(path.c_str()); // Cast to char* to remove const qualifier
-		execve_args[2] = nullptr; // Null-terminate the arguments
-
-		execve(interpreter.c_str(), execve_args.data(), envp.data());
-		exit(1);
-	}
-	else//parent
-	{
-		close(pipeFd[0]);
-		
-		struct pollfd pollFd[2]; //0 is for input, 1 is for output
-		pollFd[0].fd = pipeFd[0];
-		pollFd[0].events = POLLIN;
-		
-		pollFd[1].fd = pipeFd[1];
-		pollFd[1].events = POLLOUT;
-		
-		int ret = poll(pollFd, 2, 5000);
-		if (ret == -1)
-		{
-			close(pipeFd[0]);
-			throw Error(500, "Poll failed");
-		}
-		else if (ret == 0)
-		{
-			close(pipeFd[0]);
-			throw Error(500, "Poll timed out");
-		}
-
-		if(_request->get_method() == "POST")
-		{
-			if (pollFd[1].revents & POLLOUT)
-			{
-				const std::string write_body(_request->get_body().begin(), _request->get_body().end());
-				size_t totalWritten = 0;
-				while (totalWritten < write_body.size())
-				{
-				    ssize_t bytesWritten = write(pollFd[1].fd, write_body.c_str() + totalWritten, write_body.size() - totalWritten);
-				    if (bytesWritten == -1)
-					{
-				        close(pipeFd[1]);
-				        throw Error(500, "Write to CGI script failed");
-				    }
-				    totalWritten += bytesWritten;
-				}
-				
-				close(pipeFd[1]);
-			}
-		}
-
-		char buffer[4096];
-		if (pollFd[0].revents & POLLIN)
-		{
-			ssize_t bytesRead;
-			while ((bytesRead = read(pollFd[0].fd, buffer, sizeof(buffer))) > 0)
-				output.append(buffer, bytesRead);
-		}
-		close(pipeFd[0]);
-		
-		int status;
-        waitpid(pid, &status, 0);
-        
-        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-            throw Error(500, "CGI script failed with status: " + std::to_string(WEXITSTATUS(status)));
-	}
-
+std::string Response::parseBody_CGI(std::string &output)
+{
+	std::cout << output << std::endl;
 	size_t header_end = output.find("\r\n\r\n");
 	if (header_end == std::string::npos)
 	{
 		header_end = output.find("\r\n");
 		if (header_end == std::string::npos)
 			return (output);
+		else
+			throw Error(500, "wrong header format in cgi output. Headers should end with \\r\\n\\r\\n");
 	}
-	std::string headers = output.substr(0, header_end + 1);
-	std::string body = output.substr(header_end + (output[header_end + 2] == '\n' ? 2 : 4));
+	std::string headers = output.substr(0, header_end + 2);
+	std::string result = output.substr(header_end + 4);
 	parseHeaders_cgi(headers);
-	//parse output
+	return (result);
+}
 
-	return output;
+void writeToChild(int *inputPipe, int *outputPipe, std::string &body, struct pollfd &pfd)
+{
+	pfd.fd = inputPipe[1]; //parent writing end
+	pfd.events = POLLOUT;
+		
+	try
+	{
+		size_t written = 0;
+		while (!body.empty() && written < body.size())
+		{
+			int ret = poll(&pfd, 1, 5000);
+			if (ret == -1)
+				throw Error(500, "poll failed while writing cgi");
+			if (ret == 0)
+				throw Error(500, "poll timeouted while writing cgi");
+			if (!(pfd.revents & POLLOUT))
+				break;
+			ssize_t n = write(inputPipe[1], body.c_str() + written, body.size() - written);
+			if (n > 0)
+				written += n;
+			else if (n < 0)
+				throw Error(500, "writing to cgi script failed");
+			else
+				break;
+		}
+	}
+	catch(const Error& e)
+	{
+		close(inputPipe[1]);
+		close(outputPipe[0]);
+		throw Error(500, "CGI failed: " + std::string(e.what()));
+	}		
+	close(inputPipe[1]); //this send EOF to child, signals end of writing to child
+}
+
+void readFromChild(int *outputPipe, struct pollfd &pfd, std::string &output)
+{
+	pfd.fd = outputPipe[0]; //parent reading end
+	pfd.events = POLLIN;
+	ssize_t bytesRead;
+	std::array<char, 1024> buffer;
+	try
+	{
+		while (true)
+		{
+			int ret = poll(&pfd, 1, 5000);
+			if (ret == -1)
+				throw Error(500, "poll failed while reading cgi");
+			if (ret == 0)
+				throw Error(500, "poll timeouted while reading cgi");
+			if (!(pfd.revents & POLLIN))
+				break;
+			bytesRead = read(outputPipe[0], buffer.data(), sizeof(buffer) - 1);
+			if (bytesRead < 0)
+				throw Error(500, "reading from cgi script failed");
+			else if (bytesRead == 0)
+				break;
+			output.append(buffer.data(), bytesRead);
+		}
+	}
+	catch(const Error& e)
+	{
+		close(outputPipe[0]);
+		throw Error(500, "CGI failed: " + std::string(e.what()));
+	}
+	close(outputPipe[0]);
+}
+
+
+std::string Response::cgi_handler(const std::filesystem::path &path)
+{
+	debug_msg("using CGI");
+	if (!std::filesystem::exists(path) || std::filesystem::is_directory(path))
+		throw Error(400, "Invalid path for CGI: " + path.string());
+
+	std::string interpreter = get_interpreter_path(path);
+	std::string output;
+    std::vector<char*> envp = createEnvp(path);
+
+
+	
+	// Pipes:
+	// [0] reads
+	// [1] writes
+	// inputPipe = child reads, parent writes
+	// outputPipe = parent reads, child writes
+	int inputPipe[2], outputPipe[2];
+	if (pipe(inputPipe) == -1 || pipe(outputPipe) == -1)
+		throw Error(500, "Pipe creation failed");
+
+	pid_t pid = fork();
+	if (pid == -1)
+	{
+		close(inputPipe[0]); close(inputPipe[1]);
+		close(outputPipe[0]); close(outputPipe[1]);
+		throw Error(500, "Fork failed");
+	}
+
+	if (pid == 0)
+	{
+		close(inputPipe[1]);   // Close unused parent write end
+		close(outputPipe[0]);  // Close unused parent read end
+
+		dup2(inputPipe[0], STDIN_FILENO); //reading of child becomes stdin
+		dup2(outputPipe[1], STDOUT_FILENO);	//writing from child becomes stdout
+
+		close(inputPipe[0]);
+		close(outputPipe[1]);
+
+		std::vector<char*> args;
+		args.push_back(const_cast<char*>(interpreter.c_str()));
+		args.push_back(const_cast<char*>(path.c_str()));
+		args.push_back(nullptr);
+
+		execve(interpreter.c_str(), args.data(), envp.data());
+		exit(1);
+	}
+	else
+	{
+		close(inputPipe[0]);   // close unused child reading end
+		close(outputPipe[1]);  // Close unused child writing end
+
+		std::string body(_request->get_body().begin(), _request->get_body().end());
+		if (_request->get_method() != "POST")
+			body.clear();
+		
+		struct pollfd pfd;
+		writeToChild(inputPipe, outputPipe, body, pfd);
+		readFromChild(outputPipe, pfd, output);
+		
+		int status;
+        waitpid(pid, &status, 0);
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+            throw Error(500, "CGI script failed with status: " + std::to_string(WEXITSTATUS(status)));
+	}
+	return parseBody_CGI(output);
 }

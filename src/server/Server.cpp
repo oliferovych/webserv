@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/15 14:14:46 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/16 20:05:11 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <memory>
+#include <csignal>
 #include <fstream>
 
 Server::Server(std::string const &configPath)
@@ -269,16 +270,9 @@ void Server::_signalHandler(int sig)
 
 void Server::_serverSignals()
 {
-	struct sigaction sa;
-	sa.sa_handler = &_signalHandler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	if (sigaction(SIGINT, &sa, NULL) < 0)
-		err_msg("Error setting SIGINT handler");
-	if (sigaction(SIGTERM, &sa, NULL) < 0)
-		err_msg("Error setting SIGTERM handler");
-	if (sigaction(SIGQUIT, &sa, NULL) < 0)
-		err_msg("Error setting SIGQUIT handler");
+	std::signal(SIGINT, _signalHandler);
+    std::signal(SIGTERM, _signalHandler);
+    std::signal(SIGQUIT, _signalHandler);
 	info_msg("Signal handlers set");
 }
 

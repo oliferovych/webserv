@@ -4,7 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <set>
+#include <map>
 
 #include <iomanip>
 #include <filesystem>
@@ -24,20 +25,21 @@ class Response
 		std::string _content_type;
 		std::unordered_map<std::string, std::string> _mimeTypes;
 		std::string _redirect;
-
+		std::map<std::string, std::set<std::string>> headers;
 		bool _isCGI;
 
 		Location *_location;
 		std::string _uploadDir;
 
-		void addHeaders(std::string category, std::vector<std::string> args);
+		void addHeaders(const std::string &category, const std::vector<std::string> &args);
+		std::string buildHeaders(void);
 		void GET(void);
 		void POST(void);
 		void DELETE(void);
 		std::filesystem::path getrootDir();
 		void setBody(std::filesystem::path path);
 		void init_mimeTypes(void);
-		std::string getMimeType(std::string path);
+		std::string getMimeType(std::filesystem::path path);
 		void error_body(int code, const std::string &errorMessage);
 		std::string getDateHeader(void);
 		void fileCreation(std::vector<char> &content, std::string &filename);
@@ -47,7 +49,8 @@ class Response
 		void insert_sessionData(void);
 		std::string cgi_handler(const std::filesystem::path &path);
 		void parseHeaders_cgi(std::string &str);
-
+		std::vector<char*> createEnvp(const std::filesystem::path &path);
+		std::string parseBody_CGI(std::string &output);
 
 
 
