@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/16 22:49:31 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/17 12:00:57 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,11 +54,11 @@ bool Location::_checkLocation()
 		err_msg("Invalid autoindex value: " + _autoindex);
 		return false;
 	}
-	if(!_uploadDir.empty() && !isDir(_uploadDir))
-	{
-		err_msg("Specified upload directory does not exist");
-		return false;
-	}
+	// if(!_uploadDir.empty() && !isDir(_uploadDir))
+	// {
+	// 	err_msg("Specified upload directory does not exist");
+	// 	return false;
+	// }
 	if(!_uploadDir.empty() && (_allowedMethods.empty()
 		|| (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
 		&& std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end())))

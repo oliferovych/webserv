@@ -200,7 +200,7 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	if (!std::filesystem::is_directory(path))
+	if (path.string().back() != '/')
 		throw Error(400, "Request Target needs to be a directory for POST method: " + path.string());
 	std::cout << "postreq: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
 	if(path.string().back() != '/')
@@ -219,6 +219,8 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 	{
 		throw Error(500, "Failed to create directory structure");
 	}
+	if (!std::filesystem::is_directory(path))
+		throw Error(500, "fileCreation failed!");
 	std::filesystem::path filePath = path / filename;
 	
 	std::string extension = filePath.extension().string();
