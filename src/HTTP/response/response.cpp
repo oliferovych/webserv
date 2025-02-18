@@ -1,7 +1,7 @@
 #include "../../../include/HTTP/response/Response.hpp"
 
 Response::Response(Request *request)
-	: _result(""), _status_code(200), _request(request), _rootDir(getrootDir()), _isCGI(false), _location(nullptr)
+	: _result(""), _status_code(200), _request(request), _rootDir(getrootDir()), _location(nullptr)
 {
 	init_mimeTypes();
 	if (!_request->config->getRoot().empty())
@@ -11,7 +11,7 @@ Response::Response(Request *request)
 }
 
 Response::Response(void)
-	: _result(""), _status_code(200), _request(nullptr), _rootDir(getrootDir()), _isCGI(false), _location(nullptr)
+	: _result(""), _status_code(200), _request(nullptr), _rootDir(getrootDir()), _location(nullptr)
 {
 	init_mimeTypes();
 }
@@ -41,23 +41,44 @@ void Response::init_mimeTypes(void)
 	
 }
 
-
+bool isMultiHeader(std::string category)
+{
+	//check if multiple of this header type are possible
+	return (category == "Set-Cookie");
+}
 
 void Response::addHeaders(const std::string &category, const std::vector<std::string> &args)
 {
-    // if (category == "Set-Cookie" || headers.find(category) == headers.end())
-	// {
-        for (const std::string &arg : args)
+	if (args.empty())
+		return ;
+	if (isMultiHeader(category))
+		_multi_headers.emplace(category, args);
+	else
+	{
+		for (const std::string &arg : args)
 		{
 			if (!arg.empty())
-            	headers[category].insert(arg);
+				_headers[category].insert(arg);
 		}
-    // }
+	}
 }
 
 std::string Response::buildHeaders(void)
 {
-    for (const auto &entry : headers)
+    for (const auto &entry : _headers)
+	{
+        _result += entry.first + ": ";
+        bool first = true;
+        for (const auto &val : entry.second)
+		{
+            if (!first)
+                _result += ", ";
+            _result += val;
+            first = false;
+        }
+        _result += "\r\n";
+    }
+    for (const auto &entry : _multi_headers)
 	{
         _result += entry.first + ": ";
         bool first = true;
@@ -90,10 +111,15 @@ void Response::build(void)
 		addHeaders("Location", {_redirect});
 	auto connection = _request->get_header("connection");
 	if (!connection.empty() && connection[0] == "close")
-			addHeaders("connection", {"close"});
+	{
+		addHeaders("connection", {"close"});
+		addHeaders("Set-Cookie", {"session_id=; Max-Age=0"});
+	}
 	else
+	{
 		addHeaders("connection", {"keep-alive"});
-	addHeaders("Set-Cookie", {"session_id=" + _request->get_sessionID()});
+		addHeaders("Set-Cookie", {"session_id=" + _request->get_sessionID()});
+	}
 	buildHeaders();
 	
 	_result += "\r\n";
@@ -115,6 +141,7 @@ void Response::build_err(int code, std::string message)
 	addHeaders("Content-Type", {_content_type});
 	addHeaders("date", {getDateHeader()});
 	addHeaders("connection", {"close"});
+	addHeaders("Set-Cookie", {"session_id=; Max-Age=0"});
 	buildHeaders();
 	_result += "\r\n";
 	_result += _body;
@@ -252,26 +279,26 @@ void Response::checkLocation(void)
 		if (_request->get_method() != "GET")
 			_uploadDir = _rootDir / _location->getUploadDir().substr(1);
 		if (!_location->getCGI().empty())
-		{
-			std::vector<std::string> cgiBase = _location->getCGI();
-			if (std::find(cgiBase.begin(), cgiBase.end(), path.extension().string()) != cgiBase.end())
-				_isCGI = true;
-		}
+			_cgiBase = _location->getCGI();
 	}
 	else
 	{
 		debug_msg("no location found for: " + dir.string());
 		if (!_request->config->getCGI().empty())
-		{
-			std::vector<std::string> cgiBase = _request->config->getCGI();
-			if (std::find(cgiBase.begin(), cgiBase.end(), path.extension().string()) != cgiBase.end())
-				_isCGI = true;
-		}
+			_cgiBase = _request->config->getCGI();
 		if (_request->get_method() != "GET")
 			throw Error(403, "it isnt possbile to POST/DELETE outside a location!");
 	}
 
 
 	
+}
+
+bool Response::isCGI(std::filesystem::path path)
+{
+	if (!_cgiBase.empty() && std::find(_cgiBase.begin(), _cgiBase.end(), path.extension().string()) != _cgiBase.end())
+		return (true);
+	return (false);
+
 }
 

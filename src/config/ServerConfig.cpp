@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/16 22:49:37 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/18 13:52:09 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,15 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 			_ports.push_back(std::stoi(getSingleVarValue(line, "listen")));
 		else if(isKeyWord(line, "server_name"))
 		{
-			try{
+			try
+			{
 				_serverNames = getMultipleVarValue(line, "server_name");
 			}
-			catch(const std::exception& e){return false;}
+			catch(const std::exception& e)
+			{
+				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
+				return false;
+			}
 		}
 		else if(isKeyWord(line, "root") && _root.empty())
 		{

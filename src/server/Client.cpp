@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/16 01:00:54 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/18 00:07:42 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 #include "../../include/HTTP/requests/Request.hpp"
 #include <unistd.h>
 
-Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB)
-	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, sessionDB, _sessionID), _state(COMPLETE), _request_timeout(2)
+Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf)
+	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, _sessionID), _state(COMPLETE), _request_timeout(2)
 {
 }
 

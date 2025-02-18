@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/16 20:05:11 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/17 21:23:05 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ void Server::_acceptClient(int serverFd)
 
 	try
 	{
-		Client *clientSocket = new Client(client_fd, client_address, _config, _sessionDB);
+		Client *clientSocket = new Client(client_fd, client_address, _config);
 		try{
 			_clients.insert(std::make_pair(client_fd, clientSocket));
 		}catch(...){
@@ -173,12 +173,6 @@ void Server::_closeClient(int clientFd)
 	// resp.build_err()
 	close(clientFd);
 	_poll.removeFd(clientFd);
-	std::string sessionID = _clients[clientFd]->getSessionID();
-	if (!sessionID.empty())
-	{
-        _sessionDB.erase(sessionID);
-        info_msg("Removed session: " + sessionID);
-    }
 	delete _clients[clientFd];
 	_clients.erase(clientFd);
 	info_msg("Client socket closed on FD " + std::to_string(clientFd));

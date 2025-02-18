@@ -14,44 +14,6 @@ std::string Response::getMimeType(std::filesystem::path path)
 	return ("wrong");
 }
 
-void Response::populate_dropdown(void)
-{
-	// std::cout << "gg" << std::endl;
-	try
-	{
-        if (std::filesystem::exists(_workingDir / "uploads"))
-		{
-			std::string options;
-			std::string str = "<option value=\"\" disabled selected>-- Select a file --</option>";
-			size_t insert_pos = _body.find(str);
-            if (insert_pos != std::string::npos)
-			{
-				insert_pos += str.length();
-				for (const auto& entry : std::filesystem::directory_iterator(_workingDir / "uploads"))
-				{
-					if (std::filesystem::is_regular_file(entry.path()))
-					{
-						// std::cout << entry.path().filename() << std::endl;
-						std::string filename = entry.path().filename().string();
-						options += "<option value=\"" + filename + "\">" + filename + "</option>";
-					}
-				}
-				_body.insert(insert_pos, "\n\t\t" + options);
-			}
-			// else
-			// 	std::cout << "uu" << std::endl;
-
-				//error handling?
-		}
-		// else
-		// 	std::cout << "aa" << std::endl;
-
-    }
-	catch (const std::filesystem::filesystem_error& e)
-	{
-		err_msg("Filesystem error: " + std::string(e.what()));
-    }
-}
 
 void Response::autoIndex(std::string requestPath)
 {
@@ -99,31 +61,6 @@ void Response::autoIndex(std::string requestPath)
     _body += "</ul>\n</div>\n</body>\n</html>";
 	_content_type = "text/html";
 }
-
-void Response::insert_sessionData(void)
-{
-	//std::cout << _request->get_sessionID() << std::endl;
-	std::string background_color;
-	auto &sessionDB = _request->getSessionDB();
-	auto &sessionID = _request->get_sessionID();
-	auto session_it = sessionDB.find(sessionID);
-	if (session_it != sessionDB.end() && session_it->second.count("background_color"))
-		background_color = session_it->second["background_color"];
-	else
-		throw Error(500, "session not found: " + sessionID);
-
-	size_t pos = _body.find("background-color: #333;");
-	if (pos != std::string::npos)
-		_body.replace(pos, 22, "background-color: " + background_color);
-	else
-		throw Error(500, "no background for replacement found");
-}
-
-
-
-
-
-
 
 
 void Response::GET(void)
@@ -314,7 +251,7 @@ void Response::POST(void)
 	std::pair<std::string, std::vector<char>> result;
 	try
 	{
-		if (_isCGI)
+		if (isCGI(_request->get_path()))
 		{
 			_body = cgi_handler((_workingDir / _request->get_path().substr(1)).string());
 			return ;
@@ -334,11 +271,6 @@ void Response::DELETE(void)
 {
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	// if (_isCGI)
-	// {
-	// 	_body = cgi_handler((_workingDir / _request->get_path().substr(1)).string());
-	// 	return ;
-	// }
 	if (std::filesystem::is_directory(path))
 		throw Error(403, "cant delete directories");
 	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
@@ -371,9 +303,18 @@ void Response::DELETE(void)
 
 void Response::setBody(std::filesystem::path path)
 {
-	if (_isCGI)
+	try 
 	{
-		_body = cgi_handler(path.string());
+		if (isCGI(path))
+		{
+			_body = cgi_handler(path.string());
+			return ;
+		}
+	}
+	catch(const Error &e)
+	{
+		_body = std::string(e.what());
+		_content_type = "text/plain";
 		return ;
 	}
 
@@ -395,6 +336,4 @@ void Response::setBody(std::filesystem::path path)
 	_content_type = getMimeType(path);
 	_body = buffer.str();
 
-	if (path.filename() == "template.html")
-		insert_sessionData();
 }

@@ -49,7 +49,6 @@ class Request
 
 		std::vector<ServerConfig> &configVec;
 
-		std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &_sessionDB;
 		std::string &_sessionID;
 
 
@@ -66,7 +65,7 @@ class Request
 
 
 	public:
-		Request(std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB, std::string &sessionID);
+		Request(std::vector<ServerConfig> &conf, std::string &sessionID);
 		~Request();
 
 		ServerConfig *config;

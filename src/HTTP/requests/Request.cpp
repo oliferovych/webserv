@@ -1,8 +1,8 @@
 #include "../../../include/HTTP/requests/Request.hpp"
 #include <algorithm>
 
-Request::Request(std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB, std::string &sessionID)
-	: content_length(0), state(PARSE_REQUEST_LINE), configVec(conf), _sessionDB(sessionDB), _sessionID(sessionID), config(nullptr)
+Request::Request(std::vector<ServerConfig> &conf, std::string &sessionID)
+	: content_length(0), state(PARSE_REQUEST_LINE), configVec(conf), _sessionID(sessionID), config(nullptr)
 {
 }
 
@@ -283,10 +283,15 @@ ServerConfig *Request::_findConfig(std::string &serverName)
 {
 	for(ServerConfig &sc : configVec)
 	{
-		for(std::string &sn : sc.getServerNames())
+		std::vector<int> ports = sc.getPorts();
+		std::vector<std::string> serverNames = sc.getServerNames();
+		for(std::string &sn : serverNames)
 		{
-			if(sn == serverName)
-				return &sc;
+			for (const int &port : ports)
+			{
+				if(sn == serverName || serverName == sn + ":" + std::to_string(port))
+					return &sc;
+			}
 		}
 	}
 	return (nullptr);
@@ -295,11 +300,6 @@ ServerConfig *Request::_findConfig(std::string &serverName)
 void Request::setPath(std::string str)
 {
 	request_line.path = str;
-}
-
-std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &Request::getSessionDB(void)
-{
-	return (_sessionDB);
 }
 
 const std::string &Request::get_sessionID() const

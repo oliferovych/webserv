@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/15 14:09:52 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/17 21:23:33 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ class Client
 	
 	public:
 		int handle_message();
-		Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, std::unordered_map<std::string, std::unordered_map<std::string, std::string>> &sessionDB);
+		Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf);
 		~Client();
 		const int &getClientFd() const { return _clientFd; }
 		const sockaddr_in &getAddr() const { return _addr; }

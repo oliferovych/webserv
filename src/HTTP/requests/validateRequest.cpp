@@ -105,9 +105,11 @@ void Request::validateHeaders()
 	it = headers.find("cookie");
 	if (it != headers.end())
 	{
+		// std::cout << "cookie: " << it->second[0] << std::endl;
 		std::string id;
 		for (const auto &val : it->second)
 		{
+			// std::cout << "val: " << val << std::endl;
 			size_t pos = val.find("session_id=");
 			if (pos != std::string::npos)
 			{
@@ -115,18 +117,17 @@ void Request::validateHeaders()
 				id = val.substr(pos);
 				if (id == "reset")
 				{
-					if (!_sessionID.empty())
-						_sessionDB.erase(_sessionID);
-					_sessionID = addSession(_sessionDB);
+					if (!_sessionID.empty()) //delete existing session id
+						_sessionID.clear();
 					info_msg("Cookie reset");
 				}
-				else if (!_sessionID.empty())
+				else if (!_sessionID.empty()) //if its not the first time calling, use cookie session id
 					_sessionID = id;
 				break;
 			}
 		}
 	}
-	if (_sessionID.empty())
-    	_sessionID = addSession(_sessionDB);
-	// std::cout << "uu: " << _sessionID << " aa: " << _sessionDB[_sessionID]["background_color"] << std::endl;
+	if (_sessionID.empty()) 
+    	_sessionID = newSession(); //add a new session id.
+	// std::cout << "final sessionID: " << _sessionID << std::endl;
 }
