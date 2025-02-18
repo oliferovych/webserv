@@ -110,7 +110,7 @@ print(f"""<!DOCTYPE html>
 </head>
 <body id="body">
     <div class="container">
-        <h1>wow</h1>
+        <h1>Cookie</h1>
         <button onclick="deleteSession()">Delete Session</button>
     </div>
     <script>
