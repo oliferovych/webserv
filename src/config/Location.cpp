@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/18 18:45:40 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/18 18:57:53 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,10 +109,10 @@ void Location::_resolvePathVars(std::string const &servRoot)
 	}
 	if(!_uploadDir.empty())
 	{
-		if (_uploadDir == "/" || _uploadDir.front() != '/')
-			_uploadDir = _root + _path + _uploadDir;
+		if (_uploadDir == "/" || _uploadDir.front() != '/')		// if uploadDir is just "/" - gets taken from the location folder
+			_uploadDir = _root + _path + _uploadDir;			// same if it does not begin with "/"
 		else
-			_uploadDir = servRoot + _path + _uploadDir;
+			_uploadDir = servRoot + _path + _uploadDir;			// if begins with "/" gets taken from the root of the server
 		_uploadDir = resolvePath(_uploadDir);
 	}
 	for(auto &err : _errorPages)
