@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/18 00:04:51 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/18 11:25:34 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ void Response::parseHeaders_cgi(std::string &str)
 			if (key != "set-cookie")
 				pos_comma = value_line.find(",", content_start);
 			else
-				pos_comma = value_line.find(";", content_start);
+				pos_comma = std::string::npos;
 			if (pos_comma == std::string::npos)
 				pos_comma = value_line.length();
 

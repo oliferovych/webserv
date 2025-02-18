@@ -41,18 +41,29 @@ void Response::init_mimeTypes(void)
 	
 }
 
-
+bool isMultiHeader(std::string category)
+{
+	//check if multiple of this header type are possible
+	return (category == "Set-Cookie");
+}
 
 void Response::addHeaders(const std::string &category, const std::vector<std::string> &args)
 {
-    // if (category == "Set-Cookie" || headers.find(category) == headers.end())
-	// {
-        for (const std::string &arg : args)
+	for (const std::string &arg : args)
+	{
+		if (arg.empty())
+			continue;
+		if (isMultiHeader(category))
 		{
-			if (!arg.empty())
-            	headers[category].insert(arg);
+			auto it = _multi_headers.find(category);
+			if (it == _multi_headers.end())
+				_multi_headers.emplace(category, arg);
+			else
+				it->second.push_back(arg);
 		}
-    // }
+		else
+			_headers[category].insert(arg);
+	}
 }
 
 std::string Response::buildHeaders(void)

@@ -25,7 +25,8 @@ class Response
 		std::string _content_type;
 		std::unordered_map<std::string, std::string> _mimeTypes;
 		std::string _redirect;
-		std::map<std::string, std::set<std::string>> headers;
+		std::map<std::string, std::set<std::string>> _headers;
+		std::multimap<std::string, std::vector<std::string>> _multi_headers;
 		std::vector<std::string> _cgiBase;
 
 		Location *_location;
