@@ -283,10 +283,15 @@ ServerConfig *Request::_findConfig(std::string &serverName)
 {
 	for(ServerConfig &sc : configVec)
 	{
-		for(std::string &sn : sc.getServerNames())
+		std::vector<int> ports = sc.getPorts();
+		std::vector<std::string> serverNames = sc.getServerNames();
+		for(std::string &sn : serverNames)
 		{
-			if(sn == serverName)
-				return &sc;
+			for (const int &port : ports)
+			{
+				if(sn == serverName || serverName == sn + ":" + std::to_string(port))
+					return &sc;
+			}
 		}
 	}
 	return (nullptr);
