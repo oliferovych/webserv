@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Upload Interface</title>
 	<style>
 		body {
 			font-family: 'Arial', sans-serif;
@@ -220,7 +223,7 @@
 			<p>You will be able to delete the uploaded files from the server by typing the filename down below and pressing "Delete File".</p>
 		</div>
         <input type="text" id="deleteInput" class="delete-input" placeholder="Enter file name to delete">
-        <button class="delete-file-btn" onclick="deleteFile()">Delete File</button>
+        <button class="delete-file-btn" id="deleteFileBtn">Delete File</button>
         <div class="message" id="message"></div>
     	</div>
 
@@ -231,30 +234,73 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-                        const fileInput = document.getElementById('fileInput');
+            const fileInput = document.getElementById('fileInput');
             const dropZone = document.getElementById('dropZone');
             const deleteInput = document.getElementById('deleteInput');
+			const deleteFileBtn = document.getElementById('deleteFileBtn');
             const message = document.getElementById('message');
 
-            function handleFile(file) {
+            async function handleFile(file) {
                 const formData = new FormData();
                 formData.append('file', file);
 
-                fetch('/upload_interface/uploaded_files/', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    if (response.ok) {
-                        showMessage(`File "${file.name}" uploaded successfully.`);
-                    } else {
-                        showMessage(`Failed to upload file "${file.name}".`);
-                    }
-                })
-                .catch(error => {
+				try {
+                	const response = await fetch('/upload_interface/uploaded_files/', {
+                	method: 'POST',
+                	body: formData,
+            		});
+                	    if (response.ok) {
+                	        showMessage(`File "${file.name}" uploaded successfully.`);
+                	    } else {
+							const contentType = response.headers.get('content-type');
+							if (contentType && contentType.includes('text/html')) {
+          				    	const newHtml = await response.text();
+          				    	document.open();
+          				    	document.write(newHtml);
+          				    	document.close();
+          				    } else {
+								return response.text().then(errorText => {
+									showMessage(`Failed to upload file "${file.name}": ${errorText}.`);
+								});
+							}
+						}
+                } catch(error) {
 					console.error('Upload failed:', error);
-                    showMessage(`Failed to upload file "${file.name}".`);
-                });
+                };
+            }
+
+			async function deleteFile() {
+                const fileName = deleteInput.value.trim();
+                if (!fileName) {
+                    showMessage('Please enter a file name to delete.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/upload_interface/uploaded_files/${encodeURIComponent(fileName)}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        deleteInput.value = '';
+                        showMessage(`File "${fileName}" deleted successfully.`);
+                    } else {
+                        const contentType = response.headers.get('content-type');
+						if (contentType && contentType.includes('text/html')) {
+          					const newHtml = await response.text();
+          					document.open();
+          					document.write(newHtml);
+          					document.close();
+          				} else {
+							return response.text().then(errorText => {
+								showMessage(`Failed to delete file "${file.name}": ${errorText}.`);
+							});
+						}
+                    }
+                } catch (error) {
+                    console.error('Delete failed:', error);
+                    showMessage(`Failed to delete file "${fileName}": ${error.message}.`);
+                }
             }
 
             fileInput.addEventListener('change', (e) => {
@@ -278,36 +324,14 @@
                 }
             });
 
-            window.deleteFile = function() {
-                const fileName = deleteInput.value.trim();
-                if (!fileName) {
-                    alert('Please enter a file name to delete.');
-                    return;
-                }
-
-                fetch(`/upload_interface/uploaded_files/${encodeURIComponent(fileName)}`, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                                                deleteInput.value = '';
-                        showMessage(`File "${fileName}" deleted successfully.`);
-                    } else {
-                        showMessage(`Failed to delete file "${fileName}".`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Delete failed:', error);
-                    showMessage(`Failed to delete file "${fileName}".`);
-                });
-            };
+			deleteFileBtn.addEventListener('click', deleteFile);
 
             function showMessage(msg) {
                 message.textContent = msg;
                 message.style.display = 'block';
                 setTimeout(() => {
                     message.style.display = 'none';
-                }, 3000);
+                }, 5000);
             }
         });
     </script>
