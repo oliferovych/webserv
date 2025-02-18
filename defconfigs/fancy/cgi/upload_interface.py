@@ -44,7 +44,7 @@ def handle_delete():
 # Generate the HTML response
 def generate_html(message=''):
     files = os.listdir(UPLOAD_DIR)
-    file_list = ''.join(f'<li>{file} <a href="/cgi-bin/upload_interface.py?delete={file}">Delete</a></li>' for file in files)
+    file_list = ''.join(f'<li>{file} <a href="/cgi/upload_interface.py?delete={file}">Delete</a></li>' for file in files)
     return f"""
     <html>
     <head>
@@ -53,7 +53,7 @@ def generate_html(message=''):
     <body>
         <h2>{message}</h2>
         <h3>Upload a file</h3>
-        <form action="/cgi-bin/" method="post" enctype="multipart/form-data">
+        <form action="/cgi/" method="post" enctype="multipart/form-data">
             <input type="file" name="file">
             <input type="submit" value="Upload">
         </form>
@@ -73,6 +73,5 @@ elif 'delete' in os.environ.get('QUERY_STRING', ''):
     message = handle_delete()
 
 # Print the HTML response
-print("Content-Type: text/html")
-print()
+print("Content-Type: text/html\r\n\r\n")
 print(generate_html(message))
