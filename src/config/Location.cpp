@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/17 12:00:57 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/18 18:45:40 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,10 +109,10 @@ void Location::_resolvePathVars(std::string const &servRoot)
 	}
 	if(!_uploadDir.empty())
 	{
-		if (_path != "/")
-			_uploadDir = _root + _path.substr(1) + _uploadDir;
+		if (_uploadDir == "/" || _uploadDir.front() != '/')
+			_uploadDir = _root + _path + _uploadDir;
 		else
-			_uploadDir = _root + _uploadDir.substr(1);
+			_uploadDir = servRoot + _path + _uploadDir;
 		_uploadDir = resolvePath(_uploadDir);
 	}
 	for(auto &err : _errorPages)
