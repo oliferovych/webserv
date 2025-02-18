@@ -271,11 +271,6 @@ void Response::DELETE(void)
 {
 	std::string request_path = _request->get_path();
 	std::filesystem::path path = _workingDir / request_path.substr(1);
-	// if (_isCGI)
-	// {
-	// 	_body = cgi_handler((_workingDir / _request->get_path().substr(1)).string());
-	// 	return ;
-	// }
 	if (std::filesystem::is_directory(path))
 		throw Error(403, "cant delete directories");
 	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
@@ -308,9 +303,18 @@ void Response::DELETE(void)
 
 void Response::setBody(std::filesystem::path path)
 {
-	if (isCGI(path))
+	try 
 	{
-		_body = cgi_handler(path.string());
+		if (isCGI(path))
+		{
+			_body = cgi_handler(path.string());
+			return ;
+		}
+	}
+	catch(const Error &e)
+	{
+		_body = std::string(e.what());
+		_content_type = "text/plain";
 		return ;
 	}
 
