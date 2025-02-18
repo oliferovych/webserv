@@ -49,26 +49,36 @@ bool isMultiHeader(std::string category)
 
 void Response::addHeaders(const std::string &category, const std::vector<std::string> &args)
 {
-	for (const std::string &arg : args)
+	if (args.empty())
+		return ;
+	if (isMultiHeader(category))
+		_multi_headers.emplace(category, args);
+	else
 	{
-		if (arg.empty())
-			continue;
-		if (isMultiHeader(category))
+		for (const std::string &arg : args)
 		{
-			auto it = _multi_headers.find(category);
-			if (it == _multi_headers.end())
-				_multi_headers.emplace(category, arg);
-			else
-				it->second.push_back(arg);
+			if (!arg.empty())
+				_headers[category].insert(arg);
 		}
-		else
-			_headers[category].insert(arg);
 	}
 }
 
 std::string Response::buildHeaders(void)
 {
-    for (const auto &entry : headers)
+    for (const auto &entry : _headers)
+	{
+        _result += entry.first + ": ";
+        bool first = true;
+        for (const auto &val : entry.second)
+		{
+            if (!first)
+                _result += ", ";
+            _result += val;
+            first = false;
+        }
+        _result += "\r\n";
+    }
+    for (const auto &entry : _multi_headers)
 	{
         _result += entry.first + ": ";
         bool first = true;
