@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>CGI Files</title>
+	<style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #282c34;
+            color: #61dafb;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        .title, .neon-text {
+            margin: 50px 0;
+            font-size: 10em;
+            color: #61dafb;
+            font-family: 'Neon', sans-serif;
+            animation: neon 1.5s ease-in-out infinite alternate, flicker 3s infinite;
+        }
+        h2, h3 {
+            color: #61dafb;
+            font-family: 'Neon', sans-serif;
+            animation: neon 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes neon {
+            from {
+                text-shadow: 0 0 5px #61dafb, 0 0 10px #61dafb, 0 0 15px #61dafb, 0 0 20px #61dafb, 0 0 25px #61dafb, 0 0 30px #61dafb, 0 0 35px #61dafb;
+            }
+            to {
+                text-shadow: 0 0 10px #61dafb, 0 0 20px #61dafb, 0 0 30px #61dafb, 0 0 40px #61dafb, 0 0 50px #61dafb, 0 0 60px #61dafb, 0 0 70px #61dafb;
+            }
+        }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+            }
+            20%, 24%, 55% {
+                opacity: 0.5;
+            }
+            22% {
+                opacity: 0.1;
+            }
+        }
+		.button-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 30%;
+            max-width: 1200px;
+            margin: 100px auto 0;
+        }
+		.button {
+            display: inline-block;
+            padding: 20px 30px;
+            margin: 10px;
+            background-color: #30353f; /* Slightly darker than body background */
+            color: #314852;
+			border: 3px solid #282c34; /* Same color as title */
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+			font-size: 1.5em;
+            text-align: center;
+			animation:none;
+        }
+        .button:hover {
+			border: 3px solid #61dafb;
+			color: #61dafb;
+            animation: neon 1.5s ease-in-out infinite alternate; /* Darker on hover */
+        }
+	</style>
+</head>
+<body>
+	<div class="title">Cgi Files</div>
+	<div class="button-container">
+        <div class="button" onclick="fetchTimeScript('/cgi/time_script.py')">Time Python</div>
+        <div class="button" onclick="fetchTimeScript('/cgi/time_script.rb')">Time Ruby</div>
+        <div class="button" onclick="fetchTimeScript('/cgi/time_script.sh')">Time Shell</div>
+        <div class="button" onclick="fetchTimeScript('/cgi/time_script.pl')">Time Perl</div>
+        <div class="button" onclick="fetchTimeScript('/cgi/time_script.php')">Time PHP</div>
+        <a href="javascript:void(0);" class="button" onclick="fetchTimeScript('/cgi/upload_interface.py')">Upload</a>
+	</div>
+</body>
+<script>
+	async function fetchTimeScript(script) {
+		const response = await fetch(script, {
+            method: 'GET',
+            headers: {
+                'Accept': 'text/html'
+            }
+        });
+		const newHtml = await response.text();
+        document.open();
+		document.write(newHtml);
+		document.close();
+	}
+</script>
+</html>
