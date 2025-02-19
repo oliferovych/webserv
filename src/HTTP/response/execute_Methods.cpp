@@ -49,6 +49,8 @@ void Response::autoIndex(std::string requestPath)
     for (const auto& entry : std::filesystem::directory_iterator(path))
     {
         std::string fileName = entry.path().filename().string();
+		if (fileName.front() == '.')
+			continue;
         std::string filePath = requestPath + fileName;
 
         if (entry.is_directory())
