@@ -240,13 +240,14 @@ void Response::checkLocation(void)
 	std::filesystem::path path(_request->get_path());
 	std::filesystem::path dir;
 
-
-	if (std::filesystem::is_directory(path))
-		dir = path;
-	else 
-		dir = path.parent_path();
-
+	dir = path;
 	_location = _request->config->getLocation(dir);
+	if (!_location)
+	{
+		if (!std::filesystem::is_directory(path))
+			dir = path.parent_path();
+	}
+
 	while (!_location) 
 	{
 		if (dir == "/")
@@ -262,6 +263,7 @@ void Response::checkLocation(void)
 
 	if (_location)
 	{
+		debug_msg("location is: " + dir.string());
 		if (!_location->getAllowedMethods().empty())
 		{
 			bool flag = false;
@@ -276,7 +278,6 @@ void Response::checkLocation(void)
 			if (!flag)
 				throw Error(403, "Method not defined in config for this location: " + _request->get_method()); //error code
 		}
-
 
 		if (!_location->getRoot().empty() && _location->getRoot() != _request->config->getRoot())
 			_workingDir = _rootDir / _location->getRoot().substr(1);

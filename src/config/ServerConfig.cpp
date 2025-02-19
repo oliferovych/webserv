@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/19 15:04:58 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/19 17:07:57 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,6 +218,8 @@ bool ServerConfig::isValid() const
 
 Location *ServerConfig::getLocation(std::string path)
 {
+	if (path != "/" && path.back() == '/')
+		path.pop_back();
 	for (auto &lc : _locations)
 	{
 		if (lc.getPath() == path)
