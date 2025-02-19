@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/18 18:57:53 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/19 15:05:29 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,6 @@ bool Location::_checkLocation()
 		err_msg("Location's root directory does not exist");
 		return false;
 	}
-	// if(!_index.empty() && _index != _root + "off" && !fileExists(_index))
-	// {
-	// 	err_msg("Location's index file does not exist");
-	// 	return false;
-	// }
 	if(!_allowedMethods.empty())
 	{
 		for(auto &method : _allowedMethods)
@@ -36,6 +31,14 @@ bool Location::_checkLocation()
 				err_msg("Invalid method in location block: " + method);
 				return false;
 			}
+		}
+	}
+	if (!_redirect.second.empty())
+	{
+		if (!(_redirect.first == 301 || _redirect.first == 302))
+		{
+			err_msg("worng redirect code in location block: " + std::to_string(_redirect.first));
+			return false;
 		}
 	}
 	if(!_errorPages.empty())
@@ -54,11 +57,6 @@ bool Location::_checkLocation()
 		err_msg("Invalid autoindex value: " + _autoindex);
 		return false;
 	}
-	// if(!_uploadDir.empty() && !isDir(_uploadDir))
-	// {
-	// 	err_msg("Specified upload directory does not exist");
-	// 	return false;
-	// }
 	if(!_uploadDir.empty() && (_allowedMethods.empty()
 		|| (std::find(_allowedMethods.begin(), _allowedMethods.end(), "POST") == _allowedMethods.end()
 		&& std::find(_allowedMethods.begin(), _allowedMethods.end(), "DELETE") == _allowedMethods.end())))
@@ -192,6 +190,25 @@ Location::Location(std::ifstream &file, std::string const &path, ServerConfig co
 				return ;
 			}
 		}
+		else if(isKeyWord(line, "return"))
+		{
+			std::vector<std::string> values;
+			try
+			{
+				values = getMultipleVarValue(line, "return");
+				if(values.size() != 2)
+				{
+					err_msg("Invalid error_page block: " + line);
+					return ;
+				}
+				_redirect = std::make_pair(std::stoi(values[0]), values[1]);
+			}
+			catch(const std::exception& e)
+			{
+				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
+				return ;
+			}
+		}
 		else if(isKeyWord(line, "cgi"))
 		{
 			try
@@ -216,6 +233,8 @@ Location::Location(std::ifstream &file, std::string const &path, ServerConfig co
 		_index = serv.getIndex();
 	if(_cgi.empty())
 		_cgi = serv.getCGI();
+	if (_redirect.second.empty() && !serv.getRedirect().second.empty())
+		_redirect = serv.getRedirect();
 	_valid = _checkLocation();
 	if(_valid)
 		debug_msg("Location block parsed");
@@ -250,6 +269,9 @@ void Location::printOut(int indent) const
 	std::cout << "Autoindex: " << _autoindex << std::endl;
 	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
+	std::cout << "redirect: " << _redirect.first << " " << _redirect.second << std::endl;
+	for(int i = 0; i <= indent; i++)
+		std::cout << "  ";
 	std::cout << "Upload directory: " << _uploadDir << std::endl;
 	for(int i = 0; i <= indent; i++)
 		std::cout << "  ";
@@ -274,4 +296,9 @@ std::string Location::getErrorPage(int code)
 	if (it != _errorPages.end())
 		return (it->second);
 	return ("");
+}
+
+const std::pair<int, std::string> Location::getRedirect(void) const
+{
+	return (_redirect);
 }

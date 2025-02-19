@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:04:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 15:58:13 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/19 15:05:23 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class Location
 		std::unordered_map<int, std::string> _errorPages;
 		std::string _uploadDir;
 		std::string _autoindex;
+		std::pair<int, std::string> _redirect;
 		std::vector<std::string> _cgi;
 		bool _valid;
 		bool _checkLocation();
@@ -47,6 +48,8 @@ class Location
 		const std::vector<std::string> &getAllowedMethods() const { return _allowedMethods; }
 		const std::vector<std::string> &getCGI() const { return _cgi; }
 		std::string getErrorPage(int code);
+		const std::pair<int, std::string> getRedirect(void) const;
+
 
 		void printOut(int indent) const;
 };

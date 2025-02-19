@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:13:49 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/11 15:58:27 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/19 15:04:53 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class ServerConfig
 		std::vector<int> _ports;
 		std::string _root;
 		std::string _index;
+		std::pair<int, std::string> _redirect;
 		std::unordered_map<int, std::string> _errorPages;
 		std::vector<std::string> _serverNames;
 		std::vector<Location> _locations;
@@ -47,6 +48,8 @@ class ServerConfig
 		const std::vector<std::string> &getCGI() const { return _cgi; }
 		std::string getErrorPage(int code);
 		Location *getLocation(std::string path);
+		const std::pair<int, std::string> getRedirect(void) const;
+
 
 		ServerConfig(std::ifstream &file);
 		~ServerConfig();

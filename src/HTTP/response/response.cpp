@@ -153,6 +153,11 @@ void Response::doMethod(void)
 	{
 		std::string method = _request->get_method();
 		checkLocation();
+		if (!_redirect.empty())
+		{
+			debug_msg("redirecting to: " + _redirect);
+			return ;
+		}
 		if (method == "GET")
 			GET();
 		else if (method == "POST")
@@ -280,6 +285,11 @@ void Response::checkLocation(void)
 			_uploadDir = _rootDir / _location->getUploadDir().substr(1);
 		if (!_location->getCGI().empty())
 			_cgiBase = _location->getCGI();
+		if (!_location->getRedirect().second.empty())
+		{
+			_redirect = _location->getRedirect().second;
+			_status_code = _location->getRedirect().first;
+		}
 	}
 	else
 	{
@@ -288,6 +298,11 @@ void Response::checkLocation(void)
 			_cgiBase = _request->config->getCGI();
 		if (_request->get_method() != "GET")
 			throw Error(403, "it isnt possbile to POST/DELETE outside a location!");
+		if (!_request->config->getRedirect().second.empty())
+		{
+			_redirect = _request->config->getRedirect().second;
+			_status_code = _request->config->getRedirect().first;
+		}
 	}
 
 

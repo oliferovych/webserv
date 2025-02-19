@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/18 13:52:09 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/19 15:04:58 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,14 @@ bool ServerConfig::_checkConfig()
 				err_msg("Error page does not exist: " + err.second);
 				return false;
 			}
+		}
+	}
+	if (!_redirect.second.empty())
+	{
+		if (!(_redirect.first == 301 || _redirect.first == 302))
+		{
+			err_msg("worng redirect code in location block: " + std::to_string(_redirect.first));
+			return false;
 		}
 	}
 	if(_ports.empty() || _root.empty())
@@ -131,6 +139,25 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 				return false;
 			}
 		}
+		else if(isKeyWord(line, "return"))
+		{
+			std::vector<std::string> values;
+			try
+			{
+				values = getMultipleVarValue(line, "return");
+				if(values.size() != 2)
+				{
+					err_msg("Invalid error_page block: " + line);
+					return false;
+				}
+				_redirect = std::make_pair(std::stoi(values[0]), values[1]);
+			}
+			catch(const std::exception& e)
+			{
+				err_msg("Error in error_page block: \""+ line + "\": " + std::string(e.what()));
+				return false;
+			}
+		}
 		else if(isKeyWord(line, "cgi"))
 		{
 			try
@@ -176,6 +203,7 @@ void ServerConfig::_printOut() const
 	std::cout << "Max clients: " << _maxConn << std::endl;
 	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Index: " << _index << std::endl;
+	std::cout << "redirect: " << _redirect.first << " " << _redirect.second << std::endl;
 	for(auto err : _errorPages)
 		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
 	for(auto loc : _locations)
@@ -206,5 +234,10 @@ std::string ServerConfig::getErrorPage(int code)
 	if (it != _errorPages.end())
 		return (it->second);
 	return ("");
+}
+
+const std::pair<int, std::string> ServerConfig::getRedirect(void) const
+{
+	return (_redirect);
 }
 
