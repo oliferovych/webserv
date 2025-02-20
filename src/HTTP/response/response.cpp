@@ -118,7 +118,7 @@ void Response::build(void)
 	else
 	{
 		addHeaders("connection", {"keep-alive"});
-		addHeaders("Set-Cookie", {"session_id=" + _request->get_sessionID()});
+		addHeaders("Set-Cookie", {"session_id=" + _request->get_sessionID() + "; path=/"});
 	}
 	buildHeaders();
 	
@@ -141,7 +141,7 @@ void Response::build_err(int code, std::string message)
 	addHeaders("Content-Type", {_content_type});
 	addHeaders("date", {getDateHeader()});
 	addHeaders("connection", {"close"});
-	addHeaders("Set-Cookie", {"session_id=; Max-Age=0"});
+	addHeaders("Set-Cookie", {"session_id=; Max-Age=0; path=/"});
 	buildHeaders();
 	_result += "\r\n";
 	_result += _body;
