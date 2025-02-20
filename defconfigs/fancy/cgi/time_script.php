@@ -1,6 +1,5 @@
 <?php
 #!/usr/bin/env php
-<?php
 echo "<html>";
 echo "<head>";
 echo "<title>Current Time</title>";
