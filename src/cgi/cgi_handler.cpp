@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/18 11:25:34 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/20 16:45:44 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ void writeToChild(int *inputPipe, int *outputPipe, std::string &body, struct pol
 		size_t written = 0;
 		while (!body.empty() && written < body.size())
 		{
-			int ret = poll(&pfd, 1, 5000);
+			int ret = poll(&pfd, 1, 4000);
 			if (ret == -1)
 				throw Error(500, "poll failed while writing cgi");
 			if (ret == 0)
@@ -168,7 +168,7 @@ void readFromChild(int *outputPipe, struct pollfd &pfd, std::string &output)
 	{
 		while (true)
 		{
-			int ret = poll(&pfd, 1, 5000);
+			int ret = poll(&pfd, 1, 4000);
 			if (ret == -1)
 				throw Error(500, "poll failed while reading cgi");
 			if (ret == 0)
@@ -228,6 +228,7 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 		
 		dup2(inputPipe[0], STDIN_FILENO); //reading of child becomes stdin
 		dup2(outputPipe[1], STDOUT_FILENO);	//writing from child becomes stdout
+		dup2(outputPipe[1], STDERR_FILENO);	//writing from child becomes stdout
 		
 		close(inputPipe[0]);
 		close(outputPipe[1]);
