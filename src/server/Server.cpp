@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/17 21:23:05 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/20 15:30:16 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -215,20 +215,27 @@ void Server::run()
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
 	while(_running)
 	{
-		int events = poll(_poll.getFds().data(), _poll.size(), -1);
+		int events = poll(_poll.getFds().data(), _poll.size(), 5000);
 		if(events < 0)
 		{
 			if(errno != EINTR)
 				err_msg("Poll failed " + std::string(strerror(errno)));
 			break ;
 		}
+		else if(events == 0)
+		{
+			std::cout << "aa" << std::endl;
+			for(auto &pfd : _poll.getFds())
+			{
+				if(!_isServer(pfd.fd))
+				{
+					_closeClient(pfd.fd);
+				}
+			}
+			continue ;
+		}
 		for(auto &pfd : _poll.getFds())
 		{
-			// if ( _clients[pfd.fd]->hasTimedOut())
-			// {
-			// 	_closeClient(pfd.fd);
-			// 	break;	
-			// }
 			if(pfd.revents & POLLIN)
 			{
 				if(_isServer(pfd.fd))
@@ -243,8 +250,28 @@ void Server::run()
 					break ;
 				}
 			}
-			if(pfd.revents & (POLLHUP | POLLERR | POLLHUP | POLLNVAL))
+			else if(pfd.revents & POLLOUT)
 			{
+				if(!_isServer(pfd.fd) && _clients[pfd.fd]->getState() != 2)
+				{
+					if(_clients[pfd.fd]->sendResponse(_clients[pfd.fd]->getResponseStr()) < 0)
+					{
+						_closeClient(pfd.fd);
+						break ;
+					}
+					if (_clients[pfd.fd]->isConnClosed())
+					{
+						debug_msg("Closing connectin by request...");
+						_closeClient(pfd.fd);
+						break;
+					}
+					_clients[pfd.fd]->changeState(2);
+					_clients[pfd.fd]->resetRequest();
+				}
+			}
+			else if(pfd.revents & (POLLHUP | POLLERR | POLLNVAL))
+			{
+				debug_msg("Poll fd revent hung up/invalid, closing client fd...");
 				if(!_isServer(pfd.fd))
 				{
 					_closeClient(pfd.fd);

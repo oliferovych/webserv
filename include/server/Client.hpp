@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/17 21:23:33 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/20 15:27:09 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,20 +43,28 @@ class Client
 		bool _connected;
 		sockaddr_in _addr;
 		Request _request;
+		std::string _responseStr;
 		Status _state;
 		std::chrono::steady_clock::time_point _lastActivityTime;
 		int _request_timeout;
 		
-		int sendResponse(std::string response);
-		void changeState(Status newState);
 	
 	public:
-		int handle_message();
 		Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf);
 		~Client();
+		
+		int handle_message();
+		int sendResponse(std::string response);
+		void resetRequest(void);
+		void changeState(Status newState);
+		void changeState(int newState);
+		
 		const int &getClientFd() const { return _clientFd; }
 		const sockaddr_in &getAddr() const { return _addr; }
 		bool hasTimedOut() const;
 		std::string getSessionID(void);
+		std::string getResponseStr(void) const { return _responseStr; }
+		bool isConnClosed(void);
+		int getState(void) { return _state; }
 		
 };

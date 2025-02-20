@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/18 00:07:42 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/20 15:30:03 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,16 +67,7 @@ int Client::handle_message()
 		response.build();
 		// if (_request.get_path() != "/favicon.ico")
 		// 	std::cout << "\nResponse:\n" << response.getResult() << std::endl;
-		if (sendResponse(response.getResult()) < 0)
-			return (-1);
-		auto connection = _request.get_header("connection");
-		if (!connection.empty())
-		{
-			if (connection[0] == "close")
-				return -1;
-		}
-        _request.reset();
-		changeState(COMPLETE);
+		_responseStr = response.getResult();
     }
 	return (0);
 }
@@ -88,7 +79,10 @@ bool Client::hasTimedOut() const
 		auto now = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - _lastActivityTime);
         if (duration.count() > _request_timeout)
+		{
+			debug_msg("Request timeout, closing ...");
             return true;
+		}
 	}
 	return (false);
 }
@@ -112,7 +106,35 @@ void Client::changeState(Status newState)
 	_lastActivityTime = std::chrono::steady_clock::now();
 }
 
+void Client::changeState(int newState)
+{
+	if(newState <= 0)
+		_state = RECEIVING;
+	else if(newState == 1)
+		_state = SENDING;
+	else
+		_state = COMPLETE;
+	_lastActivityTime = std::chrono::steady_clock::now();
+}
+
 std::string Client::getSessionID(void)
 {
 	return (_sessionID);
 }
+
+bool Client::isConnClosed(void)
+{
+	auto connection = _request.get_header("connection");
+	if (!connection.empty())
+	{
+		if (connection[0] == "close")
+			return true;
+	}
+	return false;
+}
+
+void Client::resetRequest(void)
+{
+	_request.reset();
+}
+
