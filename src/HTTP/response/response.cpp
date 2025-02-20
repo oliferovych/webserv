@@ -245,7 +245,10 @@ void Response::checkLocation(void)
 	if (!_location)
 	{
 		if (!std::filesystem::is_directory(path))
+		{
 			dir = path.parent_path();
+			_location = _request->config->getLocation(dir);
+		}
 	}
 
 	while (!_location) 
