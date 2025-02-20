@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execute_Methods.cpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/02/20 16:05:38 by tecker            #+#    #+#             */
+/*   Updated: 2025/02/20 16:38:04 by tecker           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../../include/HTTP/response/Response.hpp"
 #include <fstream>
 #include <sstream>
@@ -315,8 +327,7 @@ void Response::setBody(std::filesystem::path path)
 	}
 	catch(const Error &e)
 	{
-		_body = std::string(e.what());
-		_content_type = "text/plain";
+        error_body(e.code(), "POST execution failed: " + std::string(e.what()));
 		return ;
 	}
 
