@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/20 16:45:44 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/20 19:26:27 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ std::string Response::parseBody_CGI(std::string &output)
 	return (result);
 }
 
-void writeToChild(int *inputPipe, int *outputPipe, std::string &body, struct pollfd &pfd)
+void writeToChild(int *inputPipe, int *outputPipe, std::string &body, struct pollfd &pfd, pid_t childPID)
 {
 	pfd.fd = inputPipe[1]; //parent writing end
 	pfd.events = POLLOUT;
@@ -151,6 +151,8 @@ void writeToChild(int *inputPipe, int *outputPipe, std::string &body, struct pol
 	}
 	catch(const Error& e)
 	{
+		kill(childPID, SIGKILL);
+        waitpid(childPID, NULL, WNOHANG);
 		close(inputPipe[1]);
 		close(outputPipe[0]);
 		throw Error(500, "CGI failed: " + std::string(e.what()));
@@ -158,17 +160,22 @@ void writeToChild(int *inputPipe, int *outputPipe, std::string &body, struct pol
 	close(inputPipe[1]); //this send EOF to child, signals end of writing to child
 }
 
-void readFromChild(int *outputPipe, struct pollfd &pfd, std::string &output)
+void readFromChild(int *outputPipe, struct pollfd &pfd, std::string &output, pid_t childPID)
 {
 	pfd.fd = outputPipe[0]; //parent reading end
 	pfd.events = POLLIN;
 	ssize_t bytesRead;
+	auto start_time = std::chrono::steady_clock::now();
 	std::array<char, 1024> buffer;
 	try
 	{
 		while (true)
 		{
 			int ret = poll(&pfd, 1, 4000);
+			auto now = std::chrono::steady_clock::now();
+        	auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - start_time);
+			if (duration.count() > 4)
+				throw Error(500, "CGI execution timed out!");
 			if (ret == -1)
 				throw Error(500, "poll failed while reading cgi");
 			if (ret == 0)
@@ -185,6 +192,8 @@ void readFromChild(int *outputPipe, struct pollfd &pfd, std::string &output)
 	}
 	catch(const Error& e)
 	{
+		kill(childPID, SIGKILL);
+        waitpid(childPID, NULL, WNOHANG);
 		close(outputPipe[0]);
 		throw Error(500, "CGI failed: " + std::string(e.what()));
 	}
@@ -265,8 +274,8 @@ std::string Response::cgi_handler(const std::filesystem::path &path)
 			body.clear();
 		
 		struct pollfd pfd;
-		writeToChild(inputPipe, outputPipe, body, pfd);
-		readFromChild(outputPipe, pfd, output);
+		writeToChild(inputPipe, outputPipe, body, pfd, pid);
+		readFromChild(outputPipe, pfd, output, pid);
 		
 		int status;
         waitpid(pid, &status, 0);
