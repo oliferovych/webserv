@@ -8,16 +8,18 @@ html_content="
 <html>
 <head>
 	<title>Current Time</title>
-	        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #282c34;
-            color: #61dafb;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Neon&display=swap');
+	    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #282c34;
+        color: #61dafb;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
         }
         .title, .neon-text {
             margin: 50px 0;
