@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:30:23 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/15 16:34:35 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/20 15:58:41 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,15 +20,13 @@ int main(int argc, char **argv)
 		info_msg("Usage: ./webserv [config_file] or ./webserv");
 		return 1;
 	}
-	if(argc == 1)
-	{
-		Server server("defconfigs/fancy/fancy.conf");
+	try {
+		Server server(argc == 1 ? "defconfigs/fancy/fancy.conf" : argv[1]);
 		server.run();
 	}
-	else
+	catch (std::exception &e)
 	{
-		Server server(argv[1]);
-		server.run();
+		return 1;
 	}
 
 	return 0;

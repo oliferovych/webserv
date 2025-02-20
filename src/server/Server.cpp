@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/20 15:30:16 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/20 15:59:57 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ bool Server::_loadConfig(std::string const &path)
 
 Server::~Server()
 {
+	debug_msg("Server destroyed");
 }
 
 void Server::createServerSockets()
@@ -81,16 +82,17 @@ void Server::createServerSockets()
 	{
 		for(int port : _conf.getPorts())
 		{
-			std::unique_ptr<Socket> s(new Socket(port, _conf.getMaxConn() / _conf.getPorts().size()));
 			try
 			{
+				std::unique_ptr<Socket> s(new Socket(port, _conf.getMaxConn() / _conf.getPorts().size()));
 				_sockets.insert(std::make_pair(s->getSocketFd(), s.get()));
 				_poll.addFd(s->getSocketFd());
 				s.release();
 			}
-			catch(...)
+			catch(std::exception &e)
 			{
 				err_msg("Error creating server socket on port " + std::to_string(port));
+				err_msg(e.what());
 				throw;
 			}
 		}
@@ -224,13 +226,10 @@ void Server::run()
 		}
 		else if(events == 0)
 		{
-			std::cout << "aa" << std::endl;
 			for(auto &pfd : _poll.getFds())
 			{
 				if(!_isServer(pfd.fd))
-				{
 					_closeClient(pfd.fd);
-				}
 			}
 			continue ;
 		}
