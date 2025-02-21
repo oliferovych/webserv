@@ -44,7 +44,7 @@ def handle_delete():
 # Generate the HTML response
 def generate_html(message=''):
     files = os.listdir(UPLOAD_DIR)
-    file_list = ''.join(f'<li>{file} <a href="/cgi/upload_interface/upload_interface.py?delete={file}">Delete</a></li>' for file in files)
+    file_list = ''.join(f'<li>{file}</li>' for file in files)
     return f"""
     <html>
     <head>
@@ -57,7 +57,7 @@ def generate_html(message=''):
             <input type="file" name="file">
             <input type="submit" value="Upload">
         </form>
-        <h3>Delete a file</h3>
+        <h3>Uploaded Files</h3>
         <ul>
             {file_list}
         </ul>

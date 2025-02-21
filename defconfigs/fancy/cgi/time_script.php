@@ -1,8 +1,7 @@
+#!/usr/bin/env php
 <?php
 
-#!/usr/bin/env php
-
-echo "Content-type: text/html\n\n";
+echo "Content-type: text/html\r\n\r\n";
 echo "<html>";
 echo "<head>";
 echo "<title>Current Time</title>";
