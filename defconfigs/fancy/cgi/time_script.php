@@ -1,5 +1,8 @@
 <?php
+
 #!/usr/bin/env php
+
+echo "Content-type: text/html\n\n";
 echo "<html>";
 echo "<head>";
 echo "<title>Current Time</title>";
