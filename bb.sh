@@ -2,7 +2,7 @@
 
 HOST=${1:-"localhost"}
 PORT=${2:-"8080"}
-boundary="----WebKitFormBoundary73Gc5lQ10uYDdw6i"
+boundary="----WebKitFormBoundary4XjZxow7uBuxLpLr"
 
 (
 echo -e "POST / HTTP/1.1\r

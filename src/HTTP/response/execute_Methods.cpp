@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_Methods.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 16:05:38 by tecker            #+#    #+#             */
-/*   Updated: 2025/02/21 13:14:26 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 16:57:31 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <fcntl.h>
 #include <poll.h>
+#include <array>
 
 std::string Response::getMimeType(std::filesystem::path path)
 {

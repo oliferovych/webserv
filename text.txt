@@ -7,6 +7,14 @@ hallo mein name ist tom\r\n
 ------WebKitFormBoundary4XjZxow7uBuxLpLr--\r\n
 
 
+------WebKitFormBoundary4XjZxow7uBuxLpLr\r\n
+Content-Disposition: form-data; name="file"; filename="text.txt"\r\n
+Content-Type: text/plain\r\n
+\r\n
+hallo mein name ist tom\r\n
+------WebKitFormBoundary4XjZxow7uBuxLpLr--\r\n
+
+
 before:
 68\r\n
 ------WebKitFormBoundary4XjZxow7uBuxLpLr\r\n
@@ -24,3 +32,19 @@ hallo mein name ist tom\r\n
 \r\n
 0\r\n
 \r\n
+
+
+POST body
+------WebKitFormBoundary4XjZxow7uBuxLpLr\r\n
+Content-Disposition: form-data; name="file"; filename="text.txt"\r\n
+Content-Type: text/plain\r\n
+\r\n
+hallo mein name ist tom\r\n
+------WebKitFormBoundary4XjZxow7uBuxLpLr--\r\n
+
+------WebKitFormBoundary4XjZxow7uBuxLpLr\r\n
+Content-Disposition: form-data; name="file"; filename="text.txt"\r\n
+Content-Type: text/plain\r\n
+\r\n
+hallo mein name ist tom\r\n
+------WebKitFormBoundary4XjZxow7uBuxLpLr--\r\n
