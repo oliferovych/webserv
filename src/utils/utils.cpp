@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/21 12:44:41 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 16:34:09 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,6 +208,7 @@ void printVectorEscaped(const std::vector<char>& buffer)
     }
     std::cout << std::endl;
 }
+
 void printStringEscaped(const std::string& buffer)
 {
     for (char c : buffer)
@@ -220,4 +221,22 @@ void printStringEscaped(const std::string& buffer)
 			std::cout << c;
     }
     std::cout << std::endl;
+}
+
+void displayConfigLine(std::string line, int indentation, std::string indentColor)
+{
+	std::string marker = "╠";
+	std::string reset = RESET;
+
+	if(indentColor.empty())
+		indentColor = RESET;
+	if(indentColor == FG_BOLDGREEN || indentColor == FG_BOLDBLUE)
+	{
+		marker = "╬";
+		reset = "";
+	}
+	for (int i = 0; i < indentation; i++)
+		std::cout << "  ";
+	std::cout << indentColor << marker << reset << line << RESET << std::endl;
+
 }

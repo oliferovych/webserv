@@ -23,7 +23,7 @@ html_content="
         }
         .title, .neon-text {
             margin: 50px 0;
-            font-size: 10em;
+            font-size: 8em;
             color: #61dafb;
             font-family: 'Neon', sans-serif;
             animation: neon 1.5s ease-in-out infinite alternate, flicker 3s infinite;
@@ -55,8 +55,8 @@ html_content="
 	</style>
 </head>
 <body>
-	<div class='title'>Time</div>
-	<p>The current time is: $current_time</p>
+	<p class='title'>$current_time</p>
+    <p> This is a simple CGI script in SHELL that displays the current time.</p>
 </body>
 </html>"
 

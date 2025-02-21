@@ -261,6 +261,7 @@ void Request::reset()
 	headers.clear();
 	body.clear();
 	buffer.clear();
+	query_vars.clear();
 	content_length = 0;
 	state = PARSE_REQUEST_LINE;
 }

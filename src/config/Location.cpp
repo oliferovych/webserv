@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/19 15:05:29 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/21 16:54:35 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/config/Location.hpp"
 #include "../../include/utils/utils.hpp"
+#include "../../include/global.hpp"
 #include <algorithm>
 #include <fstream>
 
@@ -248,46 +249,41 @@ Location::~Location()
 
 void Location::printOut(int indent) const
 {
-	std::cout << std::endl;
-	for(int i = 0; i < indent; i++)
-		std::cout << "  ";
-	std::cout << "Location: " << _path << std::endl;
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "Root: " << _root << std::endl;
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "Index: " << _index << std::endl;
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "Allowed methods: ";
-	for(auto method : _allowedMethods)
-		std::cout << method << " ";
-	std::cout << std::endl;
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "Autoindex: " << _autoindex << std::endl;
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "redirect: " << _redirect.first << " " << _redirect.second << std::endl;
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "Upload directory: " << _uploadDir << std::endl;
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "Error Pages: " << std::endl;
-	for(auto err : _errorPages)
+	displayConfigLine("Location block: " + _path, indent, FG_BOLDGREEN);
+	indent++;
+
+	displayConfigLine("Root: " + _root, indent, FG_GREEN);
+	if(!_index.empty())
+		displayConfigLine("Index: " + _index, indent, FG_GREEN);
+	if(!_allowedMethods.empty())
 	{
-		for(int i = 0; i <= indent + 1; i++)
-			std::cout << "  ";
-		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
+		std::string methods = "Allowed methods: ";
+		for(auto method : _allowedMethods)
+			methods.append(method + " ");
+		displayConfigLine(methods, indent, FG_GREEN);
 	}
-	for(int i = 0; i <= indent; i++)
-		std::cout << "  ";
-	std::cout << "CGI: ";
-	for(auto handler : _cgi)
-		std::cout << handler << " ";
-	std::cout << std::endl;
+	displayConfigLine("Autoindex: " + _autoindex, indent, FG_GREEN);
+
+	if(!_uploadDir.empty())
+		displayConfigLine("Upload directory: " + _uploadDir, indent, FG_GREEN);
+	if(!_redirect.second.empty())
+		displayConfigLine("Redirect: " + std::to_string(_redirect.first) + " " + _redirect.second, indent, FG_GREEN);
+
+	if(!_cgi.empty())
+	{	
+		std::string cgi = "CGI: ";
+		for(auto handler : _cgi)
+			cgi.append(handler + " ");
+		displayConfigLine(cgi, indent, FG_GREEN);
+	}
+
+	if(!_errorPages.empty())
+	{
+		displayConfigLine("Error pages:", indent, FG_GREEN);
+		indent++;
+		for(auto err : _errorPages)
+			displayConfigLine("Err_page " + std::to_string(err.first) + ": " + err.second, indent, FG_YELLOW);
+	}
 }
 
 std::string Location::getErrorPage(int code)

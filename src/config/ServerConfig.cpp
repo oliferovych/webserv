@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/20 15:31:35 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/19 17:07:57 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 16:44:03 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,23 +189,32 @@ bool ServerConfig::_parseServer(std::ifstream &file)
 
 void ServerConfig::_printOut() const
 {
-	std::cout << "Server config:" << std::endl;
-	std::cout << std::endl;
-	std::cout << "Ports: ";
+	displayConfigLine("Server block", 0, FG_BOLDGREEN);
+
+	std::string ports = "Ports: ";
 	for(auto port : _ports)
-		std::cout << port << " ";
-	std::cout << std::endl;
-	std::cout << "Server names: ";
+		ports.append(std::to_string(port) + " ");
+	displayConfigLine(ports, 1, FG_GREEN);
+
+	std::string serverNames = "Server names: ";
 	for(auto name : _serverNames)
-		std::cout << name << " ";
-	std::cout << std::endl;
-	std::cout << "Max body size: " << _maxBodySize << std::endl;
-	std::cout << "Max clients: " << _maxConn << std::endl;
-	std::cout << "Root: " << _root << std::endl;
-	std::cout << "Index: " << _index << std::endl;
-	std::cout << "redirect: " << _redirect.first << " " << _redirect.second << std::endl;
-	for(auto err : _errorPages)
-		std::cout << "err_page " << err.first << ": " << err.second << std::endl;
+		serverNames.append(name + " ");
+	displayConfigLine(serverNames, 1, FG_GREEN);
+
+	displayConfigLine("Max body size: " + std::to_string(_maxBodySize), 1, FG_GREEN);
+	displayConfigLine("Max clients: " + std::to_string(_maxConn), 1, FG_GREEN);
+	displayConfigLine("Root: " + _root, 1, FG_GREEN);
+	if(!_index.empty())
+		displayConfigLine("Index: " + _index, 1, FG_GREEN);
+	if(!_redirect.second.empty())
+		displayConfigLine("Redirect: " + std::to_string(_redirect.first) + " " + _redirect.second, 1, FG_GREEN);
+
+	if(!_errorPages.empty())
+	{	
+		displayConfigLine("Error pages:", 1, FG_GREEN);
+		for(auto err : _errorPages)
+			displayConfigLine("Err_page " + std::to_string(err.first) + ": " + err.second, 2, FG_YELLOW);
+	}
 	for(auto loc : _locations)
 		loc.printOut(1);
 	std::cout << std::endl;

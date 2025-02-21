@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 Server Internal</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #282c34;
+            color: #61dafb;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            animation: fadeIn 2s ease-in-out;
+        }
+        h1 {
+            font-size: 10rem;
+            margin: 0;
+            animation: neon 1.5s ease-in-out infinite alternate, flicker 3s infinite;
+        }
+        p {
+            font-size: 1.5rem;
+            animation: fadeIn 3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes neon {
+            from {
+                text-shadow: 0 0 5px #61dafb, 0 0 10px #61dafb, 0 0 15px #61dafb, 0 0 20px #61dafb, 0 0 25px #61dafb, 0 0 30px #61dafb, 0 0 35px #61dafb;
+            }
+            to {
+                text-shadow: 0 0 10px #61dafb, 0 0 20px #61dafb, 0 0 30px #61dafb, 0 0 40px #61dafb, 0 0 50px #61dafb, 0 0 60px #61dafb, 0 0 70px #61dafb;
+            }
+        }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+            }
+            20%, 24%, 55% {
+                opacity: 0.5;
+            }
+            22% {
+                opacity: 0.1;
+            }
+        }
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20vh;
+            background: linear-gradient(45deg, #61dafb, #282c34, #61dafb);
+            background-size: 200% 200%;
+            animation: wave 4s infinite linear, neon 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes wave {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>500</h1>
+        <p>Internal server error.</p>
+    </div>
+	<div class="wave"></div>
+</body>
+</html>

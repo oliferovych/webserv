@@ -20,7 +20,7 @@ print "</style>";
 print "</head>";
 print "<body>";
 print "<div class='time-container'>";
-print "<h1>Current Time</h1>";
+print "<h1>Current Time with Perl</h1>";
 print "<p class='time'>" . strftime("%Y-%m-%d %H:%M:%S", localtime) . "</p>";
 print "</div>";
 print "</body>";

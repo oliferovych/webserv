@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/20 15:30:03 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/21 15:31:50 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,8 @@ int Client::handle_message()
 	{
 		changeState(SENDING);
 		info_msg("Message recieved from client on FD " + std::to_string(_clientFd));
-			// _request.debug_print();
+		// if (_request.get_path() != "/favicon.ico")
+		// 	_request.debug_print();
         Response response(&_request);
 		response.doMethod();
 		response.build();

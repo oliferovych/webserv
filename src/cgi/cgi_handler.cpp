@@ -24,7 +24,7 @@ std::string get_interpreter_path(const std::filesystem::path &path)
 	if (extension == ".py")
 		interpreter += "/usr/bin/python3";
 	else if (extension == ".php")
-		interpreter += "/usr/bin/php-cgi";
+		interpreter += "/usr/bin/php";
 	else if (extension == ".pl")
 		interpreter += "/usr/bin/perl";
 	else if (extension == ".rb")
