@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/20 16:45:44 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/21 16:49:19 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ std::string get_interpreter_path(const std::filesystem::path &path)
 	if (extension == ".py")
 		interpreter += "/usr/bin/python3";
 	else if (extension == ".php")
-		interpreter += "/usr/bin/php-cgi";
+		interpreter += "/usr/bin/php";
 	else if (extension == ".pl")
 		interpreter += "/usr/bin/perl";
 	else if (extension == ".rb")
