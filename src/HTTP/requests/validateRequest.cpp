@@ -2,31 +2,32 @@
 #include <array>
 #include <algorithm>
 
-void	Request::handle_absolute_path()
-{
-	size_t start = request_line.path.find("://");
-	if (start == std::string::npos)
-		return ;
-	start += 3;
-	size_t path = request_line.path.find("/", start);
-	if (path == std::string::npos)
-		// request_line.path = "/";
-		path = request_line.path.length();
-	size_t port = request_line.path.find(":", start);
-	if (port < path)
-	{
-		if (port != std::string::npos)
-			request_line.absolute_host = request_line.path.substr(start, port - start);
-		else
-			request_line.absolute_host = request_line.path.substr(start, path - start);
-		if (path != request_line.path.length())
-			request_line.path = request_line.path.substr(path, request_line.path.length());
-		else
-			request_line.path = "/";
-	}
-	else
-		throw Error(400, "wrong format for absolut-form-request-target: " + request_line.path);
-}
+// void	Request::handle_absolute_path()
+// {
+// 	size_t start = request_line.path.find("://");
+// 	if (start == std::string::npos)
+// 		return ;
+// 	std::cout << "aa" << std::endl;
+// 	start += 3;
+// 	size_t path = request_line.path.find("/", start);
+// 	if (path == std::string::npos)
+// 		// request_line.path = "/";
+// 		path = request_line.path.length();
+// 	size_t port = request_line.path.find(":", start);
+// 	if (port < path)
+// 	{
+// 		if (port != std::string::npos)
+// 			request_line.absolute_host = request_line.path.substr(start, port - start);
+// 		else
+// 			request_line.absolute_host = request_line.path.substr(start, path - start);
+// 		if (path != request_line.path.length())
+// 			request_line.path = request_line.path.substr(path, request_line.path.length());
+// 		else
+// 			request_line.path = "/";
+// 	}
+// 	else
+// 		throw Error(400, "wrong format for absolut-form-request-target: " + request_line.path);
+// }
 
 
 void Request::validateRequestLine(void)
@@ -39,13 +40,11 @@ void Request::validateRequestLine(void)
 	if (request_line.version != "HTTP/1.1")
 		throw Error(505, "server does not support HTTP version used: " + request_line.version);
 
-	handle_absolute_path(); //check
+	// handle_absolute_path(); //check
 	if (request_line.path.find("..") != std::string::npos)
 		throw Error(403, "server doesn't allow .. in request target: " + request_line.path);
 	if (request_line.path[0] != '/')
 		throw Error(400, "request target must start with a /: " + request_line.path);
-	// if (request_line.method == "POST" && request_line.path.back() != '/')
-	// 	throw Error(400, "request target for POST request must be a directory (end with a /): " + request_line.path);
 	bool last_was_slash = false;
 	for (auto c : request_line.path)
 	{
@@ -105,11 +104,9 @@ void Request::validateHeaders()
 	it = headers.find("cookie");
 	if (it != headers.end())
 	{
-		// std::cout << "cookie: " << it->second[0] << std::endl;
 		std::string id;
 		for (const auto &val : it->second)
 		{
-			// std::cout << "val: " << val << std::endl;
 			size_t pos = val.find("session_id=");
 			if (pos != std::string::npos)
 			{
@@ -117,7 +114,7 @@ void Request::validateHeaders()
 				id = val.substr(pos);
 				if (id == "reset")
 				{
-					if (!_sessionID.empty()) //delete existing session id
+					if (!_sessionID.empty())
 						_sessionID.clear();
 					info_msg("Cookie reset");
 				}
@@ -128,6 +125,5 @@ void Request::validateHeaders()
 		}
 	}
 	if (_sessionID.empty()) 
-    	_sessionID = newSession(); //add a new session id.
-	// std::cout << "final sessionID: " << _sessionID << std::endl;
+    	_sessionID = newSession();
 }

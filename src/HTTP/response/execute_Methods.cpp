@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 16:05:38 by tecker            #+#    #+#             */
-/*   Updated: 2025/02/20 22:19:56 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 13:14:26 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,6 +229,7 @@ std::pair<std::string, std::vector<char>> Response::extractData()
 	std::vector<char> requestBody = _request->get_body();
 	std::pair<std::string, std::vector<char>> result;
 
+	// printVectorEscaped(requestBody);
 	size_t start = 0;
 	auto it = std::search(requestBody.begin(), requestBody.end(), del.begin(), del.end());
 	while (it != requestBody.end())

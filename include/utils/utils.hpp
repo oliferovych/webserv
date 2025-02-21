@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:52 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/17 22:18:14 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 12:44:48 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,4 +54,7 @@ bool isDir(const std::string &path);
 bool isFiletype(std::string type, std::string const &path);
 
 std::string newSession(void);
+void printVectorEscaped(const std::vector<char>& buffer);
+void printStringEscaped(const std::string& buffer);
+
 

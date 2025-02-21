@@ -6,7 +6,7 @@
 /*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/17 22:18:04 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 12:44:41 by tomecker         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,4 +193,31 @@ std::string newSession(void)
     std::string session_id = generate_random_sessionID();
 	info_msg("Added new session: ID: " + session_id);
 	return (session_id);
+}
+
+void printVectorEscaped(const std::vector<char>& buffer)
+{
+    for (char c : buffer)
+	{
+        if (c == '\r')
+            std::cout << "\\r";
+        else if (c == '\n')
+            std::cout << "\\n\n";
+        else
+			std::cout << c;
+    }
+    std::cout << std::endl;
+}
+void printStringEscaped(const std::string& buffer)
+{
+    for (char c : buffer)
+	{
+        if (c == '\r')
+            std::cout << "\\r";
+        else if (c == '\n')
+            std::cout << "\\n\n";
+        else
+			std::cout << c;
+    }
+    std::cout << std::endl;
 }

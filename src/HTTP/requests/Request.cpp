@@ -180,7 +180,8 @@ void Request::parse_body(void)
 
 void Request::parse_chunked_body()
 {
-    while (!buffer.empty())
+	printVectorEscaped(buffer);
+	while (!buffer.empty())
     {
         std::vector<char> del = {'\r', '\n'};
 		auto it = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
@@ -190,15 +191,19 @@ void Request::parse_chunked_body()
 
 		// getting the chunk size
         std::string chunk_size_str(buffer.begin(), it);
+		printStringEscaped(chunk_size_str);
         size_t line_length = std::distance(buffer.begin(), it) + 2;
-        size_t chunk_size;
+		std::cout << "line len: " << line_length << std::endl;
+        size_t chunk_size = 0;
         try
 		{
+			std::cout << "chunk size bef: " << chunk_size << std::endl;
             chunk_size = std::stoul(chunk_size_str, nullptr, 16);
-        }
+			std::cout << "chunk size: " << chunk_size << std::endl;
+		}
 		catch (...)
 		{
-			throw Error(500, "chunk-size parsing failed");
+			throw Error(500, "chunk-size parsing failedd");
 		}
 
 		// chunk size = 0 if we reached the end of the body
@@ -219,12 +224,15 @@ void Request::parse_chunked_body()
 		// Ensure there is enough data in the buffer for the current chunk and its CRLF
         if (buffer.size() < line_length + chunk_size + 2)
             return ;
-
-        // Append the current chunk's data to the body
+			// Append the current chunk's data to the body
+		std::cout << "debug1" << std::endl;
 		auto chunk_start = buffer.begin() + line_length;
-        body.insert(body.end(), chunk_start, chunk_start + chunk_size);
+		body.insert(body.end(), chunk_start, chunk_start + chunk_size + amountOfCRLF * 2);
+
+		// std::vector<char> tmp(chunk_start, chunk_start + chunk_size + 4);
+		// printVectorEscaped(tmp);
         // delete chunk + chunk size line from buffer
-		buffer.erase(buffer.begin(), chunk_start + chunk_size + 2);
+		buffer.erase(buffer.begin(), chunk_start + chunk_size + amountOfCRLF * 2);
     }
 	state = COMPLETE;
 }
