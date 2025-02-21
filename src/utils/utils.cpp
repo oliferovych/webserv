@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/11 21:54:17 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/17 22:18:04 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 16:34:09 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,4 +193,21 @@ std::string newSession(void)
     std::string session_id = generate_random_sessionID();
 	info_msg("Added new session: ID: " + session_id);
 	return (session_id);
+}
+
+void displayConfigLine(std::string line, int indentation, std::string indentColor)
+{
+	std::string marker = "╠";
+	std::string reset = RESET;
+
+	if(indentColor.empty())
+		indentColor = RESET;
+	if(indentColor == FG_BOLDGREEN || indentColor == FG_BOLDBLUE)
+	{
+		marker = "╬";
+		reset = "";
+	}
+	for (int i = 0; i < indentation; i++)
+		std::cout << "  ";
+	std::cout << indentColor << marker << reset << line << RESET << std::endl;
 }
