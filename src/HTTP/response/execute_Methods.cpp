@@ -6,14 +6,18 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 16:05:38 by tecker            #+#    #+#             */
-/*   Updated: 2025/02/20 16:38:04 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/21 16:57:31 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/HTTP/response/Response.hpp"
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
 #include <algorithm>
+#include <fcntl.h>
+#include <poll.h>
+#include <array>
 
 std::string Response::getMimeType(std::filesystem::path path)
 {
@@ -184,15 +188,34 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 		counter++;
 	}
 
-	std::ofstream file(filePath, std::ios::binary);
-    if (!file.is_open())
+	int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_NONBLOCK, 0644);
+    if (fd == -1)
 		throw Error(500, "Failed to create file at path: " + path.string());
 
-    file.write(content.data(), content.size());
-    file.close();
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = POLLOUT;
 
-    if (file.fail())
-		throw Error(500, "Failed to write to file: " + path.string());
+	while (1)
+	{
+		int ret = poll(&pfd, 1, -1);
+		if (ret < 0)
+		{
+			close(fd);
+			throw Error(500, "Poll failed");
+		}
+		if (ret > 0 && (pfd.revents & POLLOUT))
+		{
+			ssize_t written = write(fd, content.data(), content.size());
+			if (written < 0)
+			{
+				close(fd);
+				throw Error(500, "Failed to write to file: " + path.string());
+			}
+			break;
+		}
+	}
+	close (fd);
 
     _status_code = 201;
 }
@@ -207,6 +230,7 @@ std::pair<std::string, std::vector<char>> Response::extractData()
 	std::vector<char> requestBody = _request->get_body();
 	std::pair<std::string, std::vector<char>> result;
 
+	// printVectorEscaped(requestBody);
 	size_t start = 0;
 	auto it = std::search(requestBody.begin(), requestBody.end(), del.begin(), del.end());
 	while (it != requestBody.end())
@@ -331,22 +355,42 @@ void Response::setBody(std::filesystem::path path)
 		return ;
 	}
 
-
-	std::ifstream file(path, std::ios::binary);
-
-	if (!file.is_open())
+	int fd = open(path.c_str(), O_RDONLY | O_NONBLOCK);
+	if (fd < 0)
 	{
-		err_msg("file not found at path (setBody): " + path.string());
-		_body = "404, File not found at path: " + path.string();
-		_content_type = "text/plain";
-		return;
+			err_msg("file not found at path (setBody): " + path.string());
+			_body = "404, File not found at path: " + path.string();
+			_content_type = "text/plain";
+			return;
 	}
 
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	file.close();
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = POLLIN;
 
+	std::array<char, 1024> buffer;
+
+	while (1)
+	{
+		int ret = poll(&pfd, 1, -1);
+		if (ret < 0)
+		{
+			close(fd);
+			throw Error(500, "Poll failed");
+		}
+		if (ret > 0 && (pfd.revents & POLLIN))
+		{
+			ssize_t bytes_read = read(fd, buffer.data(), sizeof(buffer));
+			if (bytes_read < 0)
+			{
+				close(fd);
+				throw Error(500, "Failed to write to file: " + path.string());
+			}
+			else if (bytes_read == 0)
+				break;
+			_body.append(buffer.data(), bytes_read);
+		}
+	}
+	close (fd);
 	_content_type = getMimeType(path);
-	_body = buffer.str();
-
 }

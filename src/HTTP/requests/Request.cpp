@@ -180,53 +180,65 @@ void Request::parse_body(void)
 
 void Request::parse_chunked_body()
 {
-    while (!buffer.empty())
+	while (!buffer.empty())
     {
-        std::vector<char> del = {'\r', '\n'};
+		std::cout << "buffer:" << std::endl;
+		printVectorEscaped(buffer);
+        std::vector<char> del = {'\r', '\n', '\r', '\n'};
 		auto it = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
-
+ 
+		if (it != buffer.end())
+		{
+			if (it + 4 != buffer.end() && *(it + 4) == '\r' && *(it + 5) == '\n')
+        		it += 2;
+    	}
+	
+		//there is not a full chunk in buffer
         if (it == buffer.end())
             return ;
 
 		// getting the chunk size
-        std::string chunk_size_str(buffer.begin(), it);
-        size_t line_length = std::distance(buffer.begin(), it) + 2;
-        size_t chunk_size;
+        std::vector<char> del2 = {'\r', '\n'};
+		auto it2 = std::search(buffer.begin(), buffer.end(), del2.begin(), del2.end());
+        std::string chunk_size_str(buffer.begin(), it2);
+        size_t start = std::distance(buffer.begin(), it2) + 2;
+        size_t chunk_size = 0;
+		auto chunk_start = buffer.begin() + start;
         try
 		{
             chunk_size = std::stoul(chunk_size_str, nullptr, 16);
-        }
+		}
 		catch (...)
 		{
-			throw Error(500, "chunk-size parsing failed");
+			throw Error(500, "chunk-size parsing failedd");
 		}
-
-		// chunk size = 0 if we reached the end of the body
         if (chunk_size == 0)
         {
-			if (buffer.size() < line_length + 2)
+			if (buffer.size() < start + 2)
 				return ;
-            if (buffer[line_length] != '\r' || buffer[line_length + 1] != '\n')
+            if (buffer[start] != '\r' || buffer[start + 1] != '\n')
 				throw Error(400, "body ending has wrong format");
 
-            buffer.erase(buffer.begin(), buffer.begin() + line_length + 2);
-            state = COMPLETE;
-            return ;
+            buffer.erase(buffer.begin(), buffer.begin() + start + 2);
+            break ;
         }
+
+		std::vector<char> tmp1(chunk_start, chunk_start + std::distance(chunk_start, it + 2));
+		// std::cout << "tmp" << std::endl;
+		// printVectorEscaped(tmp1);
 		if (chunk_size > config->getMaxBodySize() - body.size())
     		throw Error(413, "request body is larger than MaxBodySize: " + std::to_string(body.size() + chunk_size));
 
 		// Ensure there is enough data in the buffer for the current chunk and its CRLF
-        if (buffer.size() < line_length + chunk_size + 2)
+        if (buffer.size() < start + chunk_size + 2)
             return ;
-
-        // Append the current chunk's data to the body
-		auto chunk_start = buffer.begin() + line_length;
-        body.insert(body.end(), chunk_start, chunk_start + chunk_size);
-        // delete chunk + chunk size line from buffer
-		buffer.erase(buffer.begin(), chunk_start + chunk_size + 2);
+		// Append the current chunk's data to the body
+		body.insert(body.end(), tmp1.begin(), tmp1.end());
+		buffer.erase(buffer.begin(), chunk_start + tmp1.size() + 2);
     }
 	state = COMPLETE;
+	// std::cout << "complete body" << std::endl;
+	// printVectorEscaped(body);
 }
 
 bool Request::is_complete() const
@@ -317,7 +329,3 @@ const std::string &Request::get_query_string() const
 {
 	return (query_vars);
 }
-
-
-
-

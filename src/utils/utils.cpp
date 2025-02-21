@@ -195,6 +195,34 @@ std::string newSession(void)
 	return (session_id);
 }
 
+void printVectorEscaped(const std::vector<char>& buffer)
+{
+    for (char c : buffer)
+	{
+        if (c == '\r')
+            std::cout << "\\r";
+        else if (c == '\n')
+            std::cout << "\\n\n";
+        else
+			std::cout << c;
+    }
+    std::cout << std::endl;
+}
+
+void printStringEscaped(const std::string& buffer)
+{
+    for (char c : buffer)
+	{
+        if (c == '\r')
+            std::cout << "\\r";
+        else if (c == '\n')
+            std::cout << "\\n\n";
+        else
+			std::cout << c;
+    }
+    std::cout << std::endl;
+}
+
 void displayConfigLine(std::string line, int indentation, std::string indentColor)
 {
 	std::string marker = "╠";
@@ -210,4 +238,5 @@ void displayConfigLine(std::string line, int indentation, std::string indentColo
 	for (int i = 0; i < indentation; i++)
 		std::cout << "  ";
 	std::cout << indentColor << marker << reset << line << RESET << std::endl;
+
 }
