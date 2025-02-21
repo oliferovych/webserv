@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgi_handler.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/03 00:01:19 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/20 19:26:27 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/21 17:11:07 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,7 @@ void readFromChild(int *outputPipe, struct pollfd &pfd, std::string &output, pid
 		kill(childPID, SIGKILL);
         waitpid(childPID, NULL, WNOHANG);
 		close(outputPipe[0]);
-		throw Error(500, "CGI failed: " + std::string(e.what()));
+		throw Error(500, std::string(e.what()));
 	}
 	close(outputPipe[0]);
 }

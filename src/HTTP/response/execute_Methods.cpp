@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 16:05:38 by tecker            #+#    #+#             */
-/*   Updated: 2025/02/21 16:57:31 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/21 17:11:28 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,7 +351,8 @@ void Response::setBody(std::filesystem::path path)
 	}
 	catch(const Error &e)
 	{
-        error_body(e.code(), "POST execution failed: " + std::string(e.what()));
+		err_msg("CGI failed: " + std::string(e.what()));
+        error_body(e.code(), "CGI failed: " + std::string(e.what()));
 		return ;
 	}
 
