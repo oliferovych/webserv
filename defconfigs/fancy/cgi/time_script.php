@@ -13,7 +13,7 @@ echo "</style>";
 echo "</head>";
 echo "<body>";
 echo "<div class='time-container'>";
-echo "<h1>Current Time</h1>";
+echo "<h1>Current Time with PHP</h1>";
 echo "<p class='time'>" . date("Y-m-d H:i:s") . "</p>";
 echo "</div>";
 echo "</body>";
