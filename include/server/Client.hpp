@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/20 15:27:09 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/21 18:24:42 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,11 @@ class Client
 		Status _state;
 		std::chrono::steady_clock::time_point _lastActivityTime;
 		int _request_timeout;
+		int _port;
 		
 	
 	public:
-		Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf);
+		Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, int port);
 		~Client();
 		
 		int handle_message();
@@ -61,10 +62,12 @@ class Client
 		
 		const int &getClientFd() const { return _clientFd; }
 		const sockaddr_in &getAddr() const { return _addr; }
-		bool hasTimedOut() const;
+		bool hasRequestTimedOut() const;
+		bool hasTimedOut(double timeoutTime) const;
 		std::string getSessionID(void);
 		std::string getResponseStr(void) const { return _responseStr; }
 		bool isConnClosed(void);
 		int getState(void) { return _state; }
+		int getPort(void) { return _port; }
 		
 };

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/20 15:59:57 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/21 18:25:38 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ void Server::_acceptClient(int serverFd)
 
 	try
 	{
-		Client *clientSocket = new Client(client_fd, client_address, _config);
+		Client *clientSocket = new Client(client_fd, client_address, _config, _sockets[serverFd]->getPort());
 		try{
 			_clients.insert(std::make_pair(client_fd, clientSocket));
 		}catch(...){
@@ -235,6 +235,15 @@ void Server::run()
 		}
 		for(auto &pfd : _poll.getFds())
 		{
+			if(!_isServer(pfd.fd))
+			{
+				int maxConn = _findConfig(_clients[pfd.fd]->getPort()).getMaxConn(); 
+				if(_clients[pfd.fd]->hasTimedOut(maxConn / _poll.size() * 1.1))
+				{
+					_closeClient(pfd.fd);
+					break ;
+				}
+			}
 			if(pfd.revents & POLLIN)
 			{
 				if(_isServer(pfd.fd))
@@ -243,7 +252,12 @@ void Server::run()
 					_acceptClient(pfd.fd);
 					break ;
 				}
-				if (_clients[pfd.fd]->hasTimedOut() || _clients[pfd.fd]->handle_message() < 0)
+				// else if(_clients[pfd.fd]->hasTimedOut(5.5))
+				// {
+				// 	_closeClient(pfd.fd);
+				// 	break ;
+				// }
+				if (_clients[pfd.fd]->hasRequestTimedOut() || _clients[pfd.fd]->handle_message() < 0)
 				{
 					_closeClient(pfd.fd);
 					break ;

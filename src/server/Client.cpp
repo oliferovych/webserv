@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/21 15:31:50 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/21 18:26:50 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,10 @@
 #include "../../include/HTTP/requests/Request.hpp"
 #include <unistd.h>
 
-Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf)
-	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, _sessionID), _state(COMPLETE), _request_timeout(2)
+Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, int port)
+	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, _sessionID), _request_timeout(2), _port(port) 
 {
+	changeState(COMPLETE);
 }
 
 Client::~Client()
@@ -73,7 +74,7 @@ int Client::handle_message()
 	return (0);
 }
 
-bool Client::hasTimedOut() const
+bool Client::hasRequestTimedOut() const
 {
 	if (_state != COMPLETE)
 	{
@@ -137,5 +138,20 @@ bool Client::isConnClosed(void)
 void Client::resetRequest(void)
 {
 	_request.reset();
+}
+
+bool Client::hasTimedOut(double timeoutTime) const
+{
+	if (_state == COMPLETE)
+	{
+		auto now = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - _lastActivityTime);
+        if (duration.count() > timeoutTime)
+		{
+			debug_msg("Hanging connection timeout, closing ...");
+            return true;
+		}
+	}
+	return (false);
 }
 
