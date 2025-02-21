@@ -6,7 +6,7 @@
 /*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/22 20:14:13 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/21 16:42:36 by dolifero         ###   ########.fr       */
+/*   Updated: 2025/02/21 16:54:35 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,7 +249,6 @@ Location::~Location()
 
 void Location::printOut(int indent) const
 {
-	std::cout << std::endl;
 	displayConfigLine("Location block: " + _path, indent, FG_BOLDGREEN);
 	indent++;
 
