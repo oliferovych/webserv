@@ -115,6 +115,7 @@ print(f"""<!DOCTYPE html>
     </div>
     <script>
         function deleteSession() {{
+            document.cookie = "session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
             document.cookie = 'session_id=reset; path=/';
             location.reload();
         }}
