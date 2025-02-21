@@ -35,22 +35,16 @@ class Request
 			std::string absolute_host;
 		};
 
-
 		Request_line	request_line;
 		std::unordered_map<std::string, std::vector<std::string>>	headers;
 		std::vector<char>	body;
-
 		std::vector<char> buffer;
-
 		std::string query_vars;
-
 		long	content_length;
 		ParseState state;
 
 		std::vector<ServerConfig> &configVec;
-
 		std::string &_sessionID;
-
 
 		void parse_request_line();
 		void parse_headers();
@@ -62,8 +56,6 @@ class Request
 		void validateHeaders();
 
 		ServerConfig *_findConfig(std::string &serverName);
-
-
 	public:
 		Request(std::vector<ServerConfig> &conf, std::string &sessionID);
 		~Request();
@@ -75,7 +67,6 @@ class Request
 		void reset();
 
 		bool is_complete() const;
-
 		size_t get_content_length() const;
 		const std::string &get_method() const;
 		const std::string &get_query_string() const;
