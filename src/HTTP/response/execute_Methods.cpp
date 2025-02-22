@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_Methods.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 16:05:38 by tecker            #+#    #+#             */
-/*   Updated: 2025/02/22 15:05:00 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/22 16:02:06 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,7 @@ void Response::GET(void)
 		return ;
 	}
 	setBody(path);
+	debug_msg("GET successful, file: " + path.filename().string());
 }
 
 void Response::fileCreation(std::vector<char> &content, std::string &filename)
@@ -303,6 +304,7 @@ void Response::POST(void)
         error_body(e.code(), "POST execution failed: " + std::string(e.what()));
         return;
     }
+	debug_msg("POST successful, file: " + result.first);
 }
 
 void Response::DELETE(void)
@@ -337,6 +339,7 @@ void Response::DELETE(void)
         error_body(500, "Failed to delete file due to system error");
     }
 	_status_code = 200;
+	debug_msg("DELETE successful, file: " + path.filename().string());
 }
 
 void Response::setBody(std::filesystem::path path)
