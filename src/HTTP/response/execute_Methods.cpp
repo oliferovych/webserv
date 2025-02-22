@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 16:05:38 by tecker            #+#    #+#             */
-/*   Updated: 2025/02/21 17:11:28 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/22 15:05:00 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,7 +105,7 @@ void Response::GET(void)
 
 				if (!std::filesystem::exists(path))
 				{
-					std::cout << "index not found!" << std::endl;
+					// std::cout << "index not found!" << std::endl;
 					if (_location->getAutoIndex() == "on")
 						autoIndex(request_path);
 					else
@@ -155,7 +155,7 @@ void Response::fileCreation(std::vector<char> &content, std::string &filename)
 	std::filesystem::path path = _workingDir / request_path.substr(1);
 	if (path.string().back() != '/')
 		throw Error(400, "Request Target needs to be a directory for POST method: " + path.string());
-	std::cout << "postreq: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
+	// std::cout << "postreq: " << request_path << " path: " << path << " uploadDir " << _uploadDir << std::endl;
 	if(path.string().back() != '/')
 		path += "/";
 	if (path != _uploadDir)
@@ -313,7 +313,7 @@ void Response::DELETE(void)
 		throw Error(403, "cant delete directories");
 	if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
 		throw Error(403, "cant find file for deletion at path: " + path.string());
-	std::cout << "delreq: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
+	// std::cout << "delreq: " << request_path << " path: " << path.parent_path() / "" << " uploadDir " << _uploadDir << std::endl;
 	if (path.parent_path() / "" != _uploadDir)
 		throw Error(403, "path is outside the uploadDir defined in the config!");
    	if (!std::filesystem::exists(path))

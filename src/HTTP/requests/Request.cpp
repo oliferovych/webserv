@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/02/22 15:00:05 by tecker            #+#    #+#             */
+/*   Updated: 2025/02/22 15:04:15 by tecker           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../../include/HTTP/requests/Request.hpp"
 #include <algorithm>
 
@@ -182,7 +194,6 @@ void Request::parse_chunked_body()
 {
 	while (!buffer.empty())
     {
-		std::cout << "buffer:" << std::endl;
 		printVectorEscaped(buffer);
         std::vector<char> del = {'\r', '\n', '\r', '\n'};
 		auto it = std::search(buffer.begin(), buffer.end(), del.begin(), del.end());
