@@ -3,19 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/22 14:40:22 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/22 15:47:53 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server/Server.hpp"
-#include <arpa/inet.h>
 #include <fcntl.h>
 #include <memory>
 #include <csignal>
 #include <fstream>
+#include <chrono>
+#include <thread>
 
 Server::Server(std::string const &configPath)
 {
@@ -111,18 +112,18 @@ void Server::_acceptClient(int serverFd)
 		return ;
 	}
 
-	// int flags = fcntl(client_fd, F_GETFL, 0);
-	// if(flags < 0)
-	// {
-	// 	err_msg("Error getting client socket flags " + std::string(strerror(errno)));
-	// 	return ((void)close(client_fd));
-	// }
-	// if(fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0)
-	// {
-	// 	err_msg("Error setting client socket to non-blocking " + std::string(strerror(errno)));
-	// 	return ((void)close(client_fd));
-	// }
-	// setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
+	int flags = fcntl(client_fd, F_GETFL, 0);
+	if(flags < 0)
+	{
+		err_msg("Error getting client socket flags " + std::string(strerror(errno)));
+		return ((void)close(client_fd));
+	}
+	if(fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		err_msg("Error setting client socket to non-blocking " + std::string(strerror(errno)));
+		return ((void)close(client_fd));
+	}
+	setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
 
 	_setSockTimeout(client_fd, 5);
 
@@ -197,6 +198,7 @@ void Server::run()
 	debug_msg("Poll size: " + std::to_string(_poll.size()));
 	while(_running)
 	{
+		std::this_thread::sleep_for(std::chrono::microseconds(1000));
 		int events = poll(_poll.getFds().data(), _poll.size(), 5000);
 		if(events < 0)
 		{
@@ -232,7 +234,7 @@ void Server::run()
 			}
 			if(pfd.revents & POLLOUT)
 			{
-				if(!_isServer(pfd.fd) && _clients[pfd.fd]->getState() != 2)
+				if(!_isServer(pfd.fd) && _clients[pfd.fd]->getState() == 1)
 				{
 					if(_clients[pfd.fd]->sendResponse(_clients[pfd.fd]->getResponseStr()) < 0)
 					{

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
+/*   By: dolifero <dolifero@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/22 14:36:10 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/22 14:58:48 by dolifero         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ int Client::handle_message()
 		response.checkLocation();
 		response.build_err(e.code(), "Request Parsing failed: " + std::string(e.what()));
 		_responseStr = response.getResult();
+		changeState(SENDING);
 		return (0);
 	}
 

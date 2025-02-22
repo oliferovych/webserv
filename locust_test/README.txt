@@ -6,3 +6,9 @@ locust -f locust_test/locustfile.py --host=http://localhost
 
 locust then hosts a server of its own on port 8089(at lest for linux)
 by going to localhost:8089 you can access the website with the tester
+
+
+OR RUN SIEGE
+
+siege -t20s -b http://127.0.0.1:8080
+
