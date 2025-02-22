@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:19:28 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/21 18:24:42 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/22 13:49:18 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,5 +69,7 @@ class Client
 		bool isConnClosed(void);
 		int getState(void) { return _state; }
 		int getPort(void) { return _port; }
+		void setResponseStr(std::string str);
+
 		
 };

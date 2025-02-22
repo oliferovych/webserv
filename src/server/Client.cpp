@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 18:23:53 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/21 18:26:50 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/22 14:36:10 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 Client::Client(int clientFd, sockaddr_in addr, std::vector<ServerConfig> &conf, int port)
-	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, _sessionID), _request_timeout(2), _port(port) 
+	: _clientFd(clientFd), _connected(true), _addr(addr), _request(conf, _sessionID), _request_timeout(2), _port(port)
 {
 	changeState(COMPLETE);
 }
@@ -52,10 +52,9 @@ int Client::handle_message()
 		err_msg("Request parsing failed (for client on FD" + std::to_string(_clientFd) + ") | reason: " + std::string(e.what()) + " | error code: " + std::to_string(e.code()));
 		Response response;
 		response.checkLocation();
-		response.build_err(e.code(), "Request Parsing failed: " + std::string(e.what())); //really close connection??
-		sendResponse(response.getResult());
-		changeState(COMPLETE);
-		return -1;
+		response.build_err(e.code(), "Request Parsing failed: " + std::string(e.what()));
+		_responseStr = response.getResult();
+		return (0);
 	}
 
     if (_request.is_complete())
@@ -99,6 +98,8 @@ int Client::sendResponse(std::string response)
 		info_msg("closing connection to client (on FD" + std::to_string(_clientFd) + ")");
 		return -1;
 	}
+	_state = COMPLETE;
+	_request.reset();
 	return (1);
 }
 
@@ -153,5 +154,10 @@ bool Client::hasTimedOut(double timeoutTime) const
 		}
 	}
 	return (false);
+}
+
+void Client::setResponseStr(std::string str)
+{
+	_responseStr = str;
 }
 

@@ -6,7 +6,7 @@
 /*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 16:01:00 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/21 18:25:38 by tecker           ###   ########.fr       */
+/*   Updated: 2025/02/22 14:40:22 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,18 +99,6 @@ void Server::createServerSockets()
 	}
 }
 
-void handleMaxBodySize(int clientFd)
-{
-	const char* response = "HTTP/1.1 413 Payload Too Large\r\n"
-                          "Content-Type: text/plain\r\n"
-                          "Connection: close\r\n\r\n"
-                          "Request entity too large\r\n";
-
-	send(clientFd, response, strlen(response), 0);
-	close(clientFd);
-	info_msg("Client socket bounced");
-}
-
 void Server::_acceptClient(int serverFd)
 {
 	sockaddr_in client_address{};
@@ -123,26 +111,20 @@ void Server::_acceptClient(int serverFd)
 		return ;
 	}
 
-	if((unsigned int)_clients.size() + 1 > _findConfig(_sockets[serverFd]->getPort()).getMaxConn())
-	{
-		err_msg("Client on port " + std::to_string(_sockets[serverFd]->getPort()) + " rejected: too many clients");
-		handleMaxBodySize(client_fd);
-		return ;
-	}
+	// int flags = fcntl(client_fd, F_GETFL, 0);
+	// if(flags < 0)
+	// {
+	// 	err_msg("Error getting client socket flags " + std::string(strerror(errno)));
+	// 	return ((void)close(client_fd));
+	// }
+	// if(fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0)
+	// {
+	// 	err_msg("Error setting client socket to non-blocking " + std::string(strerror(errno)));
+	// 	return ((void)close(client_fd));
+	// }
+	// setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
 
-	int flags = fcntl(client_fd, F_GETFL, 0);
-	if(flags < 0)
-	{
-		err_msg("Error getting client socket flags " + std::string(strerror(errno)));
-		return ((void)close(client_fd));
-	}
-	if(fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0)
-	{
-		err_msg("Error setting client socket to non-blocking " + std::string(strerror(errno)));
-		return ((void)close(client_fd));
-	}
-	// TODO: understand how it works
-	setsockopt(client_fd, SOL_SOCKET, SO_REUSEADDR, NULL, 0);
+	_setSockTimeout(client_fd, 5);
 
 	try
 	{
@@ -154,7 +136,7 @@ void Server::_acceptClient(int serverFd)
 			throw;
 		}
 		_poll.addFd(client_fd);
-		info_msg("Client connected on FD " + std::to_string(client_fd) + " from " + std::string(inet_ntoa(client_address.sin_addr)));
+		info_msg("Client connected on FD " + std::to_string(client_fd));
 	} catch (std::exception &e)
 	{
 		err_msg("Error creating client socket " + std::string(e.what()));
@@ -171,8 +153,6 @@ bool Server::_isServer(int fd)
 
 void Server::_closeClient(int clientFd)
 {
-	// Response resp;
-	// resp.build_err()
 	close(clientFd);
 	_poll.removeFd(clientFd);
 	delete _clients[clientFd];
@@ -235,15 +215,7 @@ void Server::run()
 		}
 		for(auto &pfd : _poll.getFds())
 		{
-			if(!_isServer(pfd.fd))
-			{
-				int maxConn = _findConfig(_clients[pfd.fd]->getPort()).getMaxConn(); 
-				if(_clients[pfd.fd]->hasTimedOut(maxConn / _poll.size() * 1.1))
-				{
-					_closeClient(pfd.fd);
-					break ;
-				}
-			}
+			
 			if(pfd.revents & POLLIN)
 			{
 				if(_isServer(pfd.fd))
@@ -252,18 +224,13 @@ void Server::run()
 					_acceptClient(pfd.fd);
 					break ;
 				}
-				// else if(_clients[pfd.fd]->hasTimedOut(5.5))
-				// {
-				// 	_closeClient(pfd.fd);
-				// 	break ;
-				// }
-				if (_clients[pfd.fd]->hasRequestTimedOut() || _clients[pfd.fd]->handle_message() < 0)
+				else if(_clients[pfd.fd]->hasRequestTimedOut() || _clients[pfd.fd]->handle_message() < 0)
 				{
 					_closeClient(pfd.fd);
 					break ;
 				}
 			}
-			else if(pfd.revents & POLLOUT)
+			if(pfd.revents & POLLOUT)
 			{
 				if(!_isServer(pfd.fd) && _clients[pfd.fd]->getState() != 2)
 				{
@@ -278,11 +245,9 @@ void Server::run()
 						_closeClient(pfd.fd);
 						break;
 					}
-					_clients[pfd.fd]->changeState(2);
-					_clients[pfd.fd]->resetRequest();
 				}
 			}
-			else if(pfd.revents & (POLLHUP | POLLERR | POLLNVAL))
+			if(pfd.revents & (POLLHUP | POLLERR | POLLNVAL | POLLPRI))
 			{
 				debug_msg("Poll fd revent hung up/invalid, closing client fd...");
 				if(!_isServer(pfd.fd))
@@ -291,9 +256,34 @@ void Server::run()
 					break;
 				}
 			}
+			if(!_isServer(pfd.fd))
+			{
+				if(_clients[pfd.fd]->hasTimedOut(10))
+				{
+					_closeClient(pfd.fd);
+					break ;
+				}
+			}
 		}
 	}
 	_shutdownServer();
+}
+
+void Server::_setSockTimeout(const int fd, int timeOutSec)
+{
+	timeval time;
+	time.tv_sec = timeOutSec;
+	time.tv_usec = 0;
+
+	if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time)) < 0)
+	{
+		err_msg("Error setting receive timeout: " + std::string(strerror(errno)));
+	}
+
+	if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &time, sizeof(time)) < 0)
+	{
+		err_msg("Error setting send timeout: " + std::string(strerror(errno)));
+	}
 }
 
 void Server::_signalHandler(int sig)

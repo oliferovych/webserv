@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tomecker <tomecker@student.42.fr>          +#+  +:+       +#+        */
+/*   By: tecker <tecker@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/13 15:53:51 by dolifero          #+#    #+#             */
-/*   Updated: 2025/02/18 00:04:06 by tomecker         ###   ########.fr       */
+/*   Updated: 2025/02/22 14:04:53 by tecker           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class Server
 		void _serverSignals();
 		bool _loadConfig(std::string const &path);
 		void _acceptClient(int serverFd);
+		void _setSockTimeout(const int fd, int timeOutSec);
 		bool _isServer(int fd);
 		void _closeClient(int clientFd);
 		void _closeServerSock(int serverFd);
