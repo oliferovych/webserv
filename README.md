@@ -15,7 +15,6 @@
 </div>
 
 
-> **This is when you finally understand why a URL starts with HTTP**
 
 ***Summary:***  *This project is about writing our own HTTP server.
 One is able to test it with an actual browser.
@@ -23,7 +22,8 @@ HTTP is one of the most used protocols on the internet.
 Knowing its arcane is useful, even if one won’t be working on a website.*
 
 ## Description:
-This project represents a fully functional webserver, created referrencing NGINX.
+This project represents a fully functional webserver, created referrencing NGINX:
+
 ![image](https://github.com/user-attachments/assets/b4bfdd8e-02b0-437b-82f3-8396acde6476)
 ## Key features:
  - Parser of config files with NGINX's syntax
