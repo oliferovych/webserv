@@ -7,7 +7,7 @@
  <br>
  <b>Intra score: 125/125</b>
  <br>
- <b>Started: 07.08.2024</b>
+ <b>Started: 09.01.2025</b>
  <br>
- <b>Finished: 04.09.2024</b>
+ <b>Finished: 23.02.2025</b>
 </div>
