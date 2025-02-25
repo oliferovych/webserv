@@ -36,4 +36,4 @@ This project represents a fully functional webserver, created referrencing NGINX
  - CGI system that supports multiple languages and is able to handle both POST and GET requests.
  - Cookie system.
  - Redirections.
- - A default website that demonstrates all of project's feature.
+ - A default website that demonstrates all of project's features.
