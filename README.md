@@ -27,6 +27,7 @@ This project represents a fully functional webserver, created referrencing NGINX
 ![image](https://github.com/user-attachments/assets/b4bfdd8e-02b0-437b-82f3-8396acde6476)
 ## Key features:
  - Parser of config files with NGINX's syntax
+ - Support of multiple server blocks with multiple ports at one launch.
  - Efficient I/O Multiplexing
  - Non-blocking sockets set up for the fastest performance
  - Request/Chunked request parsing.
